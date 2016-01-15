@@ -22,6 +22,10 @@ export default class MapView extends React.Component {
     }
 
     handleWheel(event) {
+        let map = this.refs.map;
+        let relativeX = event.pageX - map.offsetLeft;
+        let relativeY = event.pageY - map.offsetTop;
+
         if (event.deltaY < 0) {
             this.setState({zoom: this.state.zoom + 1});
         }
@@ -31,7 +35,7 @@ export default class MapView extends React.Component {
     }
 
     render() {
-        return <div onClick={this.handleClick} onWheel={this.handleWheel}>
+        return <div ref="map" onClick={this.handleClick} onWheel={this.handleWheel}>
             <div
                 style={{float: 'left', content: 'url('+this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)+')'}}>
             </div>
