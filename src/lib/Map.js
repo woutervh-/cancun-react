@@ -22,4 +22,12 @@ export default class Map {
 
         return baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey;
     }
+
+    get minZoom() {
+        return minZoom;
+    }
+
+    get maxZoom() {
+        return maxZoom;
+    }
 }

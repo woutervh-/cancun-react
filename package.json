@@ -22,8 +22,9 @@
         "debug": "~2.2.0",
         "express": "~4.13.1",
         "morgan": "~1.6.1",
-        "serve-favicon": "~2.3.0",
         "react": "^0.14.2",
-        "react-dom": "^0.14.2"
+        "react-component-resizable": "^0.3.0",
+        "react-dom": "^0.14.2",
+        "serve-favicon": "~2.3.0"
     }
 }
