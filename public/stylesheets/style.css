@@ -9,7 +9,7 @@ body {
     font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-@media only screen and (min-resolution: 2dppx) {
+@media only screen and (min-resolution: 2dppx), screen and (min-resolution: 140dpi) {
     body {
         font-size: 2em;
     }

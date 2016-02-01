@@ -1,6 +1,7 @@
 import React from 'react';
 import Resizable from 'react-component-resizable';
 import Map from '../lib/Map.js';
+import Canvas from './canvas/Canvas.jsx'
 
 export default class MapView extends React.Component {
     constructor() {
@@ -18,11 +19,13 @@ export default class MapView extends React.Component {
         zoom: 0,
         x: 0,
         y: 0,
-        width: 0
+        width: 0,
+        height: 0
     };
 
     handleResize(event) {
-        this.setState({width: event.width});
+        this.setState({width: event.width, height: event.height});
+        console.log(this.state);
     }
 
     handleClick(event) {
@@ -43,8 +46,23 @@ export default class MapView extends React.Component {
         event.preventDefault();
     }
 
+    componentDidMount() {
+        let canvas = this.refs.canvas;
+        let context = canvas.getContext('2d');
+        context.fillStyle = 'red';
+        context.fillRect(0, 0, 100, 50);
+    }
+
     render() {
-        return <Resizable onResize={this.handleResize}>{this.state.width} x {this.state.height}</Resizable>;
+        return <Canvas style={{width: '100%', height: 'auto', display: 'block'}}>
+            <span/>
+        </Canvas>;
+
+        return <Resizable onResize={this.handleResize}>
+            <canvas ref="canvas" style={{width: '100%', height: 'auto', display: 'block'}}>
+                Your browser does not support the HTML5 canvas tag.
+            </canvas>
+        </Resizable>;
 
         return <div ref="map" onClick={this.handleClick} onWheel={this.handleWheel}>
             <div
