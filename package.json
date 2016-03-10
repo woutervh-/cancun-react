@@ -3,9 +3,9 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "postinstall": "webpack",
+        "postinstall": "webpack --config webpack.config.dev.js",
         "start": "node ./bin/www",
-        "watch": "webpack --watch --colors"
+        "watch": "webpack --config webpack.config.dev.js --watch --colors"
     },
     "devDependencies": {
         "babel": "^6.1.18",
@@ -22,9 +22,9 @@
         "debug": "~2.2.0",
         "express": "~4.13.1",
         "morgan": "~1.6.1",
-        "react": "^0.14.2",
+        "react": "^0.14.7",
         "react-component-resizable": "^0.3.0",
-        "react-dom": "^0.14.2",
+        "react-dom": "^0.14.7",
         "serve-favicon": "~2.3.0"
     }
 }

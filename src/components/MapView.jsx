@@ -9,6 +9,7 @@ export default class MapView extends React.Component {
         this.handleResize = this.handleResize.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
     }
 
     static propTypes = {
@@ -47,10 +48,10 @@ export default class MapView extends React.Component {
     }
 
     componentDidMount() {
-        let canvas = this.refs.canvas;
-        let context = canvas.getContext('2d');
-        context.fillStyle = 'red';
-        context.fillRect(0, 0, 100, 50);
+        //let canvas = this.refs.canvas;
+        //let context = canvas.getContext('2d');
+        //context.fillStyle = 'red';
+        //context.fillRect(0, 0, 100, 50);
     }
 
     render() {
