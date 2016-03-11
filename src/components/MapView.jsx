@@ -55,14 +55,8 @@ export default class MapView extends React.Component {
     }
 
     render() {
-        return <Canvas style={{width: '100%', height: 'auto', display: 'block'}}>
-            <span/>
-        </Canvas>;
-
-        return <Resizable onResize={this.handleResize}>
-            <canvas ref="canvas" style={{width: '100%', height: 'auto', display: 'block'}}>
-                Your browser does not support the HTML5 canvas tag.
-            </canvas>
+        return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
+            <Canvas width={this.state.width} height={this.state.height}/>
         </Resizable>;
 
         return <div ref="map" onClick={this.handleClick} onWheel={this.handleWheel}>
