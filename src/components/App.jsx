@@ -15,7 +15,7 @@ export default class App extends React.Component {
         return <div className="row">
             <div className="col-1 menu">
                 <ul>
-                    <li>Item 1</li>
+                    <li>Item 56</li>
                 </ul>
             </div>
             <div className="col-2">
