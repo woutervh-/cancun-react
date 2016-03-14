@@ -1,7 +1,8 @@
-import React from 'react';
-import Resizable from 'react-component-resizable';
-import Map from '../lib/Map.js';
 import Canvas from './canvas/Canvas.jsx'
+import Map from '../lib/Map.js';
+import React from 'react';
+import Rectangle from './canvas/Rectangle.jsx';
+import Resizable from 'react-component-resizable';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -26,7 +27,6 @@ export default class MapView extends React.Component {
 
     handleResize(event) {
         this.setState({width: event.width, height: event.height});
-        console.log(this.state);
     }
 
     handleClick(event) {
@@ -36,6 +36,8 @@ export default class MapView extends React.Component {
         let map = this.refs.map;
         let relativeX = event.pageX - map.offsetLeft;
         let relativeY = event.pageY - map.offsetTop;
+
+        // TODO: zoom relative to center of viewport
 
         if (event.deltaY < 0 && this.state.zoom < this.props.map.maxZoom) {
             this.setState({zoom: this.state.zoom + 1});
@@ -56,7 +58,9 @@ export default class MapView extends React.Component {
 
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
-            <Canvas width={this.state.width} height={this.state.height}/>
+            <Canvas width={this.state.width} height={this.state.height}>
+                <Rectangle width="100" height="100" fillStyle="white"/>
+            </Canvas>
         </Resizable>;
 
         return <div ref="map" onClick={this.handleClick} onWheel={this.handleWheel}>
