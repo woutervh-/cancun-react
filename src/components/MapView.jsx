@@ -51,10 +51,10 @@ export default class MapView extends React.Component {
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
             <Surface top={0} left={0} width={this.state.width} height={this.state.height}>
-                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
-                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
-                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
-                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
+                <Image src={this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)} style={{top: 0, left: 0, width: '256', height: '256'}}/>
+                <Image src={this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y)} style={{top: 0, left: 256, width: '256', height: '256'}}/>
+                <Image src={this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y + 1)} style={{top: 256, left: 0, width: '256', height: '256'}}/>
+                <Image src={this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y + 1)} style={{top: 256, left: 256, width: '256', height: '256'}}/>
             </Surface>
         </Resizable>;
 
