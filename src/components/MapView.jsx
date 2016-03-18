@@ -1,8 +1,7 @@
-import Canvas from './canvas/Canvas.jsx'
 import Map from '../lib/Map.js';
 import React from 'react';
-import Rectangle from './canvas/Rectangle.jsx';
 import Resizable from 'react-component-resizable';
+import {Surface, Image, Text} from 'react-canvas';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -49,36 +48,28 @@ export default class MapView extends React.Component {
         event.preventDefault();
     }
 
-    componentDidMount() {
-        //let canvas = this.refs.canvas;
-        //let context = canvas.getContext('2d');
-        //context.fillStyle = 'red';
-        //context.fillRect(0, 0, 100, 50);
-    }
-
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
-            <Canvas width={this.state.width} height={this.state.height}>
-                <Rectangle width={200} height={300} fillStyle="white"/>
-            </Canvas>
+            <Surface top={0} left={0} width={this.state.width} height={this.state.height}>
+                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
+                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
+                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
+                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '256', height: '256'}}/>
+            </Surface>
         </Resizable>;
 
-        return <div ref="map" onClick={this.handleClick} onWheel={this.handleWheel}>
-            <div
-                style={{float: 'left', content: 'url('+this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)+')'}}>
-            </div>
-            <div
-                style={{float: 'left', content: 'url('+this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y)+')'}}>
-            </div>
-            <div style={{float: 'left', width: '100%'}}></div>
+        return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
+            <Surface top={0} left={0} width={this.state.width} height={this.state.height}>
+                <Image src="http://upload.wikimedia.org/wikipedia/commons/d/d2/Svg_example_square.svg" style={{top: 0, left: 0, width: '150', height: '150'}}/>
+                <Text style={{top: 0, left: 0, width: 100, height: 20, lineHeight: 20, fontSize: 12}}>Hello.</Text>
+            </Surface>
+        </Resizable>;
 
-            <div
-                style={{float: 'left', content: 'url('+this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y + 1)+')'}}>
-            </div>
-            <div
-                style={{float: 'left', content: 'url('+this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y + 1)+')'}}>
-            </div>
-            <div style={{float: 'left', width: '100%'}}></div>
-        </div>;
+        return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
+            <Canvas width={this.state.width} height={this.state.height}>
+                <Rectangle width={200} height={100} fillStyle="rgba(0, 0, 0, 0)"/>
+                <Picture width={100} height={100} source="http://www.html5canvastutorials.com/demos/assets/darth-vader.jpg"/>
+            </Canvas>
+        </Resizable>;
     }
 };
