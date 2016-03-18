@@ -59,7 +59,7 @@ export default class MapView extends React.Component {
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
             <Canvas width={this.state.width} height={this.state.height}>
-                <Rectangle width="100" height="100" fillStyle="white"/>
+                <Rectangle width={200} height={300} fillStyle="white"/>
             </Canvas>
         </Resizable>;
 

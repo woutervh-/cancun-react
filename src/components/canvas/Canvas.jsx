@@ -21,6 +21,7 @@ export default class Canvas extends React.Component {
     draw() {
         let canvas = this.refs.canvas;
         let context = canvas.getContext('2d');
+        context.clearRect(0, 0, this.props.width, this.props.height);
 
         React.Children.forEach(this.props.children, child => {
             switch (child.type) {
@@ -35,11 +36,13 @@ export default class Canvas extends React.Component {
     }
 
     drawRectangle(context, rectangle) {
+        context.beginPath();
         context.rect(rectangle.props.left, rectangle.props.top, rectangle.props.width, rectangle.props.height);
         context.fillStyle = rectangle.props.fillStyle;
         context.fill();
         context.strokeStyle = rectangle.props.strokeStyle;
         context.stroke();
+        context.closePath();
     }
 
     render() {
