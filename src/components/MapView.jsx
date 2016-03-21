@@ -1,3 +1,4 @@
+import Conditional from './Conditional.jsx';
 import glReactDom from 'gl-react-dom';
 import Map from '../lib/Map.js';
 import Picture from './gl-react/Picture.jsx';
@@ -11,6 +12,7 @@ export default class MapView extends React.Component {
         this.handleClick = this.handleClick.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
+        window.on
     }
 
     static propTypes = {
@@ -21,8 +23,8 @@ export default class MapView extends React.Component {
         zoom: 0,
         x: 0,
         y: 0,
-        width: 1,
-        height: 1
+        width: 0,
+        height: 0
     };
 
     handleResize(event) {
@@ -51,9 +53,11 @@ export default class MapView extends React.Component {
 
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
-            <glReactDom.Surface width={this.state.width} height={this.state.height}>
-                <Picture image={{uri: 'images/green.png'}}/>
-            </glReactDom.Surface>
+            <Conditional condition={this.state.width >= 1 && this.state.height >= 1}>
+                {() => <glReactDom.Surface width={this.state.width} height={this.state.height}>
+                    <Picture src={{uri: 'images/green.png'}}/>
+                </glReactDom.Surface>}
+            </Conditional>
         </Resizable>;
 
         return <div>

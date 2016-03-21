@@ -3,15 +3,17 @@ import React from 'react';
 
 let shaders = glReact.Shaders.create({
     picture: {
-        frag: require('./picture.vert')
+        frag: require('./picture.frag')
     }
+}, function () {
 });
 
-export default glReact.createComponent(({image, ...rest}) => {
+export default glReact.createComponent(
+    ({src, ...rest}) => {
         return <glReact.Node
             {...rest}
             shader={shaders.picture}
-            uniforms={{image: image}}
+            uniforms={{image: src}}
         />;
-    },
-    {displayName: "Picture"});
+    }
+);
