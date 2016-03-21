@@ -1,4 +1,6 @@
+import glReactDom from 'gl-react-dom';
 import Map from '../lib/Map.js';
+import Picture from './gl-react/Picture.jsx';
 import React from 'react';
 import Resizable from 'react-component-resizable';
 
@@ -19,8 +21,8 @@ export default class MapView extends React.Component {
         zoom: 0,
         x: 0,
         y: 0,
-        width: 0,
-        height: 0
+        width: 1,
+        height: 1
     };
 
     handleResize(event) {
@@ -49,12 +51,16 @@ export default class MapView extends React.Component {
 
     render() {
         return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
-            <ReactCanvas.Surface top={0} left={0} width={this.state.width} height={this.state.height}>
-                <ReactCanvas.Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)} style={{top: 0, left: 0, width: 256, height: 256}}/>
-                <ReactCanvas.Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y)} style={{top: 0, left: 256, width: 256, height: 256}}/>
-                <ReactCanvas.Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y + 1)} style={{top: 256, left: 0, width: 256, height: 256}}/>
-                <ReactCanvas.Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y + 1)} style={{top: 256, left: 256, width: 256, height: 256}}/>
-            </ReactCanvas.Surface>
+            <glReactDom.Surface width={this.state.width} height={this.state.height}>
+                <Picture image={{uri: 'images/green.png'}}/>
+            </glReactDom.Surface>
         </Resizable>;
+
+        return <div>
+            <Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)} style={{top: 0, left: 0, width: 256, height: 256}}/>
+            <Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y)} style={{top: 0, left: 256, width: 256, height: 256}}/>
+            <Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y + 1)} style={{top: 256, left: 0, width: 256, height: 256}}/>
+            <Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x + 1, this.state.y + 1)} style={{top: 256, left: 256, width: 256, height: 256}}/>
+        </div>;
     }
 };
