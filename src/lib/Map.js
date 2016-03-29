@@ -30,4 +30,12 @@ export default class Map {
     get maxZoom() {
         return maxZoom;
     }
+
+    get tileWidth() {
+        return 256;
+    }
+
+    get tileHeight() {
+        return 256;
+    }
 }

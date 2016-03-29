@@ -56,13 +56,12 @@ export default class Canvas extends React.Component {
     }
 
     drawPicture(context, picture) {
-        let that = this;
         let image = this.imageCache.get(picture.props.source);
         if (image.isLoaded()) {
             context.drawImage(image.getRawImage(), picture.props.left, picture.props.top, picture.props.width, picture.props.height);
         } else {
-            image.onLoad(function () {
-                that.setState({count: that.state.count + 1});
+            image.onLoad(() => {
+                this.setState({count: this.state.count + 1});
             });
         }
     }
