@@ -14,14 +14,14 @@ export default class App extends React.Component {
     };
 
     render() {
-        return <div className={style['row']}>
-            <div className={classNames(style['col-1'], style['menu'])}>
+        return <div className={style['wrapper']}>
+            <div className={style['content']}>
+                <MapView map={this.props.map}/>
+            </div>
+            <div className={style['menu']}>
                 <ul>
                     <li>Item 1</li>
                 </ul>
-            </div>
-            <div className={classNames(style['col-2'])}>
-                <MapView map={this.props.map}/>
             </div>
         </div>;
     }

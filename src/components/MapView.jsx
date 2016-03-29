@@ -1,9 +1,8 @@
-import Conditional from './Conditional.jsx';
-import glReactDom from 'gl-react-dom';
+import Canvas from './canvas/Canvas.jsx';
 import Map from '../lib/Map.js';
-import Picture from './gl-react/Picture.jsx';
+import Picture from './canvas/Picture.jsx';
 import React from 'react';
-import Resizable from 'react-component-resizable';
+import Rectangle from './canvas/Rectangle.jsx';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -11,8 +10,7 @@ export default class MapView extends React.Component {
         this.handleResize = this.handleResize.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
-        this.componentDidMount = this.componentDidMount.bind(this);
-        window.on
+        // this.componentDidMount = this.componentDidMount.bind(this);
     }
 
     static propTypes = {
@@ -23,12 +21,20 @@ export default class MapView extends React.Component {
         zoom: 0,
         x: 0,
         y: 0,
-        width: 0,
-        height: 0
+        width: window.innerWidth,
+        height: window.innerHeight
     };
 
-    handleResize(event) {
-        this.setState({width: event.width, height: event.height});
+    componentDidMount() {
+        window.addEventListener('resize', this.handleResize);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    handleResize() {
+        this.setState({width: window.innerWidth, height: window.innerHeight});
     }
 
     handleClick(event) {
@@ -52,13 +58,10 @@ export default class MapView extends React.Component {
     }
 
     render() {
-        return <Resizable onResize={this.handleResize} style={{width: '100%', height: '100%'}}>
-            <Conditional condition={this.state.width >= 1 && this.state.height >= 1}>
-                {() => <glReactDom.Surface width={this.state.width} height={this.state.height}>
-                    <Picture src={{uri: 'images/green.png'}}/>
-                </glReactDom.Surface>}
-            </Conditional>
-        </Resizable>;
+        return <Canvas width={this.state.width} height={this.state.height}>
+            <Rectangle width={200} height={300} fillStyle="white"/>
+            <Picture source="images/swirl.svg" width={100} height={100}/>ight={100}/>
+        </Canvas>;
 
         return <div>
             <Image src={'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, this.state.x, this.state.y)} style={{top: 0, left: 0, width: 256, height: 256}}/>

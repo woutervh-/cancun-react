@@ -4,19 +4,15 @@ html, body {
 }
 
 body {
-    padding: 0;
     margin: 0;
+    padding: 0;
+    overflow: hidden;
     font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 #react-main-mount {
+    width: 100%;
     height: 100%;
-}
-
-@media only screen and (min-resolution: 2dppx), screen and (min-resolution: 140dpi) {
-    body {
-        font-size: 2em;
-    }
 }
 
 img, video {
@@ -24,36 +20,41 @@ img, video {
     height: auto;
 }
 
+a {
+    color: #00B7FF;
+}
+
 * {
     box-sizing: border-box;
 }
 
-[class*="col-"] {
-    float: left;
-    padding: 15px;
+.wrapper {
     width: 100%;
     height: 100%;
 }
 
-@media only screen and (min-width: 768px) {
-    /* For desktop: */
-    .col-1 {
-        width: 25%;
-    }
-
-    .col-2 {
-        width: 75%;
-    }
-}
-
-.row {
+.content {
+    width: 100%;
     height: 100%;
+    z-index: 0;
 }
 
-.row:after {
-    content: "";
-    clear: both;
-    display: block;
+.menu {
+    position: absolute;
+    top: 1vh;
+    left: 1vw;
+    z-index: 1;
+}
+
+@media (min-width: 768px) {
+    /* For common desktop */
+}
+
+@media (min-width: 2560px) {
+    /* For large screens */
+    body {
+        font-size: 2em;
+    }
 }
 
 .menu ul {
@@ -71,8 +72,4 @@ img, video {
 
 .menu li:hover {
     background-color: #0099cc;
-}
-
-a {
-    color: #00B7FF;
 }

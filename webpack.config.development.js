@@ -28,9 +28,6 @@ module.exports = {
             }, {
                 test: /\.css$/,
                 loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]'
-            }, {
-                test: /\.(glsl|vert|frag)$/,
-                loader: 'webpack-glsl'
             }
         ]
     }
