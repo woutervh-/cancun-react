@@ -10,6 +10,8 @@ let baseUrls = [
 let minZoom = 0;
 let maxZoom = 18;
 
+let urlCache = {};
+
 export default class Map {
     constructor() {
         this.urlIndex = 0;
@@ -20,7 +22,11 @@ export default class Map {
         x = Math.max(0, x) % Math.pow(2, zoom);
         y = Math.max(0, y) % Math.pow(2, zoom);
 
-        return baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey;
+        if (!([zoom, x, y] in urlCache)) {
+            urlCache[[zoom, x, y]] = baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey;
+        }
+
+        return urlCache[[zoom, x, y]];
     }
 
     get minZoom() {

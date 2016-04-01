@@ -73,3 +73,12 @@ a {
 .menu li:hover {
     background-color: #0099cc;
 }
+
+.dragging {
+    cursor: move;
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+}

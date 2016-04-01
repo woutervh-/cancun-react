@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import Map from '../lib/Map';
 import MapView from './MapView.jsx';
 import React from 'react';

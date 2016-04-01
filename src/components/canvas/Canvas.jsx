@@ -1,4 +1,4 @@
-import ImageCache from '../../lib/ImageCache.js';
+import ImageCache from '../../lib/canvas/ImageCache.js';
 import Picture from './Picture.jsx';
 import React from 'react';
 import Rectangle from './Rectangle.jsx';
