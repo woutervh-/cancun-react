@@ -56,7 +56,7 @@ export default class MapView extends React.Component {
         if (this.state.dragData.dragging) {
             let dx = event.clientX - this.state.dragData.startMouseX;
             let dy = event.clientY - this.state.dragData.startMouseY;
-            this.setState({x: this.state.dragData.startX + dx, y: this.state.dragData.startY + dy});
+            this.setState({x: this.state.dragData.startX - dx, y: this.state.dragData.startY - dy});
         }
         event.preventDefault();
     }
@@ -75,17 +75,42 @@ export default class MapView extends React.Component {
     }
 
     handleWheel(event) {
-        let canvas = this.refs.canvas;
-        let relativeX = event.pageX - canvas.offsetLeft;
-        let relativeY = event.pageY - canvas.offsetTop;
+        let container = this.refs.container;
+        let containerOffsetX = container.offsetLeft;
+        let containerOffsetY = container.offsetTop;
+        let parent = container.offsetParent;
+        while (parent != null) {
+            containerOffsetX += parent.offsetLeft;
+            containerOffsetY += parent.offsetHeight;
+            parent = parent.offsetParent;
+        }
+        let relativeWheelX = event.clientX - containerOffsetX - this.state.width / 2;
+        let relativeWheelY = this.state.height / 2 + event.clientY - containerOffsetY;
+        let centerX = this.state.x + this.state.width / 2;
+        let centerY = this.state.y + this.state.height / 2;
+
+        // Look for behavior: when zoomed in, keep map position at mouse position the same
+
+        this.setState({
+            wheelX: relativeWheelX,
+            wheelY: relativeWheelY,
+            centerX: centerX,
+            centerY: centerY
+        });
 
         // TODO: zoom relative to center of viewport
 
         if (event.deltaY < 0 && this.state.zoom < this.props.map.maxZoom) {
-            this.setState({zoom: this.state.zoom + 1});
+            this.setState({
+                //zoom: this.state.zoom + 1,
+                x: this.state.x + relativeWheelX / 2,
+                y: this.state.y + relativeWheelY / 2
+            });
         }
         if (event.deltaY > 0 && this.state.zoom > this.props.map.minZoom) {
-            this.setState({zoom: this.state.zoom - 1});
+            this.setState({
+                zoom: this.state.zoom - 1
+            });
         }
 
         event.preventDefault();
@@ -104,7 +129,7 @@ export default class MapView extends React.Component {
         for (let i = 0; i < numTilesX; i++) {
             for (let j = 0; j < numTilesY; j++) {
                 tiles.push({
-                    url: 'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j),
+                    url: 'http://crossorigin.me/' + this.props.map.getTileUrl(3, startTileX + i, startTileY + j),
                     left: this.props.map.tileWidth * i + offsetX,
                     top: this.props.map.tileHeight * j + offsetY,
                     width: this.props.map.tileWidth,
@@ -117,7 +142,8 @@ export default class MapView extends React.Component {
                     onWheel={this.handleWheel}
                     onMouseDown={this.handleMouseDown}
                     onMouseMove={this.handleMouseMove}
-                    onMouseUp={this.handleMouseUp}>
+                    onMouseUp={this.handleMouseUp}
+                    ref="container">
             <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
                 {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
                 <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
