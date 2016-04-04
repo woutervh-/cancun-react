@@ -88,15 +88,6 @@ export default class MapView extends React.Component {
         let alongX = MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX);
         let alongY = MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY);
 
-        // Look for behavior: when zoomed in, keep map position at mouse position the same
-
-        this.setState({
-            alongX: alongX,
-            alongY: alongY
-        });
-
-        // TODO: zoom relative to center of viewport
-
         if (event.deltaY < 0 && this.state.zoom < this.props.map.maxZoom) {
             this.setState({
                 zoom: this.state.zoom + 1,
