@@ -20,7 +20,8 @@ export default class MapView extends React.Component {
     }
 
     static propTypes = {
-        map: React.PropTypes.instanceOf(Map).isRequired
+        map: React.PropTypes.instanceOf(Map).isRequired,
+        tileSize: React.PropTypes.oneOf([256, 512]).isRequired
     };
 
     state = {
@@ -107,31 +108,31 @@ export default class MapView extends React.Component {
     }
 
     render() {
-        let startTileX = Math.floor(this.state.x / this.props.map.tileWidth);
-        let startTileY = Math.floor(this.state.y / this.props.map.tileHeight);
-        let endTileX = Math.ceil((this.state.x + this.state.width) / this.props.map.tileWidth);
-        let endTileY = Math.ceil((this.state.y + this.state.height) / this.props.map.tileHeight);
+        let startTileX = Math.floor(this.state.x / this.props.tileSize);
+        let startTileY = Math.floor(this.state.y / this.props.tileSize);
+        let endTileX = Math.ceil((this.state.x + this.state.width) / this.props.tileSize);
+        let endTileY = Math.ceil((this.state.y + this.state.height) / this.props.tileSize);
         let numTilesX = endTileX - startTileX;
         let numTilesY = endTileY - startTileY;
-        let offsetX = startTileX * this.props.map.tileWidth - this.state.x;
-        let offsetY = startTileY * this.props.map.tileHeight - this.state.y;
+        let offsetX = startTileX * this.props.tileSize - this.state.x;
+        let offsetY = startTileY * this.props.tileSize - this.state.y;
         let tiles = [];
         for (let i = 0; i < numTilesX; i++) {
             for (let j = 0; j < numTilesY; j++) {
                 tiles.push({
-                    url: this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j),
-                    left: this.props.map.tileWidth * i + offsetX,
-                    top: this.props.map.tileHeight * j + offsetY,
-                    width: this.props.map.tileWidth,
-                    height: this.props.map.tileHeight
+                    url: this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j, this.props.tileSize),
+                    left: this.props.tileSize * i + offsetX,
+                    top: this.props.tileSize * j + offsetY,
+                    width: this.props.tileSize,
+                    height: this.props.tileSize
                 });
             }
         }
         tiles.sort((a, b) => {
-            let adx = a.left + this.props.map.tileWidth / 2 - this.state.width / 2;
-            let ady = a.top + this.props.map.tileHeight / 2 - this.state.height / 2;
-            let bdx = b.left + this.props.map.tileWidth / 2 - this.state.width / 2;
-            let bdy = b.top + this.props.map.tileHeight / 2 - this.state.height / 2;
+            let adx = a.left + this.props.tileSize / 2 - this.state.width / 2;
+            let ady = a.top + this.props.tileSize / 2 - this.state.height / 2;
+            let bdx = b.left + this.props.tileSize / 2 - this.state.width / 2;
+            let bdy = b.top + this.props.tileSize / 2 - this.state.height / 2;
             let adr = adx * adx + ady * ady;
             let bdr = bdx * bdx + bdy * bdy;
             return adr - bdr;

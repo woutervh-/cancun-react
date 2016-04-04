@@ -17,14 +17,14 @@ export default class Map {
         this.urlIndex = 0;
     }
 
-    getTileUrl(zoom, x, y) {
+    getTileUrl(zoom, x, y, tileSize) {
         zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
         let tiles = Math.pow(2, zoom);
         x = (x % tiles + tiles) % tiles;
         y = (y % tiles + tiles) % tiles;
 
         if (!([zoom, x, y] in urlCache)) {
-            urlCache[[zoom, x, y]] = baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey;
+            urlCache[[zoom, x, y]] = baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey + '&tileSize=' + tileSize;
         }
 
         return urlCache[[zoom, x, y]];
@@ -36,13 +36,5 @@ export default class Map {
 
     get maxZoom() {
         return maxZoom;
-    }
-
-    get tileWidth() {
-        return 256;
-    }
-
-    get tileHeight() {
-        return 256;
     }
 }

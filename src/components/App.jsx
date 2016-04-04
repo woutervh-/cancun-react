@@ -15,7 +15,7 @@ export default class App extends React.Component {
     render() {
         return <div className={style['wrapper']}>
             <div className={style['content']}>
-                <MapView map={this.props.map}/>
+                <MapView map={this.props.map} tileSize={512}/>
             </div>
             <div className={style['menu']}>
                 <ul>
