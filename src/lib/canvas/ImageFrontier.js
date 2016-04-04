@@ -10,7 +10,7 @@ export default class ImageFrontier {
 
     task() {
         while (this.countLoading < poolSize && this.countLoading < this.sourceQueue.length) {
-            let source = this.sourceQueue.pop();
+            let source = this.sourceQueue.shift();
             if (!(source in this.sourceToImage)) {
                 this.countLoading += 1;
                 this.sourceToImage[source] = new Image();

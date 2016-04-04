@@ -127,6 +127,15 @@ export default class MapView extends React.Component {
                 });
             }
         }
+        tiles.sort((a, b) => {
+            let adx = a.left + this.props.map.tileWidth / 2 - this.state.width / 2;
+            let ady = a.top + this.props.map.tileHeight / 2 - this.state.height / 2;
+            let bdx = b.left + this.props.map.tileWidth / 2 - this.state.width / 2;
+            let bdy = b.top + this.props.map.tileHeight / 2 - this.state.height / 2;
+            let adr = adx * adx + ady * ady;
+            let bdr = bdx * bdx + bdy * bdy;
+            return adr - bdr;
+        });
 
         return <div className={classNames(style['map-container'], {[style['dragging']]: this.state.dragData.dragging})}
                     onWheel={this.handleWheel}
