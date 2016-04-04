@@ -19,8 +19,9 @@ export default class Map {
 
     getTileUrl(zoom, x, y) {
         zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
-        x = Math.max(0, x) % Math.pow(2, zoom);
-        y = Math.max(0, y) % Math.pow(2, zoom);
+        let tiles = Math.pow(2, zoom);
+        x = (x % tiles + tiles) % tiles;
+        y = (y % tiles + tiles) % tiles;
 
         if (!([zoom, x, y] in urlCache)) {
             urlCache[[zoom, x, y]] = baseUrls[this.urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey;

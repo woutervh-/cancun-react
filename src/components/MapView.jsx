@@ -138,19 +138,6 @@ export default class MapView extends React.Component {
                 {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
                 <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
             </Canvas>
-            <pre style={{position:'absolute', left: '1em', top: '3em'}}>
-                startTileX: {startTileX}<br/>
-                startTileY: {startTileY}<br/>
-                endTileX: {endTileX}<br/>
-                endTileY: {endTileY}<br/>
-                numTilesX: {numTilesX}<br/>
-                numTilesY: {numTilesY}<br/>
-                offsetX: {offsetX}<br/>
-                offsetY: {offsetY}<br/>
-                width: {this.state.width}<br/>
-                height: {this.state.height}<br/>
-                state: {JSON.stringify(this.state, null, 2)}
-            </pre>
         </div>;
     }
 };

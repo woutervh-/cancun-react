@@ -1,4 +1,4 @@
-import ImageCache from '../../lib/canvas/ImageCache.js';
+import ImageFrontier from '../../lib/canvas/ImageFrontier.js';
 import Picture from './Picture.jsx';
 import React from 'react';
 import Rectangle from './Rectangle.jsx';
@@ -8,7 +8,7 @@ export default class Canvas extends React.Component {
         super();
         this.componentDidMount = this.draw;
         this.componentDidUpdate = this.draw;
-        this.imageCache = new ImageCache();
+        this.imageFrontier = new ImageFrontier();
     }
 
     static propTypes = {
@@ -22,12 +22,14 @@ export default class Canvas extends React.Component {
     };
 
     state = {
-        count: 0
+        count: 0,
+        pictures: {}
     };
 
     draw() {
         let canvas = this.refs.canvas;
         let context = canvas.getContext('2d');
+        this.imageFrontier.clear();
         context.clearRect(0, 0, this.props.width, this.props.height);
 
         React.Children.forEach(this.props.children, child => {
@@ -56,13 +58,12 @@ export default class Canvas extends React.Component {
     }
 
     drawPicture(context, picture) {
-        let image = this.imageCache.get(picture.props.source);
-        if (image.isLoaded()) {
-            context.drawImage(image.getRawImage(), picture.props.left, picture.props.top, picture.props.width, picture.props.height);
+        if (this.imageFrontier.isLoaded(picture.props.source)) {
+            let image = this.imageFrontier.getLoadedImage(picture.props.source);
+            context.drawImage(image, picture.props.left, picture.props.top, picture.props.width, picture.props.height);
         } else {
-            image.onLoad(() => {
-                this.setState({count: this.state.count + 1});
-            });
+            this.imageFrontier.prioritize(picture.props.source);
+            this.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
     }
 
