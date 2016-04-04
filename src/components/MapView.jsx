@@ -1,6 +1,7 @@
 import Canvas from './canvas/Canvas.jsx';
 import classNames from 'classnames';
 import Map from '../lib/Map.js';
+import MathUtil from '../lib/MathUtil.js';
 import Picture from './canvas/Picture.jsx';
 import React from 'react';
 import Rectangle from './canvas/Rectangle.jsx';
@@ -81,35 +82,33 @@ export default class MapView extends React.Component {
         let parent = container.offsetParent;
         while (parent != null) {
             containerOffsetX += parent.offsetLeft;
-            containerOffsetY += parent.offsetHeight;
+            containerOffsetY += parent.offsetTop;
             parent = parent.offsetParent;
         }
-        let relativeWheelX = event.clientX - containerOffsetX - this.state.width / 2;
-        let relativeWheelY = this.state.height / 2 + event.clientY - containerOffsetY;
-        let centerX = this.state.x + this.state.width / 2;
-        let centerY = this.state.y + this.state.height / 2;
+        let alongX = MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX);
+        let alongY = MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY);
 
         // Look for behavior: when zoomed in, keep map position at mouse position the same
 
         this.setState({
-            wheelX: relativeWheelX,
-            wheelY: relativeWheelY,
-            centerX: centerX,
-            centerY: centerY
+            alongX: alongX,
+            alongY: alongY
         });
 
         // TODO: zoom relative to center of viewport
 
         if (event.deltaY < 0 && this.state.zoom < this.props.map.maxZoom) {
             this.setState({
-                //zoom: this.state.zoom + 1,
-                x: this.state.x + relativeWheelX / 2,
-                y: this.state.y + relativeWheelY / 2
+                zoom: this.state.zoom + 1,
+                x: this.state.x * 2 + container.offsetWidth * alongX,
+                y: this.state.y * 2 + container.offsetHeight * alongY
             });
         }
         if (event.deltaY > 0 && this.state.zoom > this.props.map.minZoom) {
             this.setState({
-                zoom: this.state.zoom - 1
+                zoom: this.state.zoom - 1,
+                x: (this.state.x - container.offsetWidth * alongX) / 2,
+                y: (this.state.y - container.offsetHeight * alongY) / 2
             });
         }
 
@@ -129,7 +128,7 @@ export default class MapView extends React.Component {
         for (let i = 0; i < numTilesX; i++) {
             for (let j = 0; j < numTilesY; j++) {
                 tiles.push({
-                    url: 'http://crossorigin.me/' + this.props.map.getTileUrl(3, startTileX + i, startTileY + j),
+                    url: 'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j),
                     left: this.props.map.tileWidth * i + offsetX,
                     top: this.props.map.tileHeight * j + offsetY,
                     width: this.props.map.tileWidth,
