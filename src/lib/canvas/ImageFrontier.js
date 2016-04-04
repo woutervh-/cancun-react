@@ -1,4 +1,4 @@
-const poolSize = 4;
+const poolSize = 64;
 
 export default class ImageFrontier {
     constructor() {
@@ -41,7 +41,7 @@ export default class ImageFrontier {
         return this.sourceToImage[source];
     }
 
-    prioritize(source) {
+    fetch(source) {
         this.sourceQueue.push(source);
         setImmediate(this.task.bind(this));
     }

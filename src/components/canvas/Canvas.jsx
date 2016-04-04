@@ -62,7 +62,7 @@ export default class Canvas extends React.Component {
             let image = this.imageFrontier.getLoadedImage(picture.props.source);
             context.drawImage(image, picture.props.left, picture.props.top, picture.props.width, picture.props.height);
         } else {
-            this.imageFrontier.prioritize(picture.props.source);
+            this.imageFrontier.fetch(picture.props.source);
             this.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
     }

@@ -119,7 +119,7 @@ export default class MapView extends React.Component {
         for (let i = 0; i < numTilesX; i++) {
             for (let j = 0; j < numTilesY; j++) {
                 tiles.push({
-                    url: 'http://crossorigin.me/' + this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j),
+                    url: this.props.map.getTileUrl(this.state.zoom, startTileX + i, startTileY + j),
                     left: this.props.map.tileWidth * i + offsetX,
                     top: this.props.map.tileHeight * j + offsetY,
                     width: this.props.map.tileWidth,
