@@ -7,29 +7,11 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font: 1em "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 #react-main-mount {
     width: 100%;
     height: 100%;
-}
-
-img, video {
-    max-width: 100%;
-    height: auto;
-}
-
-a {
-    color: #00B7FF;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-.dragging {
-    cursor: move;
 }
 
 .wrapper {
@@ -40,25 +22,10 @@ a {
 .content {
     width: 100%;
     height: 100%;
-    z-index: 0;
+    z-index: -1;
 }
 
 .map-container {
     width: 100%;
     height: 100%;
-}
-
-@media (min-width: 768px) {
-    /* For common desktop */
-}
-
-@media (min-width: 2560px) {
-    /* For large screens */
-    body {
-        font-size: 2em;
-    }
-
-    input {
-        font-size: 1em;
-    }
 }
