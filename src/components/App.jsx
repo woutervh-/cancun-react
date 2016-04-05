@@ -2,6 +2,8 @@ import Map from '../lib/MapHelper';
 import MapView from './MapView.jsx';
 import React from 'react';
 import style from '../../public/stylesheets/style.css';
+import TextField from 'material-ui/lib/text-field';
+import Toolbar from 'material-ui/lib/toolbar/toolbar';
 
 export default class App extends React.Component {
     constructor() {
@@ -17,8 +19,7 @@ export default class App extends React.Component {
         map: new Map()
     };
 
-    state = {
-    };
+    state = {};
 
     handleTileSizeChange(event) {
         this.setState({tileSize: event.currentTarget.value});
@@ -29,9 +30,9 @@ export default class App extends React.Component {
             <div className={style['content']}>
                 <MapView/>
             </div>
-            <div className={style['top-menu']}>
-                    This is the menu
-            </div>
+            <Toolbar style={{position: 'absolute', top: 0, left: 0, zIndex: 2}}>
+                <TextField hintText="Enter location...?"/>
+            </Toolbar>
         </div>;
     }
 };
