@@ -54,4 +54,4 @@ export default class ImageFrontier {
         this.sourceQueue = [];
         this.sourceToCallback = {};
     }
-}
+};

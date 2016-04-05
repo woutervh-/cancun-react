@@ -6,4 +6,4 @@ export default class MathUtil {
     static norm(a, b, t) {
         return (t - a) / (b - a);
     }
-}
+};

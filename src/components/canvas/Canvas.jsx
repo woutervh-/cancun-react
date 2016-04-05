@@ -1,3 +1,4 @@
+import Group from './Group.jsx';
 import ImageFrontier from '../../lib/canvas/ImageFrontier.js';
 import Picture from './Picture.jsx';
 import React from 'react';
@@ -31,20 +32,7 @@ export default class Canvas extends React.Component {
         let context = canvas.getContext('2d');
         this.imageFrontier.clear();
         context.clearRect(0, 0, this.props.width, this.props.height);
-
-        React.Children.forEach(this.props.children, child => {
-            switch (child.type) {
-                case Rectangle:
-                    this.drawRectangle(context, child);
-                    break;
-                case Picture:
-                    this.drawPicture(context, child);
-                    break;
-                default:
-                    console.warn('Unknown child type for Canvas: ' + child.type);
-                    break;
-            }
-        });
+        this.drawGroup(context, this);
     }
 
     drawRectangle(context, rectangle) {
@@ -65,6 +53,25 @@ export default class Canvas extends React.Component {
             this.imageFrontier.fetch(picture.props.source);
             this.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
+    }
+
+    drawGroup(context, group) {
+        React.Children.forEach(group.props.children, child => {
+            switch (child.type) {
+                case Rectangle:
+                    this.drawRectangle(context, child);
+                    break;
+                case Picture:
+                    this.drawPicture(context, child);
+                    break;
+                case Group:
+                    this.drawGroup(context, child);
+                    break;
+                default:
+                    console.warn('Unknown child type for Canvas: ' + child.type);
+                    break;
+            }
+        });
     }
 
     render() {

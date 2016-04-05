@@ -1,4 +1,4 @@
-import Map from '../lib/Map';
+import Map from '../lib/MapHelper';
 import MapView from './MapView.jsx';
 import React from 'react';
 import style from '../../public/stylesheets/style.css';
@@ -18,7 +18,6 @@ export default class App extends React.Component {
     };
 
     state = {
-        tileSize: 256
     };
 
     handleTileSizeChange(event) {
@@ -28,7 +27,7 @@ export default class App extends React.Component {
     render() {
         return <div className={style['wrapper']}>
             <div className={style['content']}>
-                <MapView map={this.props.map} tileSize={this.state.tileSize}/>
+                <MapView/>
             </div>
             <div className={style['menu']}>
                 <ul>
