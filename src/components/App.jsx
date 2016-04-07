@@ -36,7 +36,7 @@ export default class App extends React.Component {
 
     handleSearchSubmit(input) {
         if (!!input) {
-
+            console.log('submitted: ' + input)
         }
     }
 
@@ -45,10 +45,9 @@ export default class App extends React.Component {
             <div className={style['content']}>
                 <MapView/>
             </div>
-            <Toolbar style={{position: 'absolute', top: 0, left: 0}}>
-                <ToolbarGroup float="left" firstChild={true}>
-                    <IconMenu style={{float: 'left'}}
-                              iconButtonElement={<IconButton><NavigationMenu/></IconButton>}
+            <Toolbar style={{position: 'absolute', top: 0, left: 0, height: 'auto', width: '100%'}}>
+                <ToolbarGroup float="left" firstChild={true} lastChild={true}>
+                    <IconMenu iconButtonElement={<IconButton><NavigationMenu/></IconButton>}
                               targetOrigin={{horizontal: 'left', vertical: 'top'}}
                               anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}>
                         <MenuItem primaryText="Refresh"/>

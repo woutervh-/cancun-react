@@ -9,6 +9,11 @@ body {
     overflow: hidden;
 }
 
+div {
+    overflow: inherit;
+    text-overflow: inherit;
+}
+
 #react-main-mount {
     width: 100%;
     height: 100%;

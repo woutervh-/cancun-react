@@ -34,7 +34,7 @@ export default class SearchBar extends React.Component {
             this.setState({
                 query: input,
                 loading: false,
-                dataSource: [{text: input, value: <MenuItem primaryText={input} rightIcon={<DeviceGpsFixed/>}/>}]
+                dataSource: [{text: input, value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}} primaryText={input} leftIcon={<DeviceGpsFixed/>}/>}]
             });
         } else {
             this.setState({
@@ -48,7 +48,12 @@ export default class SearchBar extends React.Component {
                     if (!error) {
                         this.setState({
                             loading: false,
-                            dataSource: results.map(result => result['formattedAddress'])
+                            dataSource: results.map(result => {
+                                return {
+                                    text: result['formattedAddress'],
+                                    value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}} primaryText={result['formattedAddress']}/>
+                                };
+                            })
                         });
                     } else {
                         this.setState({
