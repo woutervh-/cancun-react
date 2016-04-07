@@ -34,6 +34,10 @@ export default class MapView extends React.Component {
         window.addEventListener('resize', this.handleResize);
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
     handleMouseDown(event) {
         if (event.button == 0) {
             this.setState({
@@ -58,13 +62,9 @@ export default class MapView extends React.Component {
         event.preventDefault();
     }
 
-    handleMouseUp() {
+    handleMouseUp(event) {
         this.setState({dragData: {dragging: false}});
         event.preventDefault();
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.handleResize);
     }
 
     handleResize() {
@@ -72,6 +72,7 @@ export default class MapView extends React.Component {
     }
 
     handleWheel(event) {
+        let mapHelper = new MapHelper();
         let container = this.refs.container;
         let containerOffsetX = container.offsetLeft;
         let containerOffsetY = container.offsetTop;
@@ -84,14 +85,14 @@ export default class MapView extends React.Component {
         let alongX = MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX);
         let alongY = MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY);
 
-        if (event.deltaY < 0 && this.state.zoom < this.props.map.maxZoom) {
+        if (event.deltaY < 0 && this.state.zoom < mapHelper.maxZoom) {
             this.setState({
                 zoom: this.state.zoom + 1,
                 x: this.state.x * 2 + container.offsetWidth * alongX,
                 y: this.state.y * 2 + container.offsetHeight * alongY
             });
         }
-        if (event.deltaY > 0 && this.state.zoom > this.props.map.minZoom) {
+        if (event.deltaY > 0 && this.state.zoom > mapHelper.minZoom) {
             this.setState({
                 zoom: this.state.zoom - 1,
                 x: (this.state.x - container.offsetWidth * alongX) / 2,
