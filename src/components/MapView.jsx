@@ -12,6 +12,9 @@ export default class MapView extends React.Component {
         super();
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.handleTouchStart = this.handleTouchStart.bind(this);
+        this.handleTouchMove = this.handleTouchMove.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -36,6 +39,23 @@ export default class MapView extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize);
+    }
+
+    handleTouchStart(event) {
+        event.button = 0;
+        event.clientX = event.touches[0].clientX;
+        event.clientY = event.touches[0].clientY;
+        this.handleMouseDown(event);
+    }
+
+    handleTouchMove(event) {
+        event.clientX = event.touches[0].clientX;
+        event.clientY = event.touches[0].clientY;
+        this.handleMouseMove(event);
+    }
+
+    handleTouchEnd(event) {
+        this.handleMouseUp(event);
     }
 
     handleMouseDown(event) {
@@ -141,6 +161,9 @@ export default class MapView extends React.Component {
 
         return <div className={classNames(style['map-container'], {[style['dragging']]: this.state.dragData.dragging})}
                     onWheel={this.handleWheel}
+                    onTouchStart={this.handleTouchStart}
+                    onTouchMove={this.handleTouchMove}
+                    onTouchEnd={this.handleTouchEnd}
                     onMouseDown={this.handleMouseDown}
                     onMouseMove={this.handleMouseMove}
                     onMouseUp={this.handleMouseUp}

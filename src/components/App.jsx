@@ -36,7 +36,8 @@ export default class App extends React.Component {
 
     handleSearchSubmit(input) {
         if (!!input) {
-            console.log('submitted: ' + input)
+            console.log('submitted:');
+            console.log(input);
         }
     }
 
