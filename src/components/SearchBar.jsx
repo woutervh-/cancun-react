@@ -27,7 +27,8 @@ export default class SearchBar extends React.Component {
 
     state = {
         query: '',
-        results: []
+        results: [],
+        error: null
     };
 
     matchesForQuery(query, callback) {
@@ -47,11 +48,11 @@ export default class SearchBar extends React.Component {
     }
 
     handleClearClick() {
-        this.setState({query: '', results: []});
+        this.setState({query: '', results: [], error: null});
     }
 
     handleUpdateInput(input) {
-        this.setState({query: input});
+        this.setState({query: input, error: null});
         setTimeout(() => {
             if (this.state.query == input) {
                 this.matchesForQuery(input, (error, results) => {
@@ -70,9 +71,12 @@ export default class SearchBar extends React.Component {
             this.props.onSubmit(selected);
         } else {
             this.matchesForQuery(chosenRequest, (error, results) => {
-                let selected = results[0];
-                this.setState({query: selected.location});
-                this.props.onSubmit(selected);
+                if (results.length > 0) {
+                    let selected = results[0];
+                    this.props.onSubmit(selected);
+                } else {
+                    this.setState({error: 'No results found'});
+                }
             });
         }
     }
@@ -92,7 +96,7 @@ export default class SearchBar extends React.Component {
         });
 
         return <form {...this.props} onSubmit={this.handleSubmit}>
-            <AutoComplete openOnFocus={true} searchText={this.state.query} style={{float: 'left'}} dataSource={items} onUpdateInput={this.handleUpdateInput} onNewRequest={this.handleNewRequest} hintText="Enter location"/>
+            <AutoComplete errorText={this.state.error} openOnFocus={true} searchText={this.state.query} style={{float: 'left'}} dataSource={items} onUpdateInput={this.handleUpdateInput} onNewRequest={this.handleNewRequest} hintText="Enter location"/>
             <IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
             <IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
         </form>;

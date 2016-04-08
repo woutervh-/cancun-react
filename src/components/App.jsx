@@ -3,12 +3,9 @@ import AutoComplete from 'material-ui/lib/auto-complete';
 import ContentClear from 'material-ui/lib/svg-icons/content/clear';
 import IconButton from 'material-ui/lib/icon-button';
 import IconMenu from 'material-ui/lib/menus/icon-menu';
-import Map from '../lib/MapHelper';
 import MapView from './MapView.jsx';
 import MenuItem from 'material-ui/lib/menus/menu-item';
 import NavigationMenu from 'material-ui/lib/svg-icons/navigation/menu';
-import Paper from 'material-ui/lib/paper';
-import RaisedButton from 'material-ui/lib/raised-button';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
 import style from '../../public/stylesheets/style.css';
@@ -20,14 +17,6 @@ export default class App extends React.Component {
         super();
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
     }
-
-    static propTypes = {
-        map: React.PropTypes.instanceOf(Map).isRequired
-    };
-
-    static defaultProps = {
-        map: new Map()
-    };
 
     state = {
         searchText: '',
@@ -43,10 +32,10 @@ export default class App extends React.Component {
 
     render() {
         return <div className={style['wrapper']}>
-            <div className={style['content']}>
+            <div className={style['content']} style={{zIndex: 0}}>
                 <MapView/>
             </div>
-            <Toolbar style={{position: 'absolute', top: 0, left: 0, height: 'auto', width: '100%'}}>
+            <Toolbar style={{position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto', zIndex: 1}}>
                 <ToolbarGroup float="left" firstChild={true} lastChild={true}>
                     <IconMenu iconButtonElement={<IconButton><NavigationMenu/></IconButton>}
                               targetOrigin={{horizontal: 'left', vertical: 'top'}}
