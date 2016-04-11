@@ -5,6 +5,7 @@ import DeviceGpsFixed from 'material-ui/lib/svg-icons/device/gps-fixed';
 import GeocodingHelper from '../lib/GeocodingHelper.js';
 import IconButton from 'material-ui/lib/icon-button';
 import MenuItem from 'material-ui/lib/menus/menu-item';
+import Paper from 'material-ui/lib/paper';
 import React from 'react';
 
 export default class SearchBar extends React.Component {
@@ -31,20 +32,24 @@ export default class SearchBar extends React.Component {
         error: null
     };
 
-    matchesForQuery(query, callback) {
-        if (/-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?/.test(query)) {
-            let match = /(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/.exec(query);
-            callback(null, [{query: query, location: query, latitude: parseFloat(match[1]), longitude: parseFloat(match[3])}]);
-        } else {
-            let geocodingHelper = new GeocodingHelper();
-            geocodingHelper.getGeocodeResults(query, (error, results) => {
-                if (!error) {
-                    callback(error, results.map(result => ({query: query, location: result['formattedAddress'], latitude: result['latitude'], longitude: result['longitude']})));
-                } else {
-                    callback(error, []);
-                }
-            });
-        }
+    isCoordinate(query) {
+        return /-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(query);
+    }
+
+    matchesForCoordinateQuery(query, callback) {
+        let match = /(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)$/.exec(query);
+        callback(null, [{query: query, location: query, isCoordinate: true, latitude: parseFloat(match[1]), longitude: parseFloat(match[3])}]);
+    }
+
+    matchesForFreeTextQuery(query, callback) {
+        let geocodingHelper = new GeocodingHelper();
+        geocodingHelper.getGeocodeResults(query, (error, results) => {
+            if (!error) {
+                callback(error, results.map(result => ({query: query, location: result['formattedAddress'], isCoordinate: false, latitude: result['latitude'], longitude: result['longitude']})));
+            } else {
+                callback(error, []);
+            }
+        });
     }
 
     handleClearClick() {
@@ -52,16 +57,22 @@ export default class SearchBar extends React.Component {
     }
 
     handleUpdateInput(input) {
-        this.setState({query: input, error: null});
-        setTimeout(() => {
-            if (this.state.query == input) {
-                this.matchesForQuery(input, (error, results) => {
-                    if (this.state.query == input) {
-                        this.setState({results: results});
-                    }
-                });
-            }
-        }, this.props.sendRequestTimeout);
+        if (this.isCoordinate(input)) {
+            this.matchesForCoordinateQuery(input, (error, results) => {
+                this.setState({query: input, error: null, results: results});
+            });
+        } else {
+            this.setState({query: input, error: null});
+            setTimeout(() => {
+                if (this.state.query == input) {
+                    this.matchesForFreeTextQuery(input, (error, results) => {
+                        if (this.state.query == input) {
+                            this.setState({results: results});
+                        }
+                    });
+                }
+            }, this.props.sendRequestTimeout);
+        }
     }
 
     handleNewRequest(chosenRequest, index) {
@@ -70,9 +81,11 @@ export default class SearchBar extends React.Component {
             this.setState({query: selected.location});
             this.props.onSubmit(selected);
         } else {
-            this.matchesForQuery(chosenRequest, (error, results) => {
+            let matchFunction = this.isCoordinate(chosenRequest) ? this.matchesForCoordinateQuery : this.matchesForFreeTextQuery;
+            matchFunction(chosenRequest, (error, results) => {
                 if (results.length > 0) {
                     let selected = results[0];
+                    this.setState({query: selected.location});
                     this.props.onSubmit(selected);
                 } else {
                     this.setState({error: 'No results found'});
@@ -91,14 +104,16 @@ export default class SearchBar extends React.Component {
                 text: result.location,
                 value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}}
                                  primaryText={result.location}
-                                 leftIcon={result.location == 'Coordinate' ? <DeviceGpsFixed/> : null}/>
+                                 leftIcon={result.isCoordinate ? <DeviceGpsFixed/> : null}/>
             };
         });
 
         return <form {...this.props} onSubmit={this.handleSubmit}>
             <AutoComplete errorText={this.state.error} openOnFocus={true} searchText={this.state.query} style={{float: 'left'}} dataSource={items} onUpdateInput={this.handleUpdateInput} onNewRequest={this.handleNewRequest} hintText="Enter location"/>
-            <IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
-            <IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
+            <Paper zDepth={0} style={{display: 'inline-block', backgroundColor: 'transparent'}}>
+                <IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
+                <IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
+            </Paper>
         </form>;
     }
 };

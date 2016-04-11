@@ -8,7 +8,6 @@ import MenuItem from 'material-ui/lib/menus/menu-item';
 import NavigationMenu from 'material-ui/lib/svg-icons/navigation/menu';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
-import style from '../../public/stylesheets/style.css';
 import Toolbar from 'material-ui/lib/toolbar/toolbar';
 import ToolbarGroup from 'material-ui/lib/toolbar/toolbar-group';
 
@@ -31,10 +30,7 @@ export default class App extends React.Component {
     }
 
     render() {
-        return <div className={style['wrapper']}>
-            <div className={style['content']} style={{zIndex: 0}}>
-                <MapView/>
-            </div>
+        return <div style={{width: '100%', height: '100%'}}>
             <Toolbar style={{position: 'absolute', top: 0, left: 0, width: '100%', height: 'auto', zIndex: 1}}>
                 <ToolbarGroup float="left" firstChild={true} lastChild={true}>
                     <IconMenu iconButtonElement={<IconButton><NavigationMenu/></IconButton>}
@@ -47,6 +43,9 @@ export default class App extends React.Component {
                     <SearchBar style={{display: 'inline-block'}} onSubmit={this.handleSearchSubmit}/>
                 </ToolbarGroup>
             </Toolbar>
+            <div style={{width: '100%', height: '100%', zIndex: 0}}>
+                <MapView/>
+            </div>
         </div>;
     }
 };
