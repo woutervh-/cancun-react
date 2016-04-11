@@ -1,17 +1,13 @@
-import ActionSearch from 'material-ui/lib/svg-icons/action/search';
-import AutoComplete from 'material-ui/lib/auto-complete';
-import ContentClear from 'material-ui/lib/svg-icons/content/clear';
-import DeviceGpsFixed from 'material-ui/lib/svg-icons/device/gps-fixed';
+import {Autocomplete, Dropdown, Input} from 'react-toolbox';
 import GeocodingHelper from '../lib/GeocodingHelper.js';
-import IconButton from 'material-ui/lib/icon-button';
-import MenuItem from 'material-ui/lib/menus/menu-item';
 import React from 'react';
+import style from './style.scss';
 
 export default class SearchBar extends React.Component {
     constructor() {
         super();
         this.handleClearClick = this.handleClearClick.bind(this);
-        this.handleUpdateInput = this.handleUpdateInput.bind(this);
+        this.handleChange = this.handleChange.bind(this);
         this.handleNewRequest = this.handleNewRequest.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -51,7 +47,8 @@ export default class SearchBar extends React.Component {
         this.setState({query: '', results: [], error: null});
     }
 
-    handleUpdateInput(input) {
+    handleChange(input) {
+        console.log(input);
         this.setState({query: input, error: null});
         setTimeout(() => {
             if (this.state.query == input) {
@@ -86,19 +83,24 @@ export default class SearchBar extends React.Component {
     }
 
     render() {
-        let items = this.state.results.map(result => {
-            return {
-                text: result.location,
-                value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}}
-                                 primaryText={result.location}
-                                 leftIcon={result.location == 'Coordinate' ? <DeviceGpsFixed/> : null}/>
-            };
-        });
+        //let items = this.state.results.map(result => {
+        //    return {
+        //        text: result.location,
+        //        value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}}
+        //                         primaryText={result.location}
+        //                         leftIcon={result.location == 'Coordinate' ? <DeviceGpsFixed/> : null}/>
+        //    };
+        //});
 
-        return <form {...this.props} onSubmit={this.handleSubmit}>
-            <AutoComplete errorText={this.state.error} openOnFocus={true} searchText={this.state.query} style={{float: 'left'}} dataSource={items} onUpdateInput={this.handleUpdateInput} onNewRequest={this.handleNewRequest} hintText="Enter location"/>
-            <IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
-            <IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
+        let items = this.state.results.map(result => result.location);
+
+        return <form {...this.props} onSubmit={this.handleSubmit} className={style['inline']}>
+
         </form>;
+
+        //<Autocomplete multiple={false} direction="down" error={this.state.error} source={items} onChange={this.handleChange} floating={false} label="Enter location" value={this.state.query}/>
+        //<Input type='text' label='Enter location' floating={false} value={this.state.query} onChange={this.handleChange}/>
+        //<IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
+        //<IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
     }
 };

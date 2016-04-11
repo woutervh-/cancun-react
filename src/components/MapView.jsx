@@ -1,11 +1,9 @@
 import Canvas from './canvas/Canvas.jsx';
-import classNames from 'classnames';
 import MapHelper from '../lib/MapHelper.js';
 import MathUtil from '../lib/MathUtil.js';
 import Picture from './canvas/Picture.jsx';
 import React from 'react';
 import Rectangle from './canvas/Rectangle.jsx';
-import style from '../../public/stylesheets/style.css';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -159,7 +157,14 @@ export default class MapView extends React.Component {
             return adr - bdr;
         });
 
-        return <div className={classNames(style['map-container'], {[style['dragging']]: this.state.dragData.dragging})}
+        let style = {};
+        style.width = '100%';
+        style.height = '100%';
+        if (this.state.dragData.dragging) {
+            style.cursor = 'move';
+        }
+
+        return <div style={style}
                     onWheel={this.handleWheel}
                     onTouchStart={this.handleTouchStart}
                     onTouchMove={this.handleTouchMove}

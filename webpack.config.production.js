@@ -32,6 +32,7 @@ module.exports = {
                     presets: ['es2015', 'react', 'stage-0']
                 }
             }
+            /*loader: ExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')*/
         ]
     }
 };

@@ -1,21 +1,26 @@
 var path = require('path');
 var webpack = require('webpack');
+var autoprefixer = require('autoprefixer');
 
 module.exports = {
+    context: __dirname,
     devtool: 'cheap-module-eval-source-map',
     entry: [
         'webpack-hot-middleware/client',
-        path.resolve(__dirname, 'src/main.js')
+        path.resolve(__dirname, 'src', 'main.js')
     ],
     output: {
-        path: path.resolve(__dirname, 'public/javascripts'),
+        path: path.resolve(__dirname, 'build'),
         filename: 'bundle.js',
-        publicPath: '/javascripts/'
+        publicPath: '/'
     },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
-    ],
+    resolve: {
+        extensions: ['', '.js', '.jsx', '.scss', '.json'],
+        modulesDirectories: [
+            'node_modules',
+            path.resolve(__dirname, './node_modules')
+        ]
+    },
     module: {
         loaders: [
             {
@@ -26,9 +31,19 @@ module.exports = {
                     presets: ['es2015', 'react', 'stage-0', 'react-hmre']
                 }
             }, {
-                test: /\.css$/,
-                loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]'
+                test: /\.s?css$/,
+                loader: 'style!css?sourceMap&modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass?sourceMap!toolbox'
             }
         ]
-    }
+    },
+    toolbox: {
+        theme: path.join(__dirname, 'src', 'toolbox-theme.scss')
+    },
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoErrorsPlugin(),
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('development')
+        })
+    ]
 };

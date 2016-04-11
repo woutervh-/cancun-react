@@ -2,6 +2,8 @@ import App from './components/App.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
+import ToolboxApp from 'react-toolbox/lib/app';
+import style from './main-style.scss';
 
 // Needed for onTouchTap
 // Can go away when react 1.0 release
@@ -10,6 +12,8 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 
 ReactDOM.render(
-    <App/>,
+    <ToolboxApp className={style['root']}>
+        <App/>
+    </ToolboxApp>,
     document.getElementById('react-main-mount')
 );
