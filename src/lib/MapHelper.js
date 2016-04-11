@@ -8,6 +8,21 @@ const baseUrls = [
 const minZoom = 0;
 const maxZoom = 18;
 const tileSize = 256;
+const projection = {
+    /* EPSG:3857 */
+    radius: 6378137,
+
+    project(latitude, longitude, zoom) {
+        return {
+            x: tileSize * Math.pow(2, zoom - 1) / Math.PI * (longitude + Math.PI),
+            y: tileSize * Math.pow(2, zoom - 1) / Math.PI * (Math.PI - Math.log(Math.tan(Math.PI / 4 + latitude / 2)))
+        };
+    },
+
+    unproject(x, y) {
+        return {latitude: 0, longitude: 0};
+    }
+};
 
 let urlIndex = 0;
 let urlCache = {};
@@ -41,5 +56,9 @@ export default class MapHelper {
 
     get tileHeight() {
         return tileSize;
+    }
+
+    get projection() {
+        return projection;
     }
 };
