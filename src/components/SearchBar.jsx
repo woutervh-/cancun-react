@@ -14,6 +14,8 @@ export default class SearchBar extends React.Component {
         this.handleClearClick = this.handleClearClick.bind(this);
         this.handleUpdateInput = this.handleUpdateInput.bind(this);
         this.handleNewRequest = this.handleNewRequest.bind(this);
+        this.handleBlur = this.handleBlur.bind(this);
+        this.handleFocus = this.handleFocus.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -29,7 +31,8 @@ export default class SearchBar extends React.Component {
     state = {
         query: '',
         results: [],
-        error: null
+        error: null,
+        focus: false
     };
 
     isCoordinate(query) {
@@ -53,7 +56,9 @@ export default class SearchBar extends React.Component {
     }
 
     handleClearClick() {
-        this.setState({query: '', results: [], error: null});
+        if (this.state.focus) {
+            this.setState({query: '', results: [], error: null});
+        }
     }
 
     handleUpdateInput(input) {
@@ -94,6 +99,14 @@ export default class SearchBar extends React.Component {
         }
     }
 
+    handleBlur() {
+        this.setState({focus: false});
+    }
+
+    handleFocus() {
+        this.setState({focus: true});
+    }
+
     handleSubmit(event) {
         event.preventDefault();
     }
@@ -109,10 +122,19 @@ export default class SearchBar extends React.Component {
         });
 
         return <form {...this.props} onSubmit={this.handleSubmit}>
-            <AutoComplete errorText={this.state.error} openOnFocus={true} searchText={this.state.query} style={{float: 'left'}} dataSource={items} onUpdateInput={this.handleUpdateInput} onNewRequest={this.handleNewRequest} hintText="Enter location"/>
+            <AutoComplete onBlur={this.handleBlur}
+                          onFocus={this.handleFocus}
+                          errorText={this.state.error}
+                          openOnFocus={true}
+                          searchText={this.state.query}
+                          style={{float: 'left'}}
+                          dataSource={items}
+                          onUpdateInput={this.handleUpdateInput}
+                          onNewRequest={this.handleNewRequest}
+                          hintText="Enter location"
+                          type="search"/>
             <Paper zDepth={0} style={{display: 'inline-block', backgroundColor: 'transparent'}}>
                 <IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
-                <IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
             </Paper>
         </form>;
     }

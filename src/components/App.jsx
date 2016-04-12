@@ -29,11 +29,9 @@ export default class App extends React.Component {
     state = {
         searchText: '',
         searchDataSource: [],
-        map: {
-            x: 0,
-            y: 0,
-            zoom: 0
-        },
+        x: 0,
+        y: 0,
+        zoom: 0,
         dragData: {
             dragging: false
         }
@@ -66,8 +64,8 @@ export default class App extends React.Component {
             this.setState({
                 dragData: {
                     dragging: true,
-                    startX: this.state.map.x,
-                    startY: this.state.map.y,
+                    startX: this.state.x,
+                    startY: this.state.y,
                     startMouseX: event.clientX,
                     startMouseY: event.clientY
                 }
@@ -80,7 +78,7 @@ export default class App extends React.Component {
         if (this.state.dragData.dragging) {
             let dx = event.clientX - this.state.dragData.startMouseX;
             let dy = event.clientY - this.state.dragData.startMouseY;
-            this.setState(//TODO:map....{x: this.state.dragData.startX - dx, y: this.state.dragData.startY - dy});
+            this.setState({x: this.state.dragData.startX - dx, y: this.state.dragData.startY - dy});
         }
         event.preventDefault();
     }
@@ -104,22 +102,19 @@ export default class App extends React.Component {
         let alongX = MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX);
         let alongY = MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY);
 
-        if (event.deltaY < 0 && this.state.map.zoom < mapHelper.maxZoom) {
+        if (event.deltaY < 0 && this.state.zoom < mapHelper.maxZoom) {
             this.setState({
-                map: {
-                    zoom: this.state.map.zoom + 1,
-                    x: this.state.map.x * 2 + container.offsetWidth * alongX,
-                    y: this.state.map.y * 2 + container.offsetHeight * alongY
-                }
+                zoom: this.state.zoom + 1,
+                x: this.state.x * 2 + container.offsetWidth * alongX,
+                y: this.state.y * 2 + container.offsetHeight * alongY
+
             });
         }
-        if (event.deltaY > 0 && this.state.map.zoom > mapHelper.minZoom) {
+        if (event.deltaY > 0 && this.state.zoom > mapHelper.minZoom) {
             this.setState({
-                map: {
-                    zoom: this.state.map.zoom - 1,
-                    x: (this.state.map.x - container.offsetWidth * alongX) / 2,
-                    y: (this.state.map.y - container.offsetHeight * alongY) / 2
-                }
+                zoom: this.state.zoom - 1,
+                x: (this.state.x - container.offsetWidth * alongX) / 2,
+                y: (this.state.y - container.offsetHeight * alongY) / 2
             });
         }
 
@@ -149,7 +144,7 @@ export default class App extends React.Component {
                  onMouseMove={this.handleMouseMove}
                  onMouseUp={this.handleMouseUp}
                  ref="container">
-                <MapView x={this.state.map.x} y={this.state.map.y} zoom={this.state.map.zoom}/>
+                <MapView x={this.state.x} y={this.state.y} zoom={this.state.zoom}/>
             </div>
         </div>;
     }

@@ -71,8 +71,6 @@ export default class MapView extends React.Component {
             return adr - bdr;
         });
 
-        console.log(this.props);
-
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
             {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
             <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
