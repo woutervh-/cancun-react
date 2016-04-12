@@ -8,6 +8,7 @@ import MapView from './MapView.jsx';
 import MathUtil from '../lib/MathUtil.js';
 import MenuItem from 'material-ui/lib/menus/menu-item';
 import NavigationMenu from 'material-ui/lib/svg-icons/navigation/menu';
+import Paper from 'material-ui/lib/paper';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
 import Toolbar from 'material-ui/lib/toolbar/toolbar';
@@ -135,17 +136,17 @@ export default class App extends React.Component {
                     <SearchBar style={{display: 'inline-block'}} onSubmit={this.handleSearchSubmit}/>
                 </ToolbarGroup>
             </Toolbar>
-            <div style={{width: '100%', height: '100%', zIndex: 0}}
-                 onWheel={this.handleWheel}
-                 onTouchStart={this.handleTouchStart}
-                 onTouchMove={this.handleTouchMove}
-                 onTouchEnd={this.handleTouchEnd}
-                 onMouseDown={this.handleMouseDown}
-                 onMouseMove={this.handleMouseMove}
-                 onMouseUp={this.handleMouseUp}
-                 ref="container">
+            <Paper style={{width: '100%', height: '100%', zIndex: 0}}
+                   onWheel={this.handleWheel}
+                   onTouchStart={this.handleTouchStart}
+                   onTouchMove={this.handleTouchMove}
+                   onTouchEnd={this.handleTouchEnd}
+                   onMouseDown={this.handleMouseDown}
+                   onMouseMove={this.handleMouseMove}
+                   onMouseUp={this.handleMouseUp}
+                   ref="container">
                 <MapView x={this.state.x} y={this.state.y} zoom={this.state.zoom}/>
-            </div>
+            </Paper>
         </div>;
     }
 };

@@ -11,11 +11,8 @@ import React from 'react';
 export default class SearchBar extends React.Component {
     constructor() {
         super();
-        this.handleClearClick = this.handleClearClick.bind(this);
         this.handleUpdateInput = this.handleUpdateInput.bind(this);
         this.handleNewRequest = this.handleNewRequest.bind(this);
-        this.handleBlur = this.handleBlur.bind(this);
-        this.handleFocus = this.handleFocus.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -31,8 +28,7 @@ export default class SearchBar extends React.Component {
     state = {
         query: '',
         results: [],
-        error: null,
-        focus: false
+        error: null
     };
 
     isCoordinate(query) {
@@ -53,12 +49,6 @@ export default class SearchBar extends React.Component {
                 callback(error, []);
             }
         });
-    }
-
-    handleClearClick() {
-        if (this.state.focus) {
-            this.setState({query: '', results: [], error: null});
-        }
     }
 
     handleUpdateInput(input) {
@@ -99,14 +89,6 @@ export default class SearchBar extends React.Component {
         }
     }
 
-    handleBlur() {
-        this.setState({focus: false});
-    }
-
-    handleFocus() {
-        this.setState({focus: true});
-    }
-
     handleSubmit(event) {
         event.preventDefault();
     }
@@ -122,9 +104,7 @@ export default class SearchBar extends React.Component {
         });
 
         return <form {...this.props} onSubmit={this.handleSubmit}>
-            <AutoComplete onBlur={this.handleBlur}
-                          onFocus={this.handleFocus}
-                          errorText={this.state.error}
+            <AutoComplete errorText={this.state.error}
                           openOnFocus={true}
                           searchText={this.state.query}
                           style={{float: 'left'}}
