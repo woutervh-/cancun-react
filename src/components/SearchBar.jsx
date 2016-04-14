@@ -1,4 +1,4 @@
-import {Autocomplete, Dropdown, Input, List, ListItem, Menu, MenuItem} from 'react-toolbox';
+import {Autocomplete, Dropdown, IconButton, Input, List, ListItem, Menu, MenuItem} from 'react-toolbox';
 import classNames from 'classnames';
 import GeocodingHelper from '../lib/GeocodingHelper.js';
 import React from 'react';
@@ -7,45 +7,31 @@ import style from './style.scss';
 export default class SearchBar extends React.Component {
     constructor() {
         super();
-        this.componentDidMount = this.componentDidMount.bind(this);
-        this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.handleClearClick = this.handleClearClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
     static propTypes = {
         onSubmit: React.PropTypes.func.isRequired,
-        sendRequestTimeout: React.PropTypes.number.isRequired
+        sendRequestTimeout: React.PropTypes.number.isRequired,
+        menuCloseDelay: React.PropTypes.number.isRequired
     };
 
     static defaultProps = {
-        sendRequestTimeout: 200
+        sendRequestTimeout: 200,
+        menuCloseDelay: 200
     };
 
     state = {
         query: '',
         results: [],
-        width: 0,
-        height: 0,
         focus: false,
         error: null
     };
-
-    componentDidMount() {
-        setTimeout(() => {
-            let {width, height} = this.refs.suggestions.getBoundingClientRect();
-            if (this.state.width != width || this.state.height != height) {
-                this.setState({width, height});
-            }
-        });
-    }
-
-    componentDidUpdate() {
-        this.componentDidMount();
-    }
 
     isCoordinate(query) {
         return /-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(query);
@@ -68,6 +54,7 @@ export default class SearchBar extends React.Component {
     }
 
     handleClearClick() {
+        console.log('clear');
         this.setState({query: '', results: [], error: null});
     }
 
@@ -100,6 +87,15 @@ export default class SearchBar extends React.Component {
         this.setState({focus: true});
     }
 
+    handleMouseDown(event, index) {
+        event.stopPropagation();
+        event.preventDefault();
+        let result = this.state.results[index];
+        setTimeout(() => {
+            this.setState({query: result.location, focus: false}, ()=>this.refs.input.blur());
+        }, this.props.menuCloseDelay);
+    }
+
     handleSubmit(event) {
         console.log('submit');
         event.preventDefault();
@@ -119,19 +115,29 @@ export default class SearchBar extends React.Component {
             <ListItem
                 key={index}
                 itemContent={<span className={style['suggestions-item']}>{result.location}</span>}
+                onMouseDown={event => this.handleMouseDown(event, index)}
             />
         );
 
         return <form {...this.props} onSubmit={this.handleSubmit} className={style['inline-children']}>
-            <Input type="search" error={this.props.error} floating={false} label="Enter location" value={this.state.query} onChange={this.handleChange} onBlur={this.handleBlur} onFocus={this.handleFocus}>
+            <Input type="search"
+                   error={this.props.error}
+                   floating={false}
+                   label="Enter location"
+                   value={this.state.query}
+                   onChange={this.handleChange}
+                   onBlur={this.handleBlur}
+                   onFocus={this.handleFocus}
+                   ref="input">
                 <div ref="suggestions"
-                     className={classNames(style['suggestions'], {[style['active']]: this.state.focus})}
-                     style={this.state.focus ? {clip: 'rect(0, ' + (this.state.width + 7) + 'px, ' + (this.state.height + 7) + 'px, 0)'} : null}>
+                     className={classNames(style['suggestions'], {[style['active']]: this.state.focus && this.state.results.length >= 1})}>
                     <List ripple={true}>
                         {items}
                     </List>
                 </div>
             </Input>
+            <IconButton icon="clear" type="button" onClick={this.handleClearClick}/>
+            <IconButton icon="search"/>
         </form>;
 
         //<Autocomplete multiple={false} direction="down" error={this.state.error} source={items} onChange={this.handleChange} floating={false} label="Enter location" value={this.state.query}/>
