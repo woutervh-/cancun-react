@@ -7,6 +7,8 @@ import style from './style.scss';
 export default class SearchBar extends React.Component {
     constructor() {
         super();
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.handleClearClick = this.handleClearClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
@@ -30,8 +32,21 @@ export default class SearchBar extends React.Component {
         query: '',
         results: [],
         focus: false,
-        error: null
+        error: null,
+        maxHeight: 0
     };
+
+    componentDidMount() {
+        setImmediate(() => {
+            if (this.state.maxHeight != window.innerHeight - this.refs.suggestions.offsetTop) {
+                this.setState({maxHeight: window.innerHeight - this.refs.suggestions.offsetTop});
+            }
+        });
+    }
+
+    componentDidUpdate() {
+        this.componentDidMount();
+    }
 
     isCoordinate(query) {
         return /-?\d+(\.\d+)?,\s*-?\d+(\.\d+)?$/.test(query);
@@ -88,8 +103,8 @@ export default class SearchBar extends React.Component {
     }
 
     handleMouseDown(event, index) {
-        event.stopPropagation();
-        event.preventDefault();
+        //event.stopPropagation();
+        //event.preventDefault();
         let result = this.state.results[index];
         setTimeout(() => {
             this.setState({query: result.location, focus: false}, ()=>this.refs.input.blur());
@@ -130,7 +145,8 @@ export default class SearchBar extends React.Component {
                    onFocus={this.handleFocus}
                    ref="input">
                 <div ref="suggestions"
-                     className={classNames(style['suggestions'], {[style['active']]: this.state.focus && this.state.results.length >= 1})}>
+                     className={classNames(style['suggestions'], {[style['active']]: this.state.focus && this.state.results.length >= 1})}
+                     style={{maxHeight: this.state.maxHeight}}>
                     <List ripple={true}>
                         {items}
                     </List>

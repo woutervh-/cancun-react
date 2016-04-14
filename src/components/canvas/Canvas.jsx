@@ -9,6 +9,7 @@ export default class Canvas extends React.Component {
         super();
         this.componentDidMount = this.draw;
         this.componentDidUpdate = this.draw;
+        this.focus = this.focus.bind(this);
         this.imageFrontier = new ImageFrontier();
     }
 
@@ -53,6 +54,10 @@ export default class Canvas extends React.Component {
             this.imageFrontier.fetch(picture.props.source);
             this.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
+    }
+
+    focus() {
+        this.refs.canvas.focus();
     }
 
     drawGroup(context, group) {

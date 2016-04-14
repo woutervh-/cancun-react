@@ -1,4 +1,4 @@
-import {AppBar, IconMenu, MenuDivider, MenuItem} from 'react-toolbox';
+import {AppBar, IconMenu, Layout, MenuDivider, MenuItem, Panel} from 'react-toolbox';
 import MapView from './MapView.jsx';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
@@ -23,10 +23,8 @@ export default class App extends React.Component {
     }
 
     render() {
-        return <div className={style['wrapper']}>
-            <div className={style['content']}>
-                <MapView/>
-            </div>
+        return <span>
+            <MapView/>
             <AppBar className={style['top-bar']}>
                 <IconMenu icon='menu' position='top-left'>
                     <MenuItem value='download' caption='Download'/>
@@ -36,6 +34,21 @@ export default class App extends React.Component {
                 </IconMenu>
                 <SearchBar onSubmit={this.handleSearchSubmit}/>
             </AppBar>
-        </div>;
+        </span>;
+
+        //return <div className={style['wrapper']}>
+        //    <div className={style['content']}>
+        //        <MapView/>
+        //    </div>
+        //    <AppBar className={style['top-bar']}>
+        //        <IconMenu icon='menu' position='top-left'>
+        //            <MenuItem value='download' caption='Download'/>
+        //            <MenuDivider />
+        //            <MenuItem value='help' caption='Favorite'/>
+        //            <MenuItem value='settings' caption='Open in app'/>
+        //        </IconMenu>
+        //        <SearchBar onSubmit={this.handleSearchSubmit}/>
+        //    </AppBar>
+        //</div>;
     }
 };

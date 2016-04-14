@@ -67,7 +67,6 @@ export default class MapView extends React.Component {
                     startMouseY: event.clientY
                 }
             });
-            event.preventDefault();
         }
     }
 
@@ -77,12 +76,10 @@ export default class MapView extends React.Component {
             let dy = event.clientY - this.state.dragData.startMouseY;
             this.setState({x: this.state.dragData.startX - dx, y: this.state.dragData.startY - dy});
         }
-        event.preventDefault();
     }
 
-    handleMouseUp(event) {
+    handleMouseUp() {
         this.setState({dragData: {dragging: false}});
-        event.preventDefault();
     }
 
     handleResize() {
@@ -117,8 +114,6 @@ export default class MapView extends React.Component {
                 y: (this.state.y - container.offsetHeight * alongY) / 2
             });
         }
-
-        event.preventDefault();
     }
 
     render() {
@@ -157,15 +152,7 @@ export default class MapView extends React.Component {
             return adr - bdr;
         });
 
-        let style = {};
-        style.width = '100%';
-        style.height = '100%';
-        if (this.state.dragData.dragging) {
-            style.cursor = 'move';
-        }
-
-        return <div style={style}
-                    onWheel={this.handleWheel}
+        return <div onWheel={this.handleWheel}
                     onTouchStart={this.handleTouchStart}
                     onTouchMove={this.handleTouchMove}
                     onTouchEnd={this.handleTouchEnd}
@@ -173,7 +160,7 @@ export default class MapView extends React.Component {
                     onMouseMove={this.handleMouseMove}
                     onMouseUp={this.handleMouseUp}
                     ref="container">
-            <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
+            <Canvas ref="canvas" width={this.state.width} height={this.state.height} tabIndex={0}>
                 {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
                 <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
             </Canvas>
