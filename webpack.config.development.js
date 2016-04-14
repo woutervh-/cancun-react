@@ -32,7 +32,7 @@ module.exports = {
                 }
             }, {
                 test: /\.s?css$/,
-                loader: 'style!css?sourceMap&modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass?sourceMap!toolbox'
+                loader: 'style!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox'
             }
         ]
     },

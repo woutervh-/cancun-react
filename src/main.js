@@ -2,7 +2,6 @@ import App from './components/App.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import ToolboxApp from 'react-toolbox/lib/app';
 import style from './main-style.scss';
 
 // Needed for onTouchTap
@@ -12,8 +11,6 @@ import style from './main-style.scss';
 injectTapEventPlugin();
 
 ReactDOM.render(
-    <ToolboxApp className={style['root']}>
-        <App/>
-    </ToolboxApp>,
+    <App/>,
     document.getElementById('react-main-mount')
 );

@@ -1,3 +1,9 @@
+$unit: 1rem !default;
+
 $color-primary: $palette-brown-500 !default;
 $color-primary-dark: $palette-blue-grey-50 !default;
+
 $input-text-error-color: $palette-red-700 !default;
+
+$appbar-height: auto !default;
+$appbar-h-padding: 1 * $unit !default;

@@ -1,3 +1,6 @@
+@import "~react-toolbox/lib/base";
+@import './config';
+
 .wrapper {
   width: 100%;
   height: 100%;
@@ -17,6 +20,24 @@
   z-index: 1;
 }
 
-.inline > div {
+.suggestions {
+  margin-top: 2 * $unit;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
+  background-color: $suggestions-background-color;
+  position: absolute;
+  opacity: 0;
+  clip: rect(0, 0, 0, 0);
+  max-width: $suggestions-max-width;
+  &.active {
+    opacity: 1;
+    transition: opacity $suggestions-fade-duration $animation-curve-default, clip $suggestions-expand-duration $animation-curve-default;
+  }
+}
+
+.suggestions-item {
   display: inline-block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
