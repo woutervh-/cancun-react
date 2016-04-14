@@ -10,10 +10,12 @@ export default class SearchBar extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.handleClearClick = this.handleClearClick.bind(this);
+        this.handleSearchClick = this.handleSearchClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
-        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleItemMouseDown = this.handleItemMouseDown.bind(this);
+        this.handleKeyUp = this.handleKeyUp.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
@@ -31,6 +33,7 @@ export default class SearchBar extends React.Component {
     state = {
         query: '',
         results: [],
+        index: -1,
         focus: false,
         error: null,
         maxHeight: 0
@@ -38,14 +41,14 @@ export default class SearchBar extends React.Component {
 
     componentDidMount() {
         setImmediate(() => {
-            if (this.state.maxHeight != window.innerHeight - this.refs.suggestions.offsetTop) {
-                this.setState({maxHeight: window.innerHeight - this.refs.suggestions.offsetTop});
-            }
+            this.setState({maxHeight: window.innerHeight - this.refs.suggestions.offsetTop});
         });
     }
 
     componentDidUpdate() {
-        this.componentDidMount();
+        if (this.state.maxHeight != window.innerHeight - this.refs.suggestions.offsetTop) {
+            this.componentDidMount();
+        }
     }
 
     isCoordinate(query) {
@@ -68,18 +71,40 @@ export default class SearchBar extends React.Component {
         });
     }
 
+    submit() {
+        if (this.state.index < 0) {
+            let matchFunction = this.isCoordinate(this.state.query) ? this.matchesForCoordinateQuery : this.matchesForFreeTextQuery;
+            matchFunction(this.state.query, (error, results) => {
+                if (results.length > 0) {
+                    let selected = results[0];
+                    this.setState({query: selected.location});
+                    this.props.onSubmit(selected);
+                } else {
+                    this.setState({error: 'No results found'});
+                }
+            });
+        } else {
+            let selected = this.state.results[this.state.index];
+            this.setState({query: selected.location});
+            this.props.onSubmit(selected);
+        }
+    }
+
     handleClearClick() {
-        console.log('clear');
-        this.setState({query: '', results: [], error: null});
+        this.setState({query: '', results: [], error: null, index: -1});
+    }
+
+    handleSearchClick() {
+        this.submit();
     }
 
     handleChange(input) {
         if (this.isCoordinate(input)) {
             this.matchesForCoordinateQuery(input, (error, results) => {
-                this.setState({query: input, error: null, results: results});
+                this.setState({query: input, error: null, results: results, index: -1});
             });
         } else {
-            this.setState({query: input, error: null});
+            this.setState({query: input, error: null, index: -1});
             setTimeout(() => {
                 if (this.state.query == input) {
                     this.matchesForFreeTextQuery(input, (error, results) => {
@@ -93,45 +118,52 @@ export default class SearchBar extends React.Component {
     }
 
     handleBlur() {
-        console.log('blur');
         this.setState({focus: false});
     }
 
     handleFocus() {
-        console.log('focus');
         this.setState({focus: true});
     }
 
-    handleMouseDown(event, index) {
-        //event.stopPropagation();
-        //event.preventDefault();
+    handleItemMouseDown(index) {
         let result = this.state.results[index];
         setTimeout(() => {
-            this.setState({query: result.location, focus: false}, ()=>this.refs.input.blur());
+            this.setState({query: result.location, focus: false, index: index}, () => this.refs.input.blur());
+            this.submit();
         }, this.props.menuCloseDelay);
     }
 
+    handleKeyUp(event) {
+        switch (event.which) {
+            case 13:
+                if (this.state.index >= 0 && this.state.index < this.state.results.length) {
+                    let result = this.state.results[this.state.index];
+                    this.setState({query: result.location, focus: false}, () => this.refs.input.blur());
+                }
+                this.submit();
+                break;
+            case 38:
+            case 40:
+                let newIndex = this.state.index + (event.which == 38 ? -1 : 1);
+                if (newIndex >= 0 && newIndex < this.state.results.length) {
+                    this.setState({index: newIndex});
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
     handleSubmit(event) {
-        console.log('submit');
         event.preventDefault();
     }
 
     render() {
-        //let items = this.state.results.map(result => {
-        //    return {
-        //        text: result.location,
-        //        value: <MenuItem innerDivStyle={{overflow: 'hidden', textOverflow: 'ellipsis'}}
-        //                         primaryText={result.location}
-        //                         leftIcon={result.location == 'Coordinate' ? <DeviceGpsFixed/> : null}/>
-        //    };
-        //});
-
         let items = this.state.results.map((result, index) =>
-            <ListItem
-                key={index}
-                itemContent={<span className={style['suggestions-item']}>{result.location}</span>}
-                onMouseDown={event => this.handleMouseDown(event, index)}
-            />
+            <ListItem key={index}
+                      className={classNames({[style['active']]: this.state.index == index})}
+                      itemContent={<span className={style['suggestions-item']}>{result.location}</span>}
+                      onMouseDown={() => this.handleItemMouseDown(index)}/>
         );
 
         return <form {...this.props} onSubmit={this.handleSubmit} className={style['inline-children']}>
@@ -143,6 +175,7 @@ export default class SearchBar extends React.Component {
                    onChange={this.handleChange}
                    onBlur={this.handleBlur}
                    onFocus={this.handleFocus}
+                   onKeyUp={this.handleKeyUp}
                    ref="input">
                 <div ref="suggestions"
                      className={classNames(style['suggestions'], {[style['active']]: this.state.focus && this.state.results.length >= 1})}
@@ -153,12 +186,7 @@ export default class SearchBar extends React.Component {
                 </div>
             </Input>
             <IconButton icon="clear" type="button" onClick={this.handleClearClick}/>
-            <IconButton icon="search"/>
+            <IconButton icon="search" type="button" onClick={this.handleSearchClick}/>
         </form>;
-
-        //<Autocomplete multiple={false} direction="down" error={this.state.error} source={items} onChange={this.handleChange} floating={false} label="Enter location" value={this.state.query}/>
-        //<Input type='text' label='Enter location' floating={false} value={this.state.query} onChange={this.handleChange}/>
-        //<IconButton onClick={() => this.handleNewRequest(this.state.query, -1)}><ActionSearch/></IconButton>
-        //<IconButton onClick={this.handleClearClick}><ContentClear/></IconButton>
     }
 };

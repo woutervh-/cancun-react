@@ -25,6 +25,16 @@
   }
 }
 
+.suggestions .active {
+  background-color: $suggestions-active-background;
+}
+
+.suggestions li:hover {
+  &:not(.active) {
+    background-color: $suggestions-hover-background;
+  }
+}
+
 .suggestions-item {
   display: inline-block;
   width: 100%;
