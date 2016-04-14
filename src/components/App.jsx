@@ -35,20 +35,5 @@ export default class App extends React.Component {
                 <SearchBar onSubmit={this.handleSearchSubmit}/>
             </AppBar>
         </span>;
-
-        //return <div className={style['wrapper']}>
-        //    <div className={style['content']}>
-        //        <MapView/>
-        //    </div>
-        //    <AppBar className={style['top-bar']}>
-        //        <IconMenu icon='menu' position='top-left'>
-        //            <MenuItem value='download' caption='Download'/>
-        //            <MenuDivider />
-        //            <MenuItem value='help' caption='Favorite'/>
-        //            <MenuItem value='settings' caption='Open in app'/>
-        //        </IconMenu>
-        //        <SearchBar onSubmit={this.handleSearchSubmit}/>
-        //    </AppBar>
-        //</div>;
     }
 };

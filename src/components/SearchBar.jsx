@@ -139,6 +139,8 @@ export default class SearchBar extends React.Component {
                 if (this.state.index >= 0 && this.state.index < this.state.results.length) {
                     let result = this.state.results[this.state.index];
                     this.setState({query: result.location, focus: false}, () => this.refs.input.blur());
+                } else {
+                    this.setState({focus: false}, () => this.refs.input.blur());
                 }
                 this.submit();
                 break;
