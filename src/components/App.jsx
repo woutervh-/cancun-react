@@ -25,20 +25,41 @@ export default class App extends React.Component {
         zoom: 0,
         dragData: {
             dragging: false
+        },
+        pinchData: {
+            pinching: false
         }
     };
 
     handleTouchStart(event) {
-        event.button = 0;
-        event.clientX = event.touches[0].clientX;
-        event.clientY = event.touches[0].clientY;
-        this.handleMouseDown(event);
+        if (event.touches.length == 1) {
+            event.button = 0;
+            event.clientX = event.touches[0].clientX;
+            event.clientY = event.touches[0].clientY;
+            this.handleMouseDown(event);
+        } else if (event.touches.length == 2) {
+            this.setState({
+                pinchData: {
+                    pinching: true,
+                    startX: this.state.x,
+                    startY: this.state.y,
+                    startFirstPinchX: event.touches[0].clientX,
+                    startFirstPinchY: event.touches[0].clientY,
+                    startSecondPinchX: event.touches[1].clientX,
+                    startSecondPinchY: event.touches[1].clientY
+                }
+            });
+        }
     }
 
     handleTouchMove(event) {
-        event.clientX = event.touches[0].clientX;
-        event.clientY = event.touches[0].clientY;
-        this.handleMouseMove(event);
+        if (event.touches.length == 1) {
+            event.clientX = event.touches[0].clientX;
+            event.clientY = event.touches[0].clientY;
+            this.handleMouseMove(event);
+        } else if (event.touches.length == 2) {
+            // TODO: pin the two pinches to the map and zoom in/out to match the pinch movements
+        }
     }
 
     handleTouchEnd(event) {
@@ -118,17 +139,20 @@ export default class App extends React.Component {
                  onMouseMove={this.handleMouseMove}
                  onMouseUp={this.handleMouseUp}
                  ref="container">
-                <MapView x={this.state.x} y={this.state.y} zoom={this.state.zoom}/>
+                <MapView x={this.state.x} y={this.state.y} zoom={Math.floor(this.state.zoom)}/>
             </div>
             <AppBar className={style['top-bar']}>
                 <IconMenu icon='menu' position='top-left'>
-                    <MenuItem value='download' caption='Download'/>
+                    <MenuItem caption='+' onClick={() => this.setState({zoom: this.state.zoom + 0.25})}/>
+                    <MenuItem caption='-' onClick={() => this.setState({zoom: this.state.zoom - 0.25})}/>
                     <MenuDivider />
                     <MenuItem value='help' caption='Favorite'/>
-                    <MenuItem value='settings' caption='Open in app'/>
                 </IconMenu>
                 <SearchBar onSubmit={this.handleSearchSubmit}/>
             </AppBar>
+            <pre style={{position:'absolute', top:'8rem'}}>
+                {JSON.stringify(this.state.pinchData, null, 2)}
+            </pre>
         </span>;
     }
 };
