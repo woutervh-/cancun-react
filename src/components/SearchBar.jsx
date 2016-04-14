@@ -1,4 +1,4 @@
-import {Autocomplete, Dropdown, IconButton, Input, List, ListItem, Menu, MenuItem} from 'react-toolbox';
+import {IconButton, Input, List, ListItem} from 'react-toolbox';
 import classNames from 'classnames';
 import GeocodingHelper from '../lib/GeocodingHelper.js';
 import React from 'react';
