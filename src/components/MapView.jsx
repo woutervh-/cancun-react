@@ -3,6 +3,8 @@ import MapHelper from '../lib/MapHelper.js';
 import Picture from './canvas/Picture.jsx';
 import React from 'react';
 import Rectangle from './canvas/Rectangle.jsx';
+import Scale from './canvas/Scale.jsx';
+import Transform from './canvas/Transform.jsx';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -37,6 +39,8 @@ export default class MapView extends React.Component {
 
     render() {
         let mapHelper = new MapHelper();
+        let zoomRounded = Math.floor(this.props.zoom);
+        let zoomDifference = this.props.zoom - zoomRounded;
         let startTile = {
             x: Math.floor(this.props.x / mapHelper.tileWidth),
             y: Math.floor(this.props.y / mapHelper.tileHeight)
@@ -53,7 +57,7 @@ export default class MapView extends React.Component {
         for (let i = 0; i < endTile.x - startTile.x; i++) {
             for (let j = 0; j < endTile.y - startTile.y; j++) {
                 tiles.push({
-                    url: mapHelper.getTileUrl(this.props.zoom, startTile.x + i, startTile.y + j),
+                    url: mapHelper.getTileUrl(zoomRounded, startTile.x + i, startTile.y + j),
                     left: mapHelper.tileWidth * i + offset.x,
                     top: mapHelper.tileHeight * j + offset.y,
                     width: mapHelper.tileWidth,
@@ -72,7 +76,9 @@ export default class MapView extends React.Component {
         });
 
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height} tabIndex={0}>
+            <Scale scaleWidth={zoomDifference + 1} scaleHeight={zoomDifference + 1}/>
             {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
+            <Transform reset={true}/>
             <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
         </Canvas>;
     }

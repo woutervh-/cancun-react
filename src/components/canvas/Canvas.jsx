@@ -3,6 +3,8 @@ import ImageFrontier from '../../lib/canvas/ImageFrontier.js';
 import Picture from './Picture.jsx';
 import React from 'react';
 import Rectangle from './Rectangle.jsx';
+import Scale from './Scale.jsx';
+import Transform from './Transform.jsx';
 
 export default class Canvas extends React.Component {
     constructor() {
@@ -32,6 +34,7 @@ export default class Canvas extends React.Component {
         let canvas = this.refs.canvas;
         let context = canvas.getContext('2d');
         this.imageFrontier.clear();
+        context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, this.props.width, this.props.height);
         this.drawGroup(context, this);
     }
@@ -56,10 +59,6 @@ export default class Canvas extends React.Component {
         }
     }
 
-    focus() {
-        this.refs.canvas.focus();
-    }
-
     drawGroup(context, group) {
         React.Children.forEach(group.props.children, child => {
             switch (child.type) {
@@ -72,11 +71,33 @@ export default class Canvas extends React.Component {
                 case Group:
                     this.drawGroup(context, child);
                     break;
+                case Scale:
+                    this.drawScale(context, child);
+                    break;
+                case Transform:
+                    this.drawTransform(context, child);
+                    break;
                 default:
                     console.warn('Unknown child type for Canvas: ' + child.type);
                     break;
             }
         });
+    }
+
+    drawScale(context, child) {
+        context.scale(child.props.scaleWidth, child.props.scaleHeight);
+    }
+
+    drawTransform(context, child) {
+        if (child.props.reset) {
+            context.setTransform(child.props.a, child.props.b, child.props.c, child.props.d, child.props.e, child.props.f);
+        } else {
+            context.transform(child.props.a, child.props.b, child.props.c, child.props.d, child.props.e, child.props.f);
+        }
+    }
+
+    focus() {
+        this.refs.canvas.focus();
     }
 
     render() {

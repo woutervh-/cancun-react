@@ -43,6 +43,7 @@ export default class App extends React.Component {
                     pinching: true,
                     startX: this.state.x,
                     startY: this.state.y,
+                    startZoom: this.state.zoom,
                     startFirstPinchX: event.touches[0].clientX,
                     startFirstPinchY: event.touches[0].clientY,
                     startSecondPinchX: event.touches[1].clientX,
@@ -58,12 +59,27 @@ export default class App extends React.Component {
             event.clientY = event.touches[0].clientY;
             this.handleMouseMove(event);
         } else if (event.touches.length == 2) {
-            // TODO: pin the two pinches to the map and zoom in/out to match the pinch movements
+            if (this.state.pinchData.pinching) {
+                let mapHelper = new MapHelper();
+                let newDx = event.touches[1].clientX - event.touches[0].clientX;
+                let newDy = event.touches[1].clientY - event.touches[0].clientY;
+                let oldDx = this.state.pinchData.startSecondPinchX - this.state.pinchData.startFirstPinchX;
+                let oldDy = this.state.pinchData.startSecondPinchY - this.state.pinchData.startFirstPinchY;
+                let zoomFactor = Math.sqrt(newDx * newDx + newDy * newDy) / Math.sqrt(oldDx * oldDx + oldDy * oldDy);
+                this.setState({
+                    zoom: Math.min(mapHelper.maxZoom, Math.max(mapHelper.minZoom, this.state.pinchData.startZoom + Math.log2(zoomFactor)))
+                });
+            }
         }
     }
 
     handleTouchEnd(event) {
-        this.handleMouseUp(event);
+        if (event.touches.length == 0) {
+            this.handleMouseUp();
+        } else if (event.touches.length == 1) {
+            this.handleTouchStart(event);
+            this.setState({pinchData: {pinching: false}, zoom: this.state.zoom});
+        }
     }
 
     handleMouseDown(event) {
@@ -139,7 +155,7 @@ export default class App extends React.Component {
                  onMouseMove={this.handleMouseMove}
                  onMouseUp={this.handleMouseUp}
                  ref="container">
-                <MapView x={this.state.x} y={this.state.y} zoom={Math.floor(this.state.zoom)}/>
+                <MapView x={this.state.x} y={this.state.y} zoom={this.state.zoom}/>
             </div>
             <AppBar className={style['top-bar']}>
                 <IconMenu icon='menu' position='top-left'>
