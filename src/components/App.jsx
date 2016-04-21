@@ -1,6 +1,7 @@
 import {AppBar, IconMenu, Layout, MenuDivider, MenuItem, Panel} from 'react-toolbox';
 import MapHelper from '../lib/MapHelper.js';
 import MapView from './MapView.jsx';
+import MapViewContainer from './MapViewContainer.jsx';
 import MathUtil from '../lib/MathUtil.js';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
@@ -211,6 +212,10 @@ export default class App extends React.Component {
     }
 
     render() {
+        return <span>
+            <MapViewContainer/>
+        </span>;
+
         return <span>
             <div onWheel={this.handleWheel}
                  onTouchStart={this.handleTouchStart}
