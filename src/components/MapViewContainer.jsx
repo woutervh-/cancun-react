@@ -217,12 +217,14 @@ export default class MapViewContainer extends React.Component {
     handleWheel(event) {
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
+        let oldZoom = this.state.view.zoom;
+        let newZoom = this.state.view.zoom;
         if (event.deltaY < 0 && this.state.view.zoom < MapHelper.maxZoom) {
-            let zoom = this.state.view.zoom + 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, this.state.view.zoom, zoom), this.positionAtZoom(center, this.state.view.zoom, zoom), 0.5), zoom);
+            newZoom += 1;
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom);
         } else if (event.deltaY > 0 && this.state.view.zoom > MapHelper.minZoom) {
-            let zoom = this.state.view.zoom - 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, this.state.view.zoom, zoom), this.positionAtZoom(center, this.state.view.zoom, zoom), -1), zoom);
+            newZoom -= 1;
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom);
         }
     }
 
