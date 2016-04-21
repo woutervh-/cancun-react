@@ -4,6 +4,8 @@ import Picture from './Picture.jsx';
 import React from 'react';
 import Rectangle from './Rectangle.jsx';
 import Scale from './Scale.jsx';
+import Rotate from './Rotate.jsx';
+import Translate from './Translate.jsx';
 import Transform from './Transform.jsx';
 
 export default class Canvas extends React.Component {
@@ -11,7 +13,6 @@ export default class Canvas extends React.Component {
         super();
         this.componentDidMount = this.draw;
         this.componentDidUpdate = this.draw;
-        this.focus = this.focus.bind(this);
         this.imageFrontier = new ImageFrontier();
     }
 
@@ -74,6 +75,12 @@ export default class Canvas extends React.Component {
                 case Scale:
                     this.drawScale(context, child);
                     break;
+                case Rotate:
+                    this.drawRotate(context, child);
+                    break;
+                case Translate:
+                    this.drawTranslate(context, child);
+                    break;
                 case Transform:
                     this.drawTransform(context, child);
                     break;
@@ -84,20 +91,36 @@ export default class Canvas extends React.Component {
         });
     }
 
-    drawScale(context, child) {
-        context.scale(child.props.scaleWidth, child.props.scaleHeight);
+    drawScale(context, scale) {
+        context.save();
+        context.scale(scale.props.scaleWidth, scale.props.scaleHeight);
+        this.drawGroup(context, scale);
+        context.restore();
     }
 
-    drawTransform(context, child) {
-        if (child.props.reset) {
-            context.setTransform(child.props.a, child.props.b, child.props.c, child.props.d, child.props.e, child.props.f);
+    drawRotate(context, rotate) {
+        context.save();
+        context.rotate(rotate.props.angle);
+        this.drawGroup(context, rotate);
+        context.restore();
+    }
+
+    drawTranslate(context, translate) {
+        context.save();
+        context.translate(translate.props.x, translate.props.y);
+        this.drawGroup(context, translate);
+        context.restore();
+    }
+
+    drawTransform(context, transform) {
+        context.save();
+        if (transform.props.reset) {
+            context.setTransform(transform.props.a, transform.props.b, transform.props.c, transform.props.d, transform.props.e, transform.props.f);
         } else {
-            context.transform(child.props.a, child.props.b, child.props.c, child.props.d, child.props.e, child.props.f);
+            context.transform(transform.props.a, transform.props.b, transform.props.c, transform.props.d, transform.props.e, transform.props.f);
         }
-    }
-
-    focus() {
-        this.refs.canvas.focus();
+        this.drawGroup(context, transform);
+        context.restore();
     }
 
     render() {

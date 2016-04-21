@@ -28,6 +28,10 @@ export default class App extends React.Component {
         },
         pinchData: {
             pinching: false
+        },
+        pinchCenter: {
+            x: 0,
+            y: 0
         }
     };
 
@@ -38,16 +42,41 @@ export default class App extends React.Component {
             event.clientY = event.touches[0].clientY;
             this.handleMouseDown(event);
         } else if (event.touches.length == 2) {
+            let container = this.refs.container;
+            let containerOffset = {x: container.offsetLeft, y: container.offsetTop};
+            let parent = container.offsetParent;
+            while (parent != null) {
+                containerOffset.x += parent.offsetLeft;
+                containerOffset.y += parent.offsetTop;
+                parent = parent.offsetParent;
+            }
+            let p1 = {
+                x: event.touches[0].clientX - containerOffset.x,
+                y: event.touches[0].clientY - containerOffset.y
+            };
+            let p2 = {
+                x: event.touches[1].clientX - containerOffset.x,
+                y: event.touches[1].clientY - containerOffset.y
+            };
+            let center = MathUtil.divide(MathUtil.add(p1, p2), 2);
+            let distance = MathUtil.distance(p1, p2);
             this.setState({
+                pinch: {center},
+                dragData: {dragging: false},
                 pinchData: {
                     pinching: true,
-                    startX: this.state.x,
-                    startY: this.state.y,
+                    startContainer: {
+                        center: {
+                            x: containerOffset.x + container.offsetWidth / 2,
+                            y: containerOffset.y + container.offsetHeight / 2
+                        }
+                    },
+                    startPinch: {center, distance},
                     startZoom: this.state.zoom,
-                    startFirstPinchX: event.touches[0].clientX,
-                    startFirstPinchY: event.touches[0].clientY,
-                    startSecondPinchX: event.touches[1].clientX,
-                    startSecondPinchY: event.touches[1].clientY
+                    startPosition: {
+                        x: this.state.x,
+                        y: this.state.y
+                    }
                 }
             });
         }
@@ -60,14 +89,34 @@ export default class App extends React.Component {
             this.handleMouseMove(event);
         } else if (event.touches.length == 2) {
             if (this.state.pinchData.pinching) {
-                let mapHelper = new MapHelper();
-                let newDx = event.touches[1].clientX - event.touches[0].clientX;
-                let newDy = event.touches[1].clientY - event.touches[0].clientY;
-                let oldDx = this.state.pinchData.startSecondPinchX - this.state.pinchData.startFirstPinchX;
-                let oldDy = this.state.pinchData.startSecondPinchY - this.state.pinchData.startFirstPinchY;
-                let zoomFactor = Math.sqrt(newDx * newDx + newDy * newDy) / Math.sqrt(oldDx * oldDx + oldDy * oldDy);
+                let container = this.refs.container;
+                let containerOffset = {x: container.offsetLeft, y: container.offsetTop};
+                let parent = container.offsetParent;
+                while (parent != null) {
+                    containerOffset.x += parent.offsetLeft;
+                    containerOffset.y += parent.offsetTop;
+                    parent = parent.offsetParent;
+                }
+                let p1 = {
+                    x: event.touches[0].clientX - containerOffset.x,
+                    y: event.touches[0].clientY - containerOffset.y
+                };
+                let p2 = {
+                    x: event.touches[1].clientX - containerOffset.x,
+                    y: event.touches[1].clientY - containerOffset.y
+                };
+                let center = MathUtil.divide(MathUtil.add(p1, p2), 2);
+                let distance = MathUtil.distance(p1, p2);
+                let scale = distance / this.state.pinchData.startPinch.distance;
+                let newZoom = Math.min(MapHelper.maxZoom, Math.max(MapHelper.minZoom, this.state.pinchData.startZoom + Math.log2(scale)));
+                let zoomLevelDifference = Math.floor(newZoom) - Math.floor(this.state.pinchData.startZoom);
+                let delta = MathUtil.subtract(center, this.state.pinchData.startContainer.center);
+                let deltaPinch = MathUtil.subtract(center, this.state.pinchData.startPinch.center);
                 this.setState({
-                    zoom: Math.min(mapHelper.maxZoom, Math.max(mapHelper.minZoom, this.state.pinchData.startZoom + Math.log2(zoomFactor)))
+                    pinch: {center},
+                    zoom: newZoom,
+                    x: (this.state.pinchData.startPosition.x + (scale - 1) / scale * delta.x - deltaPinch.x) * Math.pow(2, zoomLevelDifference),
+                    y: (this.state.pinchData.startPosition.y + (scale - 1) / scale * delta.y - deltaPinch.y) * Math.pow(2, zoomLevelDifference)
                 });
             }
         }
@@ -77,8 +126,25 @@ export default class App extends React.Component {
         if (event.touches.length == 0) {
             this.handleMouseUp();
         } else if (event.touches.length == 1) {
-            this.handleTouchStart(event);
-            this.setState({pinchData: {pinching: false}, zoom: this.state.zoom});
+            let startZoom = this.state.pinchData.startZoom;
+            let newZoom = this.state.zoom;
+            if (startZoom < newZoom) {
+                newZoom = Math.ceil(newZoom);
+            } else if (startZoom > newZoom) {
+                newZoom = Math.floor(newZoom);
+            }
+            let zoomLevelDifference = Math.floor(newZoom) - Math.floor(startZoom);
+            let delta = MathUtil.subtract(this.state.pinch.center, this.state.pinchData.startContainer.center);
+            let deltaPinch = MathUtil.subtract(this.state.pinch.center, this.state.pinchData.startPinch.center);
+            this.setState({
+                zoom: newZoom,
+                x: (this.state.pinchData.startPosition.x + delta.x - deltaPinch.x) * Math.pow(2, zoomLevelDifference),
+                y: (this.state.pinchData.startPosition.y + delta.y - deltaPinch.y) * Math.pow(2, zoomLevelDifference),
+                pinchData: {pinching: false},
+                debug: {
+                    delta, zoomLevelDifference
+                }
+            }, () => this.handleTouchStart(event));
         }
     }
 
@@ -109,7 +175,6 @@ export default class App extends React.Component {
     }
 
     handleWheel(event) {
-        let mapHelper = new MapHelper();
         let container = this.refs.container;
         let containerOffsetX = container.offsetLeft;
         let containerOffsetY = container.offsetTop;
@@ -119,17 +184,17 @@ export default class App extends React.Component {
             containerOffsetY += parent.offsetTop;
             parent = parent.offsetParent;
         }
-        let alongX = MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX);
-        let alongY = MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY);
+        let alongX = MathUtil.lerp(-0.5, 0.5, MathUtil.norm(containerOffsetX, containerOffsetX + container.offsetWidth, event.clientX));
+        let alongY = MathUtil.lerp(-0.5, 0.5, MathUtil.norm(containerOffsetY, containerOffsetY + container.offsetHeight, event.clientY));
 
-        if (event.deltaY < 0 && this.state.zoom < mapHelper.maxZoom) {
+        if (event.deltaY < 0 && this.state.zoom < MapHelper.maxZoom) {
             this.setState({
                 zoom: this.state.zoom + 1,
                 x: this.state.x * 2 + container.offsetWidth * alongX,
                 y: this.state.y * 2 + container.offsetHeight * alongY
             });
         }
-        if (event.deltaY > 0 && this.state.zoom > mapHelper.minZoom) {
+        if (event.deltaY > 0 && this.state.zoom > MapHelper.minZoom) {
             this.setState({
                 zoom: this.state.zoom - 1,
                 x: (this.state.x - container.offsetWidth * alongX) / 2,
@@ -155,20 +220,18 @@ export default class App extends React.Component {
                  onMouseMove={this.handleMouseMove}
                  onMouseUp={this.handleMouseUp}
                  ref="container">
-                <MapView x={this.state.x} y={this.state.y} zoom={this.state.zoom}/>
+                <MapView x={this.state.x} y={this.state.y} zoom={Math.floor(this.state.zoom)} scale={1 + this.state.zoom - Math.floor(this.state.zoom)}/>
             </div>
-            <AppBar className={style['top-bar']}>
-                <IconMenu icon='menu' position='top-left'>
-                    <MenuItem caption='+' onClick={() => this.setState({zoom: this.state.zoom + 0.25})}/>
-                    <MenuItem caption='-' onClick={() => this.setState({zoom: this.state.zoom - 0.25})}/>
-                    <MenuDivider />
-                    <MenuItem value='help' caption='Favorite'/>
-                </IconMenu>
-                <SearchBar onSubmit={this.handleSearchSubmit}/>
-            </AppBar>
-            <pre style={{position:'absolute', top:'8rem'}}>
-                {JSON.stringify(this.state.pinchData, null, 2)}
-            </pre>
         </span>;
+
+        //<AppBar className={style['top-bar']}>
+        //    <IconMenu icon='menu' position='top-left'>
+        //        <MenuItem caption='+' onClick={() => this.setState({zoom: this.state.zoom + 0.25})}/>
+        //        <MenuItem caption='-' onClick={() => this.setState({zoom: this.state.zoom - 0.25})}/>
+        //        <MenuDivider />
+        //        <MenuItem value='help' caption='Favorite'/>
+        //    </IconMenu>
+        //    <SearchBar onSubmit={this.handleSearchSubmit}/>
+        //</AppBar>
     }
 };

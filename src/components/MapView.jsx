@@ -5,6 +5,7 @@ import React from 'react';
 import Rectangle from './canvas/Rectangle.jsx';
 import Scale from './canvas/Scale.jsx';
 import Transform from './canvas/Transform.jsx';
+import Translate from './canvas/Translate.jsx';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -17,7 +18,12 @@ export default class MapView extends React.Component {
     static propTypes = {
         x: React.PropTypes.number.isRequired,
         y: React.PropTypes.number.isRequired,
-        zoom: React.PropTypes.number.isRequired
+        zoom: React.PropTypes.number.isRequired,
+        scale: React.PropTypes.number.isRequired
+    };
+
+    static defaultProps = {
+        scale: 1
     };
 
     state = {
@@ -38,47 +44,48 @@ export default class MapView extends React.Component {
     }
 
     render() {
-        let mapHelper = new MapHelper();
-        let zoomRounded = Math.floor(this.props.zoom);
-        let zoomDifference = this.props.zoom - zoomRounded;
+        let topLeft = {
+            x: this.props.x - this.state.width / 2 / this.props.scale,
+            y: this.props.y - this.state.height / 2 / this.props.scale
+        };
         let startTile = {
-            x: Math.floor(this.props.x / mapHelper.tileWidth),
-            y: Math.floor(this.props.y / mapHelper.tileHeight)
+            x: Math.floor(topLeft.x / MapHelper.tileWidth),
+            y: Math.floor(topLeft.y / MapHelper.tileHeight)
         };
         let endTile = {
-            x: Math.ceil((this.props.x + this.state.width) / mapHelper.tileWidth),
-            y: Math.ceil((this.props.y + this.state.height) / mapHelper.tileHeight)
+            x: Math.ceil((topLeft.x + this.state.width) / MapHelper.tileWidth),
+            y: Math.ceil((topLeft.y + this.state.height) / MapHelper.tileHeight)
         };
         let offset = {
-            x: startTile.x * mapHelper.tileWidth - this.props.x,
-            y: startTile.y * mapHelper.tileHeight - this.props.y
+            x: startTile.x * MapHelper.tileWidth - topLeft.x,
+            y: startTile.y * MapHelper.tileHeight - topLeft.y
         };
         let tiles = [];
         for (let i = 0; i < endTile.x - startTile.x; i++) {
             for (let j = 0; j < endTile.y - startTile.y; j++) {
                 tiles.push({
-                    url: mapHelper.getTileUrl(zoomRounded, startTile.x + i, startTile.y + j),
-                    left: mapHelper.tileWidth * i + offset.x,
-                    top: mapHelper.tileHeight * j + offset.y,
-                    width: mapHelper.tileWidth,
-                    height: mapHelper.tileHeight
+                    url: MapHelper.getTileUrl(startTile.x + i, startTile.y + j, this.props.zoom),
+                    left: MapHelper.tileWidth * i + offset.x,
+                    top: MapHelper.tileHeight * j + offset.y,
+                    width: MapHelper.tileWidth,
+                    height: MapHelper.tileHeight
                 });
             }
         }
         tiles.sort((a, b) => {
-            let adx = a.left + mapHelper.tileWidth / 2 - this.state.width / 2;
-            let ady = a.top + mapHelper.tileHeight / 2 - this.state.height / 2;
-            let bdx = b.left + mapHelper.tileWidth / 2 - this.state.width / 2;
-            let bdy = b.top + mapHelper.tileHeight / 2 - this.state.height / 2;
+            let adx = a.left + MapHelper.tileWidth / 2 - this.state.width / 2;
+            let ady = a.top + MapHelper.tileHeight / 2 - this.state.height / 2;
+            let bdx = b.left + MapHelper.tileWidth / 2 - this.state.width / 2;
+            let bdy = b.top + MapHelper.tileHeight / 2 - this.state.height / 2;
             let adr = adx * adx + ady * ady;
             let bdr = bdx * bdx + bdy * bdy;
             return adr - bdr;
         });
 
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height} tabIndex={0}>
-            <Scale scaleWidth={zoomDifference + 1} scaleHeight={zoomDifference + 1}/>
-            {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
-            <Transform reset={true}/>
+            <Scale scaleWidth={this.props.scale} scaleHeight={this.props.scale}>
+                {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
+            </Scale>
             <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
         </Canvas>;
     }
