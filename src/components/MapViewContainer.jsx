@@ -97,6 +97,31 @@ export default class MapViewContainer extends React.Component {
         });
     }
 
+    updatePinching(pointers) {
+        let center = VectorUtil.divide(VectorUtil.add(pointers[0], pointers[1]), 2);
+        let distance = VectorUtil.distance(pointers[0], pointers[1]);
+
+        let scale = distance / this.state.startDistance;
+        let oldZoom = this.state.startView.zoom;
+        let newZoom = Math.min(MapHelper.maxZoom, Math.max(MapHelper.minZoom, oldZoom + Math.log2(scale)));
+
+        let newCenter = VectorUtil.lerp(this.state.view, center, (scale - 1) / scale);
+        this.centerOn(this.positionAtZoom(newCenter, oldZoom, newZoom), newZoom);
+        this.setState({
+            debug: newCenter
+        });
+
+        //let zoomLevelDifference = Math.floor(newZoom) - Math.floor(this.state.pinchData.startZoom);
+        //let delta = VectorUtil.subtract(center, this.state.pinchData.startContainer.center);
+        //let deltaPinch = VectorUtil.subtract(center, this.state.pinchData.startPinch.center);
+        //this.setState({
+        //    pinch: {center},
+        //    zoom: newZoom,
+        //    x: (this.state.pinchData.startPosition.x + (scale - 1) / scale * delta.x - deltaPinch.x) * Math.pow(2, zoomLevelDifference),
+        //    y: (this.state.pinchData.startPosition.y + (scale - 1) / scale * delta.y - deltaPinch.y) * Math.pow(2, zoomLevelDifference)
+        //});
+    }
+
     stopPinching() {
         this.setState({
             pinching: false
@@ -115,24 +140,30 @@ export default class MapViewContainer extends React.Component {
     }
 
     handleTouchStart(event) {
-        if (event.touches.length == 1) {
+        if (event.touches.length == 1 && !this.state.dragging && !this.state.pinching) {
             this.startDragging({x: event.touches[0].clientX, y: event.touches[0].clientY});
-        } else if (event.touches.length == 2) {
+        } else if (event.touches.length == 2 && !this.state.pinching) {
             if (this.state.dragging) {
                 this.stopDragging();
             }
             let p1 = {x: event.touches[0].clientX, y: event.touches[0].clientY};
             let p2 = {x: event.touches[1].clientX, y: event.touches[1].clientY};
-            this.startPinching([p1, p2].map(p => this.screenToContainer(p)));
+            this.startPinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))));
         }
     }
 
     handleTouchMove(event) {
         if (event.touches.length == 1) {
-            event.clientX = event.touches[0].clientX;
-            event.clientY = event.touches[0].clientY;
-            this.handleMouseMove(event);
+            if (this.state.dragging) {
+                this.updateDragging({x: event.touches[0].clientX, y: event.touches[0].clientY});
+            }
         } else if (event.touches.length == 2) {
+            if (this.state.pinching) {
+                let p1 = {x: event.touches[0].clientX, y: event.touches[0].clientY};
+                let p2 = {x: event.touches[1].clientX, y: event.touches[1].clientY};
+                this.updatePinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p), this.state.startView)));
+                this.setState({debug: e.message});
+            }
             if (this.state.pinchData.pinching) {
                 let container = this.refs.container;
                 let containerOffset = {x: container.offsetLeft, y: container.offsetTop};
@@ -172,27 +203,27 @@ export default class MapViewContainer extends React.Component {
             this.stopDragging();
         } else if (event.touches.length == 1) {
             if (this.state.pinching) {
-
+                this.stopPinching();
             }
-            let startZoom = this.state.pinchData.startZoom;
-            let newZoom = this.state.zoom;
-            if (startZoom < newZoom) {
-                newZoom = Math.ceil(newZoom);
-            } else if (startZoom > newZoom) {
-                newZoom = Math.floor(newZoom);
-            }
-            let zoomLevelDifference = Math.floor(newZoom) - Math.floor(startZoom);
-            let delta = VectorUtil.subtract(this.state.pinch.center, this.state.pinchData.startContainer.center);
-            let deltaPinch = VectorUtil.subtract(this.state.pinch.center, this.state.pinchData.startPinch.center);
-            this.setState({
-                zoom: newZoom,
-                x: (this.state.pinchData.startPosition.x + delta.x - deltaPinch.x) * Math.pow(2, zoomLevelDifference),
-                y: (this.state.pinchData.startPosition.y + delta.y - deltaPinch.y) * Math.pow(2, zoomLevelDifference),
-                pinchData: {pinching: false},
-                debug: {
-                    delta, zoomLevelDifference
-                }
-            }, () => this.handleTouchStart(event));
+            //let startZoom = this.state.pinchData.startZoom;
+            //let newZoom = this.state.zoom;
+            //if (startZoom < newZoom) {
+            //    newZoom = Math.ceil(newZoom);
+            //} else if (startZoom > newZoom) {
+            //    newZoom = Math.floor(newZoom);
+            //}
+            //let zoomLevelDifference = Math.floor(newZoom) - Math.floor(startZoom);
+            //let delta = VectorUtil.subtract(this.state.pinch.center, this.state.pinchData.startContainer.center);
+            //let deltaPinch = VectorUtil.subtract(this.state.pinch.center, this.state.pinchData.startPinch.center);
+            //this.setState({
+            //    zoom: newZoom,
+            //    x: (this.state.pinchData.startPosition.x + delta.x - deltaPinch.x) * Math.pow(2, zoomLevelDifference),
+            //    y: (this.state.pinchData.startPosition.y + delta.y - deltaPinch.y) * Math.pow(2, zoomLevelDifference),
+            //    pinchData: {pinching: false},
+            //    debug: {
+            //        delta, zoomLevelDifference
+            //    }
+            //}, () => this.handleTouchStart(event));
         }
     }
 
