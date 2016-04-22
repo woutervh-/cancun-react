@@ -41,7 +41,7 @@ export default class MapHelper {
         let scale = Math.pow(2, Math.max(minZoom, Math.min(maxZoom, zoom))) * tileSize;
         x = (x % scale + scale) % scale;
         y = (y % scale + scale) % scale;
-        let latitude = -360 / Math.PI * (Math.atan(Math.exp((y / scale * 2 - 1) * Math.PI)) - Math.PI / 4);
+        let latitude = -360 / Math.PI * Math.atan(Math.exp((y / scale * 2 - 1) * Math.PI)) + 90;
         let longitude = (x / scale - 0.5) * 360;
         return {latitude, longitude}
     }

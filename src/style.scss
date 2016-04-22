@@ -1,5 +1,60 @@
 @import "~react-toolbox/lib/base";
+@import "~react-toolbox/lib/commons";
 @import './config';
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (min-width: 480px) {
+  /* Phone (portrait) */
+  html {
+    font-size: 62.5%;
+  }
+}
+
+@media screen and (min-width: 720px) {
+  /* Small tablet (portrait) */
+  html {
+    font-size: 62.5%;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  /* Large tablet (landscape), desktop */
+  html {
+    font-size: 62.5%;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  /* HD Desktop */
+  html {
+    font-size: 62.5%;
+  }
+}
+
+@media screen and (min-width: 2560px) {
+  /* WQHD Desktop */
+  html {
+    font-size: 100%;
+  }
+}
+
+@media screen and (min-width: 3840px) {
+  /* UHD Desktop */
+  html {
+    font-size: 137.5%;
+    color: red;
+  }
+}
 
 .top-bar {
   position: absolute;
@@ -7,6 +62,10 @@
   left: 0;
   width: 100%;
   z-index: 1;
+}
+
+.top-bar > * {
+  align-self: flex-start;
 }
 
 .suggestions {
@@ -43,6 +102,7 @@
   text-overflow: ellipsis;
 }
 
-.inline-children > * {
+.search-form > * {
   display: inline-block;
+  vertical-align: top;
 }

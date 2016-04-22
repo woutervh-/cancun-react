@@ -2,7 +2,7 @@ import App from './App.jsx';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import style from './main-style.scss';
+import style from './style.scss';
 
 // Needed for onTouchTap
 // Can go away when react 1.0 release

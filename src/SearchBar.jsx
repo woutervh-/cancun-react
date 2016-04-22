@@ -168,9 +168,9 @@ export default class SearchBar extends React.Component {
                       onMouseDown={() => this.handleItemMouseDown(index)}/>
         );
 
-        return <form {...this.props} onSubmit={this.handleSubmit} className={style['inline-children']}>
+        return <form {...this.props} onSubmit={this.handleSubmit} className={style['search-form']}>
             <Input type="search"
-                   error={this.props.error}
+                   error={this.state.error}
                    floating={false}
                    label="Enter location"
                    value={this.state.query}
