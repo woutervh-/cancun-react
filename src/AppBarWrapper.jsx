@@ -1,4 +1,4 @@
-import {AppBar, IconMenu, Layout, MenuDivider, MenuItem, Panel} from 'react-toolbox';
+import {AppBar, IconMenu, MenuDivider, MenuItem} from 'react-toolbox';
 import MapHelper from './MapHelper.js';
 import MapViewController from './MapViewController.jsx';
 import React from 'react';

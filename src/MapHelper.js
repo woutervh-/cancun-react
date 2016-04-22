@@ -9,7 +9,7 @@ const baseUrls = [
 const minZoom = 0;
 const maxZoom = 18;
 const tileSize = 256;
-const maxLatitude = 85.051128779806;
+const maxLatitude = (360 * Math.atan(Math.exp(Math.PI)) / Math.PI - 90);
 
 let urlIndex = 0;
 let urlCache = {};
@@ -32,8 +32,8 @@ export default class MapHelper {
         let scale = Math.pow(2, Math.max(minZoom, Math.min(maxZoom, zoom))) * tileSize;
         latitude = Math.min(maxLatitude, Math.max(-maxLatitude, latitude));
         longitude = Math.min(180, Math.max(-180, longitude));
-        let x = Math.floor((longitude / 360 + 0.5) * scale);
-        let y = -Math.floor(scale / 2 / (Math.PI * Math.log(Math.tan(Math.PI / 4 + latitude * Math.PI / 360)) + 1));
+        let x = scale / 2 * (longitude / 180 + 1);
+        let y = scale / 2 * (1 - Math.log(Math.tan((latitude + 90) * Math.PI / 360)) / Math.PI);
         return {x, y};
     }
 

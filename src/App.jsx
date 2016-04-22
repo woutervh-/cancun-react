@@ -4,6 +4,7 @@ import MapViewController from './MapViewController.jsx';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
 import style from './style.scss';
+import VectorUtil from './VectorUtil.js';
 
 export default class App extends React.Component {
     constructor() {
@@ -23,9 +24,12 @@ export default class App extends React.Component {
 
     handleSearchSubmit(input) {
         if (!!input) {
-            console.log('submitted:');
-            console.log(input);
-            console.log();
+            let center = MapHelper.project(input, Math.floor(this.state.view.zoom));
+            this.setState({view: {
+                x: center.x,
+                y: center.y,
+                zoom: this.state.view.zoom
+            }});
         }
     }
 
