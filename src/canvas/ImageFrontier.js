@@ -1,16 +1,18 @@
+import Heap from 'heap';
+
 const poolSize = 64;
 
 export default class ImageFrontier {
-    constructor() {
-        this.sourceQueue = [];
+    constructor(compareFunction) {
+        this.sourceHeap = new Heap(compareFunction);
         this.sourceToImage = {};
         this.sourceToCallback = {};
         this.countLoading = 0;
     }
 
     task() {
-        while (this.countLoading < poolSize && this.countLoading < this.sourceQueue.length) {
-            let source = this.sourceQueue.shift();
+        while (this.countLoading < poolSize && this.countLoading < this.sourceHeap.size()) {
+            let source = this.sourceHeap.pop();
             if (!(source in this.sourceToImage)) {
                 this.countLoading += 1;
                 this.sourceToImage[source] = new Image();
@@ -42,7 +44,7 @@ export default class ImageFrontier {
     }
 
     fetch(source) {
-        this.sourceQueue.push(source);
+        this.sourceHeap.push(source);
         setImmediate(this.task.bind(this));
     }
 
@@ -51,7 +53,9 @@ export default class ImageFrontier {
     }
 
     clear() {
-        this.sourceQueue = [];
+        for (let i = 0; i < this.sourceHeap.size(); i++) {
+            this.sourceHeap.pop();
+        }
         this.sourceToCallback = {};
     }
 };

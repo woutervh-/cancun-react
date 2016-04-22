@@ -13,17 +13,18 @@ export default class Canvas extends React.Component {
         super();
         this.componentDidMount = this.draw;
         this.componentDidUpdate = this.draw;
-        this.imageFrontier = new ImageFrontier();
     }
 
     static propTypes = {
         width: React.PropTypes.number.isRequired,
-        height: React.PropTypes.number.isRequired
+        height: React.PropTypes.number.isRequired,
+        imageFrontier: React.PropTypes.instanceOf(ImageFrontier).isRequired
     };
 
     static defaultProps = {
         width: 0,
-        height: 0
+        height: 0,
+        imageFrontier: new ImageFrontier()
     };
 
     state = {
@@ -34,7 +35,7 @@ export default class Canvas extends React.Component {
     draw() {
         let canvas = this.refs.canvas;
         let context = canvas.getContext('2d');
-        this.imageFrontier.clear();
+        this.props.imageFrontier.clear();
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.clearRect(0, 0, this.props.width, this.props.height);
         this.drawGroup(context, this);
@@ -51,12 +52,12 @@ export default class Canvas extends React.Component {
     }
 
     drawPicture(context, picture) {
-        if (this.imageFrontier.isLoaded(picture.props.source)) {
-            let image = this.imageFrontier.getLoadedImage(picture.props.source);
+        if (this.props.imageFrontier.isLoaded(picture.props.source)) {
+            let image = this.props.imageFrontier.getLoadedImage(picture.props.source);
             context.drawImage(image, picture.props.left, picture.props.top, picture.props.width, picture.props.height);
         } else {
-            this.imageFrontier.fetch(picture.props.source);
-            this.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
+            this.props.imageFrontier.fetch(picture.props.source);
+            this.props.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
     }
 
