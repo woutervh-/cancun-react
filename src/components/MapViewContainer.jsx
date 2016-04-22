@@ -16,14 +16,26 @@ export default class MapViewContainer extends React.Component {
         this.handleWheel = this.handleWheel.bind(this);
     }
 
-    state = {
-        view: {
+    static propTypes = {
+        view: React.PropTypes.shape({
             /* Pixel-space coordinate to center map on */
+            x: React.PropTypes.number.isRequired,
+            y: React.PropTypes.number.isRequired,
+            /* Zoom */
+            zoom: React.PropTypes.number.isRequired
+        }).isRequired,
+        onViewChange: React.PropTypes.func.isRequired
+    };
+
+    static defaultProps = {
+        view: {
             x: 0,
             y: 0,
-            /* Zoom */
             zoom: 0
-        },
+        }
+    };
+
+    state = {
         dragging: false,
         pinching: false
     };
@@ -52,7 +64,7 @@ export default class MapViewContainer extends React.Component {
      * @param container
      * @returns {{x, y}|*}
      */
-    containerToMap(containerPosition, mapCenter = this.state.view, container = this.refs.container) {
+    containerToMap(containerPosition, mapCenter = this.props.view, container = this.refs.container) {
         let dimensions = {x: container.offsetWidth, y: container.offsetHeight};
         return VectorUtil.add(mapCenter, VectorUtil.subtract(containerPosition, VectorUtil.divide(dimensions, 2)));
     }
@@ -65,7 +77,7 @@ export default class MapViewContainer extends React.Component {
      * @param toZoom
      * @returns {{x, y}|*}
      */
-    positionAtZoom({x = 0, y = 0} = {}, fromZoom = this.state.view.zoom, toZoom = this.state.view.zoom) {
+    positionAtZoom({x = 0, y = 0} = {}, fromZoom = this.props.view.zoom, toZoom = this.props.view.zoom) {
         let zoomLevelDifference = Math.floor(toZoom) - Math.floor(fromZoom);
         return VectorUtil.multiply({x, y}, Math.pow(2, zoomLevelDifference));
     }
@@ -74,9 +86,9 @@ export default class MapViewContainer extends React.Component {
         this.setState({
             dragging: true,
             startView: {
-                x: this.state.view.x,
-                y: this.state.view.y,
-                zoom: this.state.view.zoom
+                x: this.props.view.x,
+                y: this.props.view.y,
+                zoom: this.props.view.zoom
             },
             startPointer: {
                 x: pointer.x,
@@ -101,9 +113,9 @@ export default class MapViewContainer extends React.Component {
         this.setState({
             pinching: true,
             startView: {
-                x: this.state.view.x,
-                y: this.state.view.y,
-                zoom: this.state.view.zoom
+                x: this.props.view.x,
+                y: this.props.view.y,
+                zoom: this.props.view.zoom
             },
             startPointer: VectorUtil.divide(VectorUtil.add(pointers[0], pointers[1]), 2),
             endPointer: VectorUtil.divide(VectorUtil.add(pointers[0], pointers[1]), 2),
@@ -125,7 +137,7 @@ export default class MapViewContainer extends React.Component {
 
     stopPinching() {
         let startZoom = this.state.startView.zoom;
-        let newZoom = this.state.view.zoom;
+        let newZoom = this.props.view.zoom;
         let center = this.state.endPointer;
         if (startZoom < newZoom) {
             newZoom = Math.ceil(newZoom);
@@ -139,10 +151,8 @@ export default class MapViewContainer extends React.Component {
         });
     }
 
-    centerOn({x = 0, y = 0} = {}, zoom = this.state.view.zoom) {
-        this.setState({
-            view: {x, y, zoom}
-        });
+    centerOn({x = 0, y = 0} = {}, zoom = this.props.view.zoom) {
+        this.props.onViewChange({x, y, zoom});
     }
 
     handleTouchStart(event) {
@@ -197,14 +207,14 @@ export default class MapViewContainer extends React.Component {
     handleWheel(event) {
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
-        let oldZoom = this.state.view.zoom;
-        let newZoom = this.state.view.zoom;
-        if (event.deltaY < 0 && this.state.view.zoom < MapHelper.maxZoom) {
+        let oldZoom = this.props.view.zoom;
+        let newZoom = this.props.view.zoom;
+        if (event.deltaY < 0 && this.props.view.zoom < MapHelper.maxZoom) {
             newZoom += 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom);
-        } else if (event.deltaY > 0 && this.state.view.zoom > MapHelper.minZoom) {
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom);
+        } else if (event.deltaY > 0 && this.props.view.zoom > MapHelper.minZoom) {
             newZoom -= 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom);
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom);
         }
     }
 
@@ -219,10 +229,10 @@ export default class MapViewContainer extends React.Component {
             onMouseUp={this.handleMouseUp}
             ref="container">
             <MapView
-                x={this.state.view.x}
-                y={this.state.view.y}
-                zoom={Math.floor(this.state.view.zoom)}
-                scale={1 + this.state.view.zoom - Math.floor(this.state.view.zoom)}/>
+                x={this.props.view.x}
+                y={this.props.view.y}
+                zoomLevel={Math.floor(this.props.view.zoom)}
+                scale={1 + this.props.view.zoom - Math.floor(this.props.view.zoom)}/>
         </div>;
     }
 };

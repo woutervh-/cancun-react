@@ -18,7 +18,7 @@ export default class MapView extends React.Component {
     static propTypes = {
         x: React.PropTypes.number.isRequired,
         y: React.PropTypes.number.isRequired,
-        zoom: React.PropTypes.number.isRequired,
+        zoomLevel: React.PropTypes.number.isRequired,
         scale: React.PropTypes.number.isRequired
     };
 
@@ -64,7 +64,7 @@ export default class MapView extends React.Component {
         for (let i = 0; i < endTile.x - startTile.x; i++) {
             for (let j = 0; j < endTile.y - startTile.y; j++) {
                 tiles.push({
-                    url: MapHelper.getTileUrl(startTile.x + i, startTile.y + j, this.props.zoom),
+                    url: MapHelper.getTileUrl(startTile.x + i, startTile.y + j, this.props.zoomLevel),
                     left: MapHelper.tileWidth * i + offset.x,
                     top: MapHelper.tileHeight * j + offset.y,
                     width: MapHelper.tileWidth,
