@@ -1,10 +1,9 @@
-import MapHelper from '../lib/MapHelper.js';
+import MapHelper from './MapHelper.js';
 import MapView from './MapView.jsx';
-import MathUtil from '../lib/MathUtil.js';
-import VectorUtil from '../lib/VectorUtil.js';
+import VectorUtil from './VectorUtil.js';
 import React from 'react';
 
-export default class MapViewContainer extends React.Component {
+export default class MapViewController extends React.Component {
     constructor() {
         super();
         this.handleTouchStart = this.handleTouchStart.bind(this);
@@ -24,7 +23,8 @@ export default class MapViewContainer extends React.Component {
             /* Zoom */
             zoom: React.PropTypes.number.isRequired
         }).isRequired,
-        onViewChange: React.PropTypes.func.isRequired
+        onViewChange: React.PropTypes.func.isRequired,
+        onLongViewChange: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
@@ -104,6 +104,7 @@ export default class MapViewContainer extends React.Component {
     }
 
     stopDragging() {
+        this.centerOn({x: this.props.view.x, y: this.props.view.y}, this.props.view.zoom, true);
         this.setState({
             dragging: false
         });
@@ -141,18 +142,22 @@ export default class MapViewContainer extends React.Component {
         let center = this.state.endPointer;
         if (startZoom < newZoom) {
             newZoom = Math.ceil(newZoom);
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), 0.5), newZoom);
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), 0.5), newZoom, true);
         } else if (startZoom > newZoom) {
             newZoom = Math.floor(newZoom);
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), -1), newZoom);
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), -1), newZoom, true);
         }
         this.setState({
             pinching: false
         });
     }
 
-    centerOn({x = 0, y = 0} = {}, zoom = this.props.view.zoom) {
-        this.props.onViewChange({x, y, zoom});
+    centerOn({x = 0, y = 0} = {}, zoom = this.props.view.zoom, sendLongViewChange = false) {
+        if (sendLongViewChange) {
+            this.props.onLongViewChange({x, y, zoom});
+        } else {
+            this.props.onViewChange({x, y, zoom});
+        }
     }
 
     handleTouchStart(event) {
@@ -211,10 +216,10 @@ export default class MapViewContainer extends React.Component {
         let newZoom = this.props.view.zoom;
         if (event.deltaY < 0 && this.props.view.zoom < MapHelper.maxZoom) {
             newZoom += 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom);
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom, true);
         } else if (event.deltaY > 0 && this.props.view.zoom > MapHelper.minZoom) {
             newZoom -= 1;
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom);
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom, true);
         }
     }
 

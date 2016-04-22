@@ -1,8 +1,7 @@
 import {AppBar, IconMenu, Layout, MenuDivider, MenuItem, Panel} from 'react-toolbox';
-import MapHelper from '../lib/MapHelper.js';
+import MapHelper from './MapHelper.js';
 import MapView from './MapView.jsx';
 import MapViewContainer from './MapViewContainer.jsx';
-import MathUtil from '../lib/MathUtil.js';
 import React from 'react';
 import SearchBar from './SearchBar.jsx';
 import style from './style.scss';
@@ -11,11 +10,11 @@ export default class App extends React.Component {
     constructor() {
         super();
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
-        this.handleViewChange = this.handleViewChange.bind(this);
+        this.handleLongViewChange = this.handleLongViewChange.bind(this);
     }
 
     state = {
-        view: {
+        longView: {
             x: 0,
             y: 0,
             zoom: 0
@@ -29,7 +28,7 @@ export default class App extends React.Component {
         }
     }
 
-    handleViewChange(view) {
+    handleLongViewChange(view) {
         this.setState({view});
     }
 
@@ -44,7 +43,7 @@ export default class App extends React.Component {
                 </IconMenu>
                 <SearchBar onSubmit={this.handleSearchSubmit}/>
             </AppBar>
-            <MapViewContainer view={this.state.view} onViewChange={this.handleViewChange}/>
+            <MapViewContainer onLongViewChange={this.handleLongViewChange}/>
         </span>;
     }
 };

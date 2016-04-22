@@ -1,5 +1,5 @@
 import Group from './Group.jsx';
-import ImageFrontier from '../../lib/canvas/ImageFrontier.js';
+import ImageFrontier from './ImageFrontier.js';
 import Picture from './Picture.jsx';
 import React from 'react';
 import Rectangle from './Rectangle.jsx';

@@ -1,11 +1,9 @@
 import Canvas from './canvas/Canvas.jsx';
-import MapHelper from '../lib/MapHelper.js';
+import MapHelper from './MapHelper.js';
 import Picture from './canvas/Picture.jsx';
 import React from 'react';
 import Rectangle from './canvas/Rectangle.jsx';
 import Scale from './canvas/Scale.jsx';
-import Transform from './canvas/Transform.jsx';
-import Translate from './canvas/Translate.jsx';
 
 export default class MapView extends React.Component {
     constructor() {
