@@ -87,7 +87,7 @@ export default class MapView extends React.Component {
 
         let cachedTiles = [];
         for (let i = 0; i < this.props.zoomLevel; i++) {
-            cachedTiles = cachedTiles.concat(this.generateTilesList(topLeft, i - this.props.zoomLevel));
+            cachedTiles = this.generateTilesList(topLeft, i - this.props.zoomLevel).concat(cachedTiles);
         }
 
         let preloadTiles = [];
@@ -112,7 +112,6 @@ export default class MapView extends React.Component {
             return adr - bdr;
         };
         tiles.sort(byDistanceFromCenter);
-        cachedTiles.sort(byDistanceFromCenter);
         preloadTiles.sort(byDistanceFromCenter);
 
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
