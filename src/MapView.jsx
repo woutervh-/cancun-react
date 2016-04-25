@@ -115,7 +115,7 @@ export default class MapView extends React.Component {
         cachedTiles.sort(byDistanceFromCenter);
         preloadTiles.sort(byDistanceFromCenter);
 
-        return <Canvas ref="canvas" width={this.state.width} height={this.state.height} tabIndex={0}>
+        return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
             <Scale scaleWidth={this.props.scale} scaleHeight={this.props.scale}>
                 <Composition type="destination-over">
                     {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}

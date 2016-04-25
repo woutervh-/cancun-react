@@ -108,3 +108,10 @@ body {
   display: inline-block;
   vertical-align: top;
 }
+
+.unselectable {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}

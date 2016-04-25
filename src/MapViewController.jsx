@@ -2,6 +2,7 @@ import MapHelper from './MapHelper.js';
 import MapView from './MapView.jsx';
 import VectorUtil from './VectorUtil.js';
 import React from 'react';
+import style from './style.scss';
 
 export default class MapViewController extends React.Component {
     constructor() {
@@ -194,6 +195,7 @@ export default class MapViewController extends React.Component {
     handleMouseDown(event) {
         if (event.button == 0 && !this.state.dragging && !this.state.pinching) {
             this.startDragging({x: event.clientX, y: event.clientY});
+            document.body.classList.add(style['unselectable']);
         }
     }
 
@@ -206,6 +208,7 @@ export default class MapViewController extends React.Component {
     handleMouseUp() {
         if (this.state.dragging) {
             this.stopDragging();
+            document.body.classList.remove(style['unselectable']);
         }
     }
 
@@ -224,15 +227,14 @@ export default class MapViewController extends React.Component {
     }
 
     render() {
-        return <div
-            onWheel={this.handleWheel}
-            onTouchStart={this.handleTouchStart}
-            onTouchMove={this.handleTouchMove}
-            onTouchEnd={this.handleTouchEnd}
-            onMouseDown={this.handleMouseDown}
-            onMouseMove={this.handleMouseMove}
-            onMouseUp={this.handleMouseUp}
-            ref="container">
+        return <div onWheel={this.handleWheel}
+                    onTouchStart={this.handleTouchStart}
+                    onTouchMove={this.handleTouchMove}
+                    onTouchEnd={this.handleTouchEnd}
+                    onMouseDown={this.handleMouseDown}
+                    onMouseMove={this.handleMouseMove}
+                    onMouseUp={this.handleMouseUp}
+                    ref="container">
             <MapView
                 x={this.props.view.x}
                 y={this.props.view.y}
