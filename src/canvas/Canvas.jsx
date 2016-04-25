@@ -1,3 +1,4 @@
+import Composition from './Composition.jsx';
 import Group from './Group.jsx';
 import ImageFrontier from './ImageFrontier.js';
 import Picture from './Picture.jsx';
@@ -52,10 +53,10 @@ export default class Canvas extends React.Component {
     }
 
     drawPicture(context, picture) {
-        if (this.props.imageFrontier.isLoaded(picture.props.source)) {
+        if (this.props.imageFrontier.isLoaded(picture.props.source) && picture.props.display) {
             let image = this.props.imageFrontier.getLoadedImage(picture.props.source);
             context.drawImage(image, picture.props.left, picture.props.top, picture.props.width, picture.props.height);
-        } else {
+        } else if (!picture.props.forceFromCache) {
             this.props.imageFrontier.fetch(picture.props.source);
             this.props.imageFrontier.setCallback(picture.props.source, () => this.setState({count: this.state.count + 1}));
         }
@@ -84,6 +85,9 @@ export default class Canvas extends React.Component {
                     break;
                 case Transform:
                     this.drawTransform(context, child);
+                    break;
+                case Composition:
+                    this.drawComposition(context, child);
                     break;
                 default:
                     console.warn('Unknown child type for Canvas: ' + child.type);
@@ -122,6 +126,13 @@ export default class Canvas extends React.Component {
         }
         this.drawGroup(context, transform);
         context.restore();
+    }
+
+    drawComposition(context, composition) {
+        let oldCompositeOperation = context.globalCompositeOperation;
+        context.globalCompositeOperation = composition.props.type;
+        this.drawGroup(context, composition);
+        context.globalCompositeOperation = oldCompositeOperation;
     }
 
     render() {
