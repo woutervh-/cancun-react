@@ -24,11 +24,12 @@ export default class App extends React.Component {
 
     handleSearchSubmit(input) {
         if (!!input) {
-            let center = MapHelper.project(input, Math.floor(this.state.view.zoom));
+            let toZoom = Math.max(12, Math.floor(this.state.view.zoom));
+            let center = MapHelper.project(input, toZoom);
             this.setState({view: {
                 x: center.x,
                 y: center.y,
-                zoom: this.state.view.zoom
+                zoom: toZoom
             }});
         }
     }
