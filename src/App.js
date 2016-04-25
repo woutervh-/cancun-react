@@ -1,5 +1,6 @@
 import AppBarWrapper from './AppBarWrapper';
-import {MapHelper, MapViewController} from './map';
+import {MapHelper, MapLayer, MapView, MapViewController} from './map';
+import {Picture} from './map/canvas';
 import React from 'react';
 import SearchBar from './SearchBar';
 import style from './style';
@@ -46,7 +47,16 @@ export default class App extends React.Component {
     render() {
         return <span>
             <AppBarWrapper onSearchSubmit={this.handleSearchSubmit}/>
-            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange}/>
+            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange}>
+                <MapView x={this.state.view.x}
+                         y={this.state.view.y}
+                         zoomLevel={Math.floor(this.state.view.zoom)}
+                         scale={1 + this.state.view.zoom - Math.floor(this.state.view.zoom)}>
+                    <MapLayer latitude={52.315871} longitude={4.953673}>
+                        <Picture source="images/marker-search.svg" left={150} top={150} width={20} height={30}/>
+                    </MapLayer>
+                </MapView>
+            </MapViewController>
         </span>;
     }
 };

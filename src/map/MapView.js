@@ -1,6 +1,8 @@
 import MapHelper from './MapHelper';
+import MapLayer from './MapLayer';
 import React from 'react';
-import {Canvas, Composition, Picture, Rectangle, Scale} from './canvas';
+import {Canvas, Composition, Picture, Rectangle, Scale, Translate} from './canvas';
+import VectorUtil from '../VectorUtil';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -73,6 +75,19 @@ export default class MapView extends React.Component {
         return tiles;
     }
 
+    transformLayer(layer) {
+        let center = MapHelper.project(layer.props, this.props.zoomLevel);
+        let offset = VectorUtil.subtract(center, this.props);
+
+        console.log(center);
+        console.log(this.props);
+        console.log(offset);
+
+        return <Translate>
+            {layer.props.children}
+        </Translate>;
+    }
+
     render() {
         let topLeft = {
             x: this.props.x - this.state.width / 2 / this.props.scale,
@@ -113,7 +128,17 @@ export default class MapView extends React.Component {
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
             <Scale scaleWidth={this.props.scale} scaleHeight={this.props.scale}>
                 <Composition type="destination-over">
-                    {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
+                    <Composition type="source-over">
+                        {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
+                        {React.Children.map(this.props.children, child => {
+                            switch (child.type) {
+                                case MapLayer:
+                                    return this.transformLayer(child);
+                                default:
+                                    return child;
+                            }
+                        })}
+                    </Composition>
                     {cachedTiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height} forceFromCache={true}/>)}
                     {preloadTiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height} display={false}/>)}
                 </Composition>

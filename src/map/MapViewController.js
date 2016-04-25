@@ -235,11 +235,7 @@ export default class MapViewController extends React.Component {
                     onMouseMove={this.handleMouseMove}
                     onMouseUp={this.handleMouseUp}
                     ref="container">
-            <MapView
-                x={this.props.view.x}
-                y={this.props.view.y}
-                zoomLevel={Math.floor(this.props.view.zoom)}
-                scale={1 + this.props.view.zoom - Math.floor(this.props.view.zoom)}/>
+            {this.props.children}
         </div>;
     }
 };
