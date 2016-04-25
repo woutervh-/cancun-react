@@ -1,10 +1,9 @@
-import AppBarWrapper from './AppBarWrapper.jsx';
-import MapHelper from './MapHelper.js';
-import MapViewController from './MapViewController.jsx';
+import AppBarWrapper from './AppBarWrapper';
+import {MapHelper, MapViewController} from './map';
 import React from 'react';
-import SearchBar from './SearchBar.jsx';
-import style from './style.scss';
-import VectorUtil from './VectorUtil.js';
+import SearchBar from './SearchBar';
+import style from './style';
+import VectorUtil from './VectorUtil';
 
 export default class App extends React.Component {
     constructor() {
@@ -26,11 +25,13 @@ export default class App extends React.Component {
         if (!!input) {
             let toZoom = Math.max(12, Math.floor(this.state.view.zoom));
             let center = MapHelper.project(input, toZoom);
-            this.setState({view: {
-                x: center.x,
-                y: center.y,
-                zoom: toZoom
-            }});
+            this.setState({
+                view: {
+                    x: center.x,
+                    y: center.y,
+                    zoom: toZoom
+                }
+            });
         }
     }
 

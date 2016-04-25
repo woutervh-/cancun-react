@@ -1,13 +1,13 @@
-import Composition from './Composition.jsx';
-import Group from './Group.jsx';
-import ImageFrontier from './ImageFrontier.js';
-import Picture from './Picture.jsx';
+import Composition from './Composition';
+import Group from './Group';
+import ImageFrontier from './ImageFrontier';
+import Picture from './Picture';
 import React from 'react';
-import Rectangle from './Rectangle.jsx';
-import Scale from './Scale.jsx';
-import Rotate from './Rotate.jsx';
-import Translate from './Translate.jsx';
-import Transform from './Transform.jsx';
+import Rectangle from './Rectangle';
+import Rotate from './Rotate';
+import Scale from './Scale';
+import Transform from './Transform';
+import Translate from './Translate';
 
 export default class Canvas extends React.Component {
     constructor() {

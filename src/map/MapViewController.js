@@ -1,8 +1,8 @@
-import MapHelper from './MapHelper.js';
-import MapView from './MapView.jsx';
-import VectorUtil from './VectorUtil.js';
+import MapHelper from './MapHelper';
+import MapView from './MapView';
+import VectorUtil from '../VectorUtil';
 import React from 'react';
-import style from './style.scss';
+import style from './style';
 
 export default class MapViewController extends React.Component {
     constructor() {

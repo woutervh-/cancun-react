@@ -1,8 +1,8 @@
 import {IconButton, Input, List, ListItem} from 'react-toolbox';
 import classNames from 'classnames';
-import GeocodingHelper from './GeocodingHelper.js';
+import GeocodingHelper from './GeocodingHelper';
 import React from 'react';
-import style from './style.scss';
+import style from './style';
 
 export default class SearchBar extends React.Component {
     constructor() {

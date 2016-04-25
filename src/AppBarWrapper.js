@@ -1,9 +1,9 @@
 import {AppBar, IconMenu, MenuDivider, MenuItem} from 'react-toolbox';
-import MapHelper from './MapHelper.js';
-import MapViewController from './MapViewController.jsx';
+import MapHelper from './map/MapHelper';
+import MapViewController from './map/MapViewController';
 import React from 'react';
-import SearchBar from './SearchBar.jsx';
-import style from './style.scss';
+import SearchBar from './SearchBar';
+import style from './style';
 
 export default class AppBarWrapper extends React.Component {
     constructor() {
