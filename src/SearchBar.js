@@ -21,6 +21,7 @@ export default class SearchBar extends React.Component {
 
     static propTypes = {
         onSubmit: React.PropTypes.func.isRequired,
+        onClear: React.PropTypes.func.isRequired,
         sendRequestTimeout: React.PropTypes.number.isRequired,
         menuCloseDelay: React.PropTypes.number.isRequired
     };
@@ -92,6 +93,7 @@ export default class SearchBar extends React.Component {
 
     handleClearClick() {
         this.setState({query: '', results: [], error: null, index: -1});
+        this.props.onClear();
     }
 
     handleSearchClick() {

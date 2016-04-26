@@ -10,6 +10,7 @@ export default class App extends React.Component {
     constructor() {
         super();
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+        this.handleSearchClear = this.handleSearchClear.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLongViewChange = this.handleLongViewChange.bind(this);
     }
@@ -19,6 +20,9 @@ export default class App extends React.Component {
             x: 0,
             y: 0,
             zoom: 0
+        },
+        searchMarker: {
+            show: false
         }
     };
 
@@ -31,9 +35,20 @@ export default class App extends React.Component {
                     x: center.x,
                     y: center.y,
                     zoom: toZoom
+                },
+                searchMarker: {
+                    show: true,
+                    location: {
+                        latitude: input.latitude,
+                        longitude: input.longitude
+                    }
                 }
             });
         }
+    }
+
+    handleSearchClear() {
+        this.setState({searchMarker: {show: false}});
     }
 
     handleViewChange(view) {
@@ -51,13 +66,14 @@ export default class App extends React.Component {
 
         return <span>
             <AppBarWrapper onSearchSubmit={this.handleSearchSubmit}
-                           onPlusClick={() => this.setState({view: {x: this.state.view.x, y:this.state.view.y, zoom: this.state.view.zoom+0.25}})}
-                           onMinusClick={() => this.setState({view: {x: this.state.view.x, y:this.state.view.y, zoom: this.state.view.zoom-0.25}})}/>
+                           onSearchClear={this.handleSearchClear}/>
             <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
-                    <MapLayer latitude={52.373166} longitude={4.89066}>
-                        <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
-                    </MapLayer>
+                    {this.state.searchMarker.show ?
+                        <MapLayer {...this.state.searchMarker.location}>
+                            <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
+                        </MapLayer>
+                        : null }
                 </MapView>
             </MapViewController>
         </span>;

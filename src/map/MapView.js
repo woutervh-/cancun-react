@@ -26,7 +26,7 @@ export default class MapView extends React.Component {
         scale: 1,
         preloadHorizontal: 0.5,
         preloadVertical: 0.5,
-        preloadLevels: 1
+        preloadLevels: 0
     };
 
     state = {

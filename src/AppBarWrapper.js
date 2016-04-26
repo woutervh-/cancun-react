@@ -13,12 +13,13 @@ export default class AppBarWrapper extends React.Component {
 
     static propTypes = {
         onSearchSubmit: React.PropTypes.func.isRequired,
-        onPlusClick: React.PropTypes.func,
-        onMinusClick: React.PropTypes.func
+        onSearchClear: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
         onSearchSubmit: () => {
+        },
+        onSearchClear: () => {
         }
     };
 
@@ -34,7 +35,7 @@ export default class AppBarWrapper extends React.Component {
                 <MenuDivider />
                 <MenuItem value='help' caption='Favorite'/>
             </IconMenu>
-            <SearchBar onSubmit={this.props.onSearchSubmit}/>
+            <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
         </AppBar>;
     }
 };
