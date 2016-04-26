@@ -25,7 +25,8 @@ export default class MapViewController extends React.Component {
             zoom: React.PropTypes.number.isRequired
         }).isRequired,
         onViewChange: React.PropTypes.func.isRequired,
-        onLongViewChange: React.PropTypes.func.isRequired
+        onLongViewChange: React.PropTypes.func.isRequired,
+        pinchZoomJumpThreshold: React.PropTypes.number.isRequired
     };
 
     static defaultProps = {
@@ -33,7 +34,8 @@ export default class MapViewController extends React.Component {
             x: 0,
             y: 0,
             zoom: 0
-        }
+        },
+        pinchZoomJumpThreshold: 0.2
     };
 
     state = {
@@ -129,9 +131,9 @@ export default class MapViewController extends React.Component {
         let center = VectorUtil.divide(VectorUtil.add(pointers[0], pointers[1]), 2);
         let distance = VectorUtil.distance(pointers[0], pointers[1]);
         let deltaCenter = VectorUtil.subtract(center, this.state.startPointer);
-        let scale = distance / this.state.startDistance;
         let oldZoom = this.state.startView.zoom;
-        let newZoom = Math.min(MapHelper.maxZoom, Math.max(MapHelper.minZoom, oldZoom + Math.log2(scale)));
+        let newZoom = Math.min(MapHelper.maxZoom, Math.max(MapHelper.minZoom, oldZoom + Math.log2(distance / this.state.startDistance)));
+        let scale = Math.pow(2, newZoom - oldZoom);
         let newCenter = VectorUtil.subtract(VectorUtil.lerp(this.state.startView, center, (scale - 1) / scale), deltaCenter);
         this.setState({endPointer: center});
         this.centerOn(this.positionAtZoom(newCenter, oldZoom, newZoom), newZoom);
@@ -142,11 +144,11 @@ export default class MapViewController extends React.Component {
         let newZoom = this.props.view.zoom;
         let center = this.state.endPointer;
         if (startZoom < newZoom) {
-            newZoom = Math.min(MapHelper.maxZoom, Math.ceil(newZoom));
+            newZoom = newZoom - startZoom > this.props.pinchZoomJumpThreshold ? Math.ceil(newZoom) : Math.floor(newZoom);
+            newZoom = Math.min(MapHelper.maxZoom, newZoom);
         } else if (startZoom > newZoom) {
-            newZoom = Math.max(MapHelper.minZoom, Math.floor(newZoom));
-        } else {
-            return;
+            newZoom = startZoom - newZoom > this.props.pinchZoomJumpThreshold ? Math.floor(newZoom) : Math.ceil(newZoom);
+            newZoom = Math.max(MapHelper.minZoom, newZoom);
         }
         let scale = Math.pow(2, newZoom - startZoom);
         let deltaCenter = VectorUtil.subtract(center, this.state.startPointer);
@@ -247,6 +249,9 @@ export default class MapViewController extends React.Component {
                     onMouseUp={this.handleMouseUp}
                     ref="container">
             {this.props.children}
+            <pre style={{position: 'absolute', top: '4em', left: 0}}>
+                {JSON.stringify(this.state.debug, null, 2)}
+            </pre>
         </div>;
     }
 };
