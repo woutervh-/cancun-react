@@ -83,13 +83,13 @@ export default class MapViewController extends React.Component {
         return VectorUtil.multiply({x, y}, Math.pow(2, zoomLevelDifference));
     }
 
-    startDragging(pointer) {
+    startDragging(pointer, startView = this.props.view) {
         this.setState({
             dragging: true,
             startView: {
-                x: this.props.view.x,
-                y: this.props.view.y,
-                zoom: this.props.view.zoom
+                x: startView.x,
+                y: startView.y,
+                zoom: startView.zoom
             },
             startPointer: {
                 x: pointer.x,
@@ -137,20 +137,28 @@ export default class MapViewController extends React.Component {
         this.centerOn(this.positionAtZoom(newCenter, oldZoom, newZoom), newZoom);
     }
 
-    stopPinching() {
+    stopPinching(callback) {
         let startZoom = this.state.startView.zoom;
         let newZoom = this.props.view.zoom;
         let center = this.state.endPointer;
         if (startZoom < newZoom) {
-            newZoom = Math.ceil(newZoom);
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), 0.5), newZoom, true);
+            newZoom = Math.min(MapHelper.maxZoom, Math.ceil(newZoom));
         } else if (startZoom > newZoom) {
-            newZoom = Math.floor(newZoom);
-            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.state.startView, startZoom, newZoom), this.positionAtZoom(center, startZoom, newZoom), -1), newZoom, true);
+            newZoom = Math.max(MapHelper.minZoom, Math.floor(newZoom));
+        } else {
+            return;
         }
+        let scale = Math.pow(2, newZoom - startZoom);
+        let deltaCenter = VectorUtil.subtract(center, this.state.startPointer);
+        let newCenter = VectorUtil.subtract(VectorUtil.lerp(this.state.startView, center, (scale - 1) / scale), deltaCenter);
+        let newCenterZoomed = this.positionAtZoom(newCenter, startZoom, newZoom);
+        this.centerOn(newCenterZoomed, newZoom, true);
         this.setState({
             pinching: false
         });
+        if (!!callback) {
+            callback({x: newCenterZoomed.x, y: newCenterZoomed.y, zoom: newZoom});
+        }
     }
 
     centerOn({x = 0, y = 0} = {}, zoom = this.props.view.zoom, sendLongViewChange = false) {
@@ -187,8 +195,11 @@ export default class MapViewController extends React.Component {
     handleTouchEnd(event) {
         if (event.touches.length == 0 && this.state.dragging) {
             this.stopDragging();
+        } else if (event.touches.length == 0 && this.state.pinching) {
+            this.stopPinching();
         } else if (event.touches.length == 1 && this.state.pinching) {
             this.stopPinching();
+            setImmediate(() => this.handleTouchStart(event));
         }
     }
 

@@ -77,14 +77,14 @@ export default class MapView extends React.Component {
 
     transformLayer(layer) {
         let center = MapHelper.project(layer.props, this.props.zoomLevel);
-        let offset = VectorUtil.subtract(center, this.props);
-
-        console.log(center);
-        console.log(this.props);
-        console.log(offset);
-
-        return <Translate>
-            {layer.props.children}
+        let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
+            x: this.state.width / 2 / this.props.scale,
+            y: this.state.height / 2 / this.props.scale
+        });
+        return <Translate {...offset}>
+            <Scale scaleWidth={1 / this.props.scale} scaleHeight={1 / this.props.scale}>
+                {layer.props.children}
+            </Scale>
         </Translate>;
     }
 

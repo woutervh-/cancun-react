@@ -64,34 +64,36 @@ export default class Canvas extends React.Component {
 
     drawGroup(context, group) {
         React.Children.forEach(group.props.children, child => {
-            switch (child.type) {
-                case Rectangle:
-                    this.drawRectangle(context, child);
-                    break;
-                case Picture:
-                    this.drawPicture(context, child);
-                    break;
-                case Group:
-                    this.drawGroup(context, child);
-                    break;
-                case Scale:
-                    this.drawScale(context, child);
-                    break;
-                case Rotate:
-                    this.drawRotate(context, child);
-                    break;
-                case Translate:
-                    this.drawTranslate(context, child);
-                    break;
-                case Transform:
-                    this.drawTransform(context, child);
-                    break;
-                case Composition:
-                    this.drawComposition(context, child);
-                    break;
-                default:
-                    console.warn('Unknown child type for Canvas: ' + child.type);
-                    break;
+            if (!!child) {
+                switch (child.type) {
+                    case Rectangle:
+                        this.drawRectangle(context, child);
+                        break;
+                    case Picture:
+                        this.drawPicture(context, child);
+                        break;
+                    case Group:
+                        this.drawGroup(context, child);
+                        break;
+                    case Scale:
+                        this.drawScale(context, child);
+                        break;
+                    case Rotate:
+                        this.drawRotate(context, child);
+                        break;
+                    case Translate:
+                        this.drawTranslate(context, child);
+                        break;
+                    case Transform:
+                        this.drawTransform(context, child);
+                        break;
+                    case Composition:
+                        this.drawComposition(context, child);
+                        break;
+                    default:
+                        console.warn('Unknown child type for Canvas: ' + child.type);
+                        break;
+                }
             }
         });
     }
