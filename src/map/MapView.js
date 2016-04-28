@@ -26,7 +26,7 @@ export default class MapView extends React.Component {
         scale: 1,
         preloadHorizontal: 0.5,
         preloadVertical: 0.5,
-        preloadLevels: 0
+        preloadLevels: 1
     };
 
     state = {
@@ -128,17 +128,15 @@ export default class MapView extends React.Component {
         return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
             <Scale scaleWidth={this.props.scale} scaleHeight={this.props.scale}>
                 <Composition type="destination-over">
-                    <Composition type="source-over">
-                        {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
-                        {React.Children.map(this.props.children, child => {
-                            switch (child.type) {
-                                case MapLayer:
-                                    return this.transformLayer(child);
-                                default:
-                                    return child;
-                            }
-                        })}
-                    </Composition>
+                    {React.Children.map(this.props.children, child => {
+                        switch (child.type) {
+                            case MapLayer:
+                                return this.transformLayer(child);
+                            default:
+                                return child;
+                        }
+                    })}
+                    {tiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height}/>)}
                     {cachedTiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height} forceFromCache={true}/>)}
                     {preloadTiles.map((tile, index) => <Picture key={index} source={tile.url} left={tile.left} top={tile.top} width={tile.width} height={tile.height} display={false}/>)}
                 </Composition>
