@@ -1,10 +1,18 @@
 //const apiKey = '8havdz9a6s5theax5zk334ge';
 const apiKey = 'wqz3ad2zvhnfsnwpddk6wgqq';
 const baseUrls = [
-    'https://a.api.tomtom.com/lbs/map/3/basic',
-    'https://b.api.tomtom.com/lbs/map/3/basic',
-    'https://c.api.tomtom.com/lbs/map/3/basic',
-    'https://d.api.tomtom.com/lbs/map/3/basic'
+    'http://a.wouter-lbs:8000/lbs/map/3/basic',
+    'http://b.wouter-lbs:8000/lbs/map/3/basic',
+    'http://c.wouter-lbs:8000/lbs/map/3/basic',
+    'http://d.wouter-lbs:8000/lbs/map/3/basic',
+    'http://e.wouter-lbs:8000/lbs/map/3/basic',
+    'http://f.wouter-lbs:8000/lbs/map/3/basic',
+    'http://g.wouter-lbs:8000/lbs/map/3/basic',
+    'http://h.wouter-lbs:8000/lbs/map/3/basic',
+    'http://i.wouter-lbs:8000/lbs/map/3/basic',
+    'http://j.wouter-lbs:8000/lbs/map/3/basic',
+    'http://k.wouter-lbs:8000/lbs/map/3/basic',
+    'http://l.wouter-lbs:8000/lbs/map/3/basic'
 ];
 const minZoom = 0;
 const maxZoom = 18;
