@@ -1,5 +1,12 @@
 $suggestions-background-color: $color-white !default;
 $suggestions-fade-duration: .2s !default;
+$suggestions-initial-width: 25.6 * $unit !default;
 $suggestions-max-width: 25.6 * $unit !default;
 $suggestions-active-background: $palette-grey-200 !default;
 $suggestions-hover-background: $palette-grey-100 !default;
+
+$top-bar-background-color: $palette-blue-grey-50 !default;
+
+$bottom-bar-background-color: $palette-blue-grey-50 !default;
+
+$button-font-icon-font-size: $unit * 2 !default;

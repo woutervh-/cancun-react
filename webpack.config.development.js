@@ -15,7 +15,7 @@ module.exports = {
         publicPath: '/'
     },
     resolve: {
-        extensions: ['', '.js', '.jsx', '.scss', '.json'],
+        extensions: ['', '.js', '.jsx', '.scss', '.json', '.svg'],
         modulesDirectories: [
             'node_modules',
             path.resolve(__dirname, './node_modules')
@@ -33,6 +33,9 @@ module.exports = {
             }, {
                 test: /\.s?css$/,
                 loader: 'style!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox'
+            }, {
+                test: /\.svg$/,
+                loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0&presets[]=react-hmre!react-svg'
             }
         ]
     },

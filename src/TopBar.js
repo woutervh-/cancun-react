@@ -5,7 +5,7 @@ import React from 'react';
 import SearchBar from './SearchBar';
 import style from './style';
 
-export default class AppBarWrapper extends React.Component {
+export default class TopBar extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
@@ -33,7 +33,7 @@ export default class AppBarWrapper extends React.Component {
                 <MenuItem caption='+' onClick={this.props.onPlusClick}/>
                 <MenuItem caption='-' onClick={this.props.onMinusClick}/>
                 <MenuDivider />
-                <MenuItem value='help' caption='Favorite'/>
+                <MenuItem caption='Drawer' onClick={this.props.onDrawClick}/>
             </IconMenu>
             <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
         </AppBar>;

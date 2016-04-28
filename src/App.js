@@ -1,4 +1,5 @@
-import AppBarWrapper from './AppBarWrapper';
+import TopBar from './TopBar';
+import BottomBar from './BottomBar';
 import {MapHelper, MapLayer, MapView, MapViewController} from './map';
 import {Picture} from './map/canvas';
 import React from 'react';
@@ -23,6 +24,13 @@ export default class App extends React.Component {
         },
         searchMarker: {
             show: false
+        },
+        searchInformation: {
+            name: '',
+            location: {
+                latitude: 0,
+                longitude: 0
+            }
         }
     };
 
@@ -37,7 +45,10 @@ export default class App extends React.Component {
                     zoom: toZoom
                 },
                 searchMarker: {
-                    show: true,
+                    show: true
+                },
+                searchInformation: {
+                    name: input.isCoordinate ? 'Coordinate' : input.location,
                     location: {
                         latitude: input.latitude,
                         longitude: input.longitude
@@ -65,17 +76,19 @@ export default class App extends React.Component {
         let view = VectorUtil.multiply(this.state.view, Math.pow(2, zoomLevel - Math.floor(this.state.view.zoom)));
 
         return <span>
-            <AppBarWrapper onSearchSubmit={this.handleSearchSubmit}
-                           onSearchClear={this.handleSearchClear}/>
+            <TopBar onSearchSubmit={this.handleSearchSubmit}
+                           onSearchClear={this.handleSearchClear}
+                           onDrawClick={this.handleToggle}/>
             <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
                     {this.state.searchMarker.show ?
-                        <MapLayer {...this.state.searchMarker.location}>
+                        <MapLayer {...this.state.searchInformation.location}>
                             <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
                         </MapLayer>
                         : null }
                 </MapView>
             </MapViewController>
+            <BottomBar active={this.state.searchMarker.show} searchInformation={this.state.searchInformation}/>
         </span>;
     }
 };

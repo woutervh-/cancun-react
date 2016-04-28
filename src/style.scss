@@ -64,6 +64,7 @@ body {
   z-index: 1;
   padding-top: 1 * $unit;
   padding-bottom: 1 * $unit;
+  background-color: $top-bar-background-color;
 }
 
 .top-bar > * {
@@ -76,6 +77,7 @@ body {
   box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
   position: absolute;
   opacity: 0;
+  width: $suggestions-initial-width;
   max-width: $suggestions-max-width;
   pointer-events: none;
   transition: opacity $suggestions-fade-duration $animation-curve-default;
@@ -84,6 +86,10 @@ body {
     pointer-events: auto;
     opacity: 1;
   }
+}
+
+.suggestions * {
+  z-index: 500;
 }
 
 .suggestions .active {
@@ -107,4 +113,52 @@ body {
 .search-form > * {
   display: inline-block;
   vertical-align: top;
+}
+
+.bottom-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  padding: 1 * $unit 1 * $unit;
+  color: $color-black;
+  background-color: $bottom-bar-background-color;
+  transition: all $animation-duration $animation-curve-default $animation-duration;
+  pointer-events: auto;
+  box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  &:not(.active) {
+    transform: translateY(100%);
+    box-shadow: none;
+  }
+  &.active {
+    transform: translateY(0%);
+  }
+}
+
+.bottom-bar > * {
+  align-self: center;
+  margin: 0.5 * $unit 0;
+}
+
+.bottom-bar-info {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.bottom-bar-info > * {
+  margin: 0 0.5 * $unit;
+  align-self: center;
+}
+
+.bottom-bar-actions > * {
+  margin: 0 0.5 * $unit;
+}
+
+.button-icon {
+  font-size: $button-font-icon-font-size;
 }
