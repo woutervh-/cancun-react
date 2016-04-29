@@ -14,6 +14,7 @@ export default class App extends React.Component {
         this.handleSearchClear = this.handleSearchClear.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLongViewChange = this.handleLongViewChange.bind(this);
+        this.handleLocationSelect = this.handleLocationSelect.bind(this);
     }
 
     state = {
@@ -58,6 +59,18 @@ export default class App extends React.Component {
         }
     }
 
+    handleLocationSelect(location) {
+        this.setState({
+            searchMarker: {
+                show: true
+            },
+            searchInformation: {
+                name: 'Coordinate',
+                location
+            }
+        });
+    }
+
     handleSearchClear() {
         this.setState({searchMarker: {show: false}});
     }
@@ -77,9 +90,9 @@ export default class App extends React.Component {
 
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
-                           onSearchClear={this.handleSearchClear}
-                           onDrawClick={this.handleToggle}/>
-            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange}>
+                    onSearchClear={this.handleSearchClear}
+                    onDrawClick={this.handleToggle}/>
+            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
                     {this.state.searchMarker.show ?
                         <MapLayer {...this.state.searchInformation.location}>
@@ -88,7 +101,7 @@ export default class App extends React.Component {
                         : null }
                 </MapView>
             </MapViewController>
-            <BottomBar active={this.state.searchMarker.show} searchInformation={this.state.searchInformation}/>
+            <BottomBar onClearClick={this.handleSearchClear} active={this.state.searchMarker.show} searchInformation={this.state.searchInformation}/>
         </span>;
     }
 };

@@ -3,17 +3,20 @@ import MapView from './MapView';
 import VectorUtil from '../VectorUtil';
 import React from 'react';
 import style from './style';
+import Hammer from 'react-hammerjs';
 
 export default class MapViewController extends React.Component {
     constructor() {
         super();
-        this.handleTouchStart = this.handleTouchStart.bind(this);
-        this.handleTouchMove = this.handleTouchMove.bind(this);
-        this.handleTouchEnd = this.handleTouchEnd.bind(this);
-        this.handleMouseDown = this.handleMouseDown.bind(this);
-        this.handleMouseMove = this.handleMouseMove.bind(this);
-        this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
+        this.handlePanStart = this.handlePanStart.bind(this);
+        this.handlePan = this.handlePan.bind(this);
+        this.handlePanEnd = this.handlePanEnd.bind(this);
+        this.handlePinchStart = this.handlePinchStart.bind(this);
+        this.handlePinch = this.handlePinch.bind(this);
+        this.handlePinchEnd = this.handlePinchEnd.bind(this);
+        this.handleDoubleTap = this.handleDoubleTap.bind(this);
+        this.handlePress = this.handlePress.bind(this);
     }
 
     static propTypes = {
@@ -26,6 +29,7 @@ export default class MapViewController extends React.Component {
         }).isRequired,
         onViewChange: React.PropTypes.func.isRequired,
         onLongViewChange: React.PropTypes.func.isRequired,
+        onLocationSelect: React.PropTypes.func.isRequired,
         pinchZoomJumpThreshold: React.PropTypes.number.isRequired
     };
 
@@ -34,6 +38,8 @@ export default class MapViewController extends React.Component {
             x: 0,
             y: 0,
             zoom: 0
+        },
+        onLocationSelect: () => {
         },
         pinchZoomJumpThreshold: 0.2
     };
@@ -171,87 +177,92 @@ export default class MapViewController extends React.Component {
         }
     }
 
-    handleTouchStart(event) {
-        if (event.touches.length == 1 && !this.state.dragging && !this.state.pinching) {
-            this.startDragging({x: event.touches[0].clientX, y: event.touches[0].clientY});
-        } else if (event.touches.length == 2 && !this.state.pinching) {
-            if (this.state.dragging) {
-                this.stopDragging();
-            }
-            let p1 = {x: event.touches[0].clientX, y: event.touches[0].clientY};
-            let p2 = {x: event.touches[1].clientX, y: event.touches[1].clientY};
-            this.startPinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))));
-        }
-    }
-
-    handleTouchMove(event) {
-        if (event.touches.length == 1 && this.state.dragging) {
-            this.updateDragging({x: event.touches[0].clientX, y: event.touches[0].clientY});
-        } else if (event.touches.length == 2 && this.state.pinching) {
-            let p1 = {x: event.touches[0].clientX, y: event.touches[0].clientY};
-            let p2 = {x: event.touches[1].clientX, y: event.touches[1].clientY};
-            this.updatePinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p), this.state.startView)));
-        }
-    }
-
-    handleTouchEnd(event) {
-        if (event.touches.length == 0 && this.state.dragging) {
-            this.stopDragging();
-        } else if (event.touches.length == 0 && this.state.pinching) {
-            this.stopPinching();
-        } else if (event.touches.length == 1 && this.state.pinching) {
-            this.stopPinching();
-            setImmediate(() => this.handleTouchStart(event));
-        }
-    }
-
-    handleMouseDown(event) {
-        if (event.button == 0 && !this.state.dragging && !this.state.pinching) {
-            this.startDragging({x: event.clientX, y: event.clientY});
-            document.body.classList.add(style['unselectable']);
-        }
-    }
-
-    handleMouseMove(event) {
-        if (this.state.dragging) {
-            this.updateDragging({x: event.clientX, y: event.clientY});
-        }
-    }
-
-    handleMouseUp() {
-        if (this.state.dragging) {
-            this.stopDragging();
-            document.body.classList.remove(style['unselectable']);
-        }
-    }
-
     handleWheel(event) {
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
         let oldZoom = this.props.view.zoom;
-        let newZoom = this.props.view.zoom;
         if (event.deltaY < 0 && this.props.view.zoom < MapHelper.maxZoom) {
-            newZoom += 1;
+            let newZoom = this.props.view.zoom + 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom, true);
         } else if (event.deltaY > 0 && this.props.view.zoom > MapHelper.minZoom) {
-            newZoom -= 1;
+            let newZoom = this.props.view.zoom - 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom, true);
         }
     }
 
+    handlePanStart(event) {
+        if (!this.state.dragging && !this.state.pinching) {
+            this.startDragging({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
+            document.body.classList.add(style['unselectable']);
+        }
+    }
+
+    handlePan(event) {
+        if (this.state.dragging) {
+            this.updateDragging({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
+        }
+    }
+
+    handlePanEnd() {
+        if (this.state.dragging) {
+            document.body.classList.remove(style['unselectable']);
+            this.stopDragging();
+        }
+    }
+
+    handlePinchStart(event) {
+        if (this.state.dragging) {
+            this.stopDragging();
+        }
+        let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
+        let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
+        this.startPinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))));
+    }
+
+    handlePinch(event) {
+        if (this.state.pinching) {
+            let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
+            let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
+            this.updatePinching([p1, p2].map(p => this.containerToMap(this.screenToContainer(p), this.state.startView)));
+        }
+    }
+
+    handlePinchEnd() {
+        if (this.state.pinching) {
+            this.stopPinching();
+        }
+    }
+
+    handleDoubleTap(event) {
+        let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
+        let center = this.containerToMap(pointer);
+        let oldZoom = this.props.view.zoom;
+        if (this.props.view.zoom < MapHelper.maxZoom) {
+            let newZoom = this.props.view.zoom + 1;
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom, true);
+        }
+    }
+
+    handlePress(event) {
+        let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
+        let center = this.containerToMap(pointer);
+        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom));
+    }
+
     render() {
-        return <div onWheel={this.handleWheel}
-                    onTouchStart={this.handleTouchStart}
-                    onTouchMove={this.handleTouchMove}
-                    onTouchEnd={this.handleTouchEnd}
-                    onMouseDown={this.handleMouseDown}
-                    onMouseMove={this.handleMouseMove}
-                    onMouseUp={this.handleMouseUp}
-                    ref="container">
-            {this.props.children}
-            <pre style={{position: 'absolute', top: '4em', left: 0}}>
-                {JSON.stringify(this.state.debug, null, 2)}
-            </pre>
-        </div>;
+        return <Hammer onPanStart={this.handlePanStart}
+                       onPan={this.handlePan}
+                       onPanEnd={this.handlePanEnd}
+                       onPinchStart={this.handlePinchStart}
+                       onPinch={this.handlePinch}
+                       onPinchEnd={this.handlePinchEnd}
+                       onWheel={this.handleWheel}
+                       onDoubleTap={this.handleDoubleTap}
+                       onPress={this.handlePress}
+                       options={{recognizers: {pinch: {enable: true}, doubletap: {enable: true}}}}>
+            <div ref="container">
+                {this.props.children}
+            </div>
+        </Hammer>;
     }
 };
