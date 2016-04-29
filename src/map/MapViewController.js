@@ -3,11 +3,15 @@ import MapView from './MapView';
 import VectorUtil from '../VectorUtil';
 import React from 'react';
 import style from './style';
-import Hammer from 'react-hammerjs';
+import Hammer from 'hammerjs';
 
 export default class MapViewController extends React.Component {
     constructor() {
         super();
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
         this.handlePanStart = this.handlePanStart.bind(this);
         this.handlePan = this.handlePan.bind(this);
@@ -15,6 +19,7 @@ export default class MapViewController extends React.Component {
         this.handlePinchStart = this.handlePinchStart.bind(this);
         this.handlePinch = this.handlePinch.bind(this);
         this.handlePinchEnd = this.handlePinchEnd.bind(this);
+        this.handleTwoFingerTap = this.handleTwoFingerTap.bind(this);
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handlePress = this.handlePress.bind(this);
     }
@@ -48,6 +53,72 @@ export default class MapViewController extends React.Component {
         dragging: false,
         pinching: false
     };
+
+    componentDidMount() {
+        this.hammer = new Hammer(this.refs.container);
+        let twoFingerTap = new Hammer.Tap({event: 'twofingertap', pointers: 2});
+        this.hammer.add(twoFingerTap);
+        this.updateHammer(this.hammer);
+    }
+
+    componentDidUpdate() {
+        if (this.hammer) {
+            this.updateHammer(this.hammer);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.hammer) {
+            this.hammer.stop();
+            this.hammer.destroy();
+        }
+        this.hammer = null;
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return this.props.view != nextProps.view
+            || this.props.onViewChange != nextProps.onViewChange
+            || this.props.onLongViewChange != nextProps.onLongViewChange
+            || this.props.pinchZoomJumpThreshold != nextProps.pinchZoomJumpThreshold
+            || this.props.children != nextProps.children
+            || this.state.debug != nextState.debug;
+    }
+
+    updateHammer(hammer) {
+        //onPanStart={this.handlePanStart}
+        //onPan={this.handlePan}
+        //onPanEnd={this.handlePanEnd}
+        //onPinchStart={this.handlePinchStart}
+        //onPinch={this.handlePinch}
+        //onPinchEnd={this.handlePinchEnd}
+        //onTap={this.handleTap}
+        //onDoubleTap={this.handleDoubleTap}
+        //onPress={this.handlePress}
+        //options={{recognizers: {tap: {requireFailure: 'pinch'}, pinch: {enable: true, threshold: 0.1}, doubletap: {enable: true}}}}
+        //recognizeWith={{pinch: 'tap'}}
+        hammer.off('panstart');
+        hammer.on('panstart', this.handlePanStart);
+        hammer.off('pan');
+        hammer.on('pan', this.handlePan);
+        hammer.off('panend');
+        hammer.on('panend', this.handlePanEnd);
+
+        hammer.off('pinchstart');
+        hammer.on('pinchstart', this.handlePinchStart);
+        hammer.off('pinch');
+        hammer.on('pinch', this.handlePinch);
+        hammer.off('pinchend');
+        hammer.on('pinchend', this.handlePinchEnd);
+
+        hammer.off('twofingertap');
+        hammer.on('twofingertap', this.handleTwoFingerTap);
+        hammer.off('doubletap');
+        hammer.on('doubletap', this.handleDoubleTap);
+        hammer.off('press');
+        hammer.on('press', this.handlePress);
+
+        hammer.get('pinch').set({enable: true, threshold: 0.1});
+    }
 
     /**
      * Converts a position in screen coordinates to a position in container coordinates.
@@ -211,6 +282,7 @@ export default class MapViewController extends React.Component {
     }
 
     handlePinchStart(event) {
+        this.setState({debug: 'start pinch'});
         if (this.state.dragging) {
             this.stopDragging();
         }
@@ -228,8 +300,20 @@ export default class MapViewController extends React.Component {
     }
 
     handlePinchEnd() {
+        this.setState({debug: 'end pinch'});
         if (this.state.pinching) {
             this.stopPinching();
+        }
+    }
+
+    handleTwoFingerTap(event) {
+        let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
+        let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
+        let center = VectorUtil.divide(VectorUtil.add(...([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))))), 2);
+        let oldZoom = this.props.view.zoom;
+        if (this.props.view.zoom > MapHelper.minZoom) {
+            let newZoom = this.props.view.zoom - 1;
+            this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom, true);
         }
     }
 
@@ -250,19 +334,11 @@ export default class MapViewController extends React.Component {
     }
 
     render() {
-        return <Hammer onPanStart={this.handlePanStart}
-                       onPan={this.handlePan}
-                       onPanEnd={this.handlePanEnd}
-                       onPinchStart={this.handlePinchStart}
-                       onPinch={this.handlePinch}
-                       onPinchEnd={this.handlePinchEnd}
-                       onWheel={this.handleWheel}
-                       onDoubleTap={this.handleDoubleTap}
-                       onPress={this.handlePress}
-                       options={{recognizers: {pinch: {enable: true}, doubletap: {enable: true}}}}>
-            <div ref="container">
-                {this.props.children}
-            </div>
-        </Hammer>;
+        return <div ref="container" onWheel={this.handleWheel}>
+            {this.props.children}
+            <pre style={{position: 'absolute', top: '4em', left: 0}}>
+                {JSON.stringify(this.state.debug, null, 2)}
+            </pre>
+        </div>;
     }
 };
