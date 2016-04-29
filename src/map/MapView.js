@@ -9,6 +9,7 @@ export default class MapView extends React.Component {
         super();
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handleResize = this.handleResize.bind(this);
     }
 
@@ -40,6 +41,19 @@ export default class MapView extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.handleResize);
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        return this.props.x != nextProps.x
+            || this.props.y != nextProps.y
+            || this.props.zoomLevel != nextProps.zoomLevel
+            || this.props.scale != nextProps.scale
+            || this.props.preloadHorizontal != nextProps.preloadHorizontal
+            || this.props.preloadVertical != nextProps.preloadVertical
+            || this.props.preloadLevels != nextProps.preloadLevels
+            || this.props.children != nextProps.children
+            || this.state.width != nextState.width
+            || this.state.height != nextState.height;
     }
 
     handleResize() {

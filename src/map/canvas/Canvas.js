@@ -29,8 +29,7 @@ export default class Canvas extends React.Component {
     };
 
     state = {
-        count: 0,
-        pictures: {}
+        count: 0
     };
 
     draw() {

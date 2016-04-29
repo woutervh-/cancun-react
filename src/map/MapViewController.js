@@ -80,8 +80,7 @@ export default class MapViewController extends React.Component {
             || this.props.onViewChange != nextProps.onViewChange
             || this.props.onLongViewChange != nextProps.onLongViewChange
             || this.props.pinchZoomJumpThreshold != nextProps.pinchZoomJumpThreshold
-            || this.props.children != nextProps.children
-            || this.state.debug != nextState.debug;
+            || this.props.children != nextProps.children;
     }
 
     updateHammer(hammer) {
@@ -282,7 +281,6 @@ export default class MapViewController extends React.Component {
     }
 
     handlePinchStart(event) {
-        this.setState({debug: 'start pinch'});
         if (this.state.dragging) {
             this.stopDragging();
         }
@@ -300,7 +298,6 @@ export default class MapViewController extends React.Component {
     }
 
     handlePinchEnd() {
-        this.setState({debug: 'end pinch'});
         if (this.state.pinching) {
             this.stopPinching();
         }
@@ -336,9 +333,6 @@ export default class MapViewController extends React.Component {
     render() {
         return <div ref="container" onWheel={this.handleWheel}>
             {this.props.children}
-            <pre style={{position: 'absolute', top: '4em', left: 0}}>
-                {JSON.stringify(this.state.debug, null, 2)}
-            </pre>
         </div>;
     }
 };
