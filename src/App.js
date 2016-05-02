@@ -1,5 +1,5 @@
 import TopBar from './TopBar';
-import BottomBar from './BottomBar';
+import LocationInfoBox from './LocationInfoBox';
 import {MapHelper, MapLayer, MapView, MapViewController} from './map';
 import {Picture} from './map/canvas';
 import React from 'react';
@@ -99,9 +99,13 @@ export default class App extends React.Component {
                             <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
                         </MapLayer>
                         : null }
+                    <MapLayer {...this.state.searchInformation.location}>
+                    </MapLayer>
                 </MapView>
             </MapViewController>
-            <BottomBar onClearClick={this.handleSearchClear} active={this.state.searchMarker.show} searchInformation={this.state.searchInformation}/>
+            <LocationInfoBox onClearClick={this.handleSearchClear}
+                             active={this.state.searchMarker.show}
+                             searchInformation={this.state.searchInformation}/>
         </span>;
     }
 };

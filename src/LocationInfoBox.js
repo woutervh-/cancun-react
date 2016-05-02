@@ -1,11 +1,10 @@
 import {Button, FontIcon} from 'react-toolbox';
-import Overlay from 'react-toolbox/lib/overlay';
 import React from 'react';
 import style from './style';
 import classNames from 'classnames';
 import Satellite from '../public/images/send-location';
 
-export default class BottomBar extends React.Component {
+export default class LocationInfoBox extends React.Component {
     static propTypes = {
         onClearClick: React.PropTypes.func.isRequired,
         onSendLocation: React.PropTypes.func.isRequired,
@@ -27,14 +26,14 @@ export default class BottomBar extends React.Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        return nextProps.onClearClick !== this.props.onClearClick
-            || nextProps.onSendLocation !== this.props.onSendLocation
-            || nextProps.active !== this.props.active
-            || nextProps.searchInformation !== this.props.searchInformation;
+        return nextProps.onClearClick != this.props.onClearClick
+            || nextProps.onSendLocation != this.props.onSendLocation
+            || nextProps.active != this.props.active
+            || nextProps.searchInformation != this.props.searchInformation;
     }
 
     render() {
-        return <Overlay>
+        return <span className={classNames(style['bottom-bar-container'], {[style['active']]: this.props.active})}>
             <div className={classNames(style['bottom-bar'], {[style['active']]: this.props.active})}>
                 <div className={style['bottom-bar-info']}>
                     <header>
@@ -50,6 +49,6 @@ export default class BottomBar extends React.Component {
                     <Button onClick={this.props.onSendLocation} raised={true}><Satellite viewBox="0 0 20 20"/> Send Location</Button>
                 </div>
             </div>
-        </Overlay>;
+        </span>;
     }
 };

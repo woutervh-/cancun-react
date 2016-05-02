@@ -24,7 +24,8 @@ export default class TopBar extends React.Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        return nextProps.onSearchSubmit !== this.props.onSearchSubmit;
+        return nextProps.onSearchSubmit != this.props.onSearchSubmit
+            || nextProps.onSearchClear != this.props.onSearchClear;
     }
 
     render() {

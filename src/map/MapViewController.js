@@ -4,6 +4,7 @@ import VectorUtil from '../VectorUtil';
 import React from 'react';
 import style from './style';
 import Hammer from 'hammerjs';
+import classNames from 'classnames';
 
 export default class MapViewController extends React.Component {
     constructor() {
@@ -79,8 +80,11 @@ export default class MapViewController extends React.Component {
         return this.props.view != nextProps.view
             || this.props.onViewChange != nextProps.onViewChange
             || this.props.onLongViewChange != nextProps.onLongViewChange
+            || this.props.onLocationSelect != nextProps.onLocationSelect
             || this.props.pinchZoomJumpThreshold != nextProps.pinchZoomJumpThreshold
-            || this.props.children != nextProps.children;
+            || this.props.children != nextProps.children
+            || this.state.dragging != nextState.dragging
+            || this.state.pinching != nextState.pinching;
     }
 
     updateHammer(hammer) {
@@ -331,7 +335,7 @@ export default class MapViewController extends React.Component {
     }
 
     render() {
-        return <div ref="container" onWheel={this.handleWheel}>
+        return <div ref="container" onWheel={this.handleWheel} className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;
     }
