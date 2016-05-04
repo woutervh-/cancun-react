@@ -2,6 +2,7 @@ import MapHelper from './MapHelper';
 import MapLayer from './MapLayer';
 import MapTilesLayer from './MapTilesLayer';
 import MapTilesLayerHelper from './MapTilesLayerHelper';
+import MapViewController from './MapViewController';
 import React from 'react';
 import {Canvas, Composition, Picture, Rectangle, Scale, Translate} from './canvas';
 import VectorUtil from '../VectorUtil';
@@ -17,14 +18,15 @@ export default class MapView extends React.Component {
     }
 
     static propTypes = {
-        x: React.PropTypes.number.isRequired,
-        y: React.PropTypes.number.isRequired,
-        zoomLevel: React.PropTypes.number.isRequired,
-        scale: React.PropTypes.number.isRequired
-    };
-
-    static defaultProps = {
-        scale: 1
+        view: React.PropTypes.shape({
+            x: React.PropTypes.number.isRequired,
+            y: React.PropTypes.number.isRequired,
+            zoom: React.PropTypes.number.isRequired
+        }).isRequired,
+        onViewChange: React.PropTypes.func.isRequired,
+        onLongViewChange: React.PropTypes.func.isRequired,
+        onLocationSelect: React.PropTypes.func.isRequired,
+        onTap: React.PropTypes.func.isRequired
     };
 
     state = {
@@ -33,10 +35,11 @@ export default class MapView extends React.Component {
     };
 
     shouldComponentUpdate(nextProps, nextState) {
-        return this.props.x != nextProps.x
-            || this.props.y != nextProps.y
-            || this.props.zoomLevel != nextProps.zoomLevel
-            || this.props.scale != nextProps.scale
+        return this.props.view != nextProps.view
+            || this.props.onViewChange != nextProps.onViewChange
+            || this.props.onLongViewChange != nextProps.onLongViewChange
+            || this.props.onLocationSelect != nextProps.onLocationSelect
+            || this.props.onTap != nextProps.onTap
             || this.props.children != nextProps.children
             || this.state.width != nextState.width
             || this.state.height != nextState.height;
@@ -54,24 +57,21 @@ export default class MapView extends React.Component {
         this.setState({width: window.innerWidth, height: window.innerHeight});
     }
 
-    renderMapTilesLayer(layer, mixinProps = {}) {
+    renderMapTilesLayer(layer, mixinProps, view) {
         let layerProps = layer.props || {};
         let newProps = {
             width: this.state.width,
             height: this.state.height,
-            x: this.props.x,
-            y: this.props.y,
-            zoomLevel: this.props.zoomLevel,
-            scale: this.props.scale
+            ...view
         };
         Object.assign(newProps, layerProps, mixinProps);
         let mapTilesLayerHelper = new MapTilesLayerHelper(newProps);
         return mapTilesLayerHelper.render();
     }
 
-    renderCanvasLayer(layer, mixinProps = {}) {
-        let center = MapHelper.project(layer.props, this.props.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, this.props), this.props.scale), {
+    renderCanvasLayer(layer, mixinProps, view) {
+        let center = MapHelper.project(layer.props, view.zoomLevel);
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, view), view.scale), {
             x: this.state.width / 2,
             y: this.state.height / 2
         });
@@ -80,9 +80,9 @@ export default class MapView extends React.Component {
         </Translate>;
     }
 
-    renderHtmlLayer(layer, mixinProps = {}) {
-        let center = MapHelper.project(layer.props, this.props.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, this.props), this.props.scale), {
+    renderHtmlLayer(layer, mixinProps, view) {
+        let center = MapHelper.project(layer.props, view.zoomLevel);
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, view), view.scale), {
             x: this.state.width / 2,
             y: this.state.height / 2
         });
@@ -92,15 +92,30 @@ export default class MapView extends React.Component {
     }
 
     transformLayer(layer, index) {
+        let zoomLevel = Math.round(this.props.view.zoom);
+        let scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+        let view = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+        view.zoomLevel = zoomLevel;
+        view.scale = scale;
+
         switch (layer.type) {
             case MapTilesLayer:
-                return {canvas: true, rendered: this.renderMapTilesLayer(layer, {key: index})};
+                return {
+                    canvas: true,
+                    rendered: this.renderMapTilesLayer(layer, {key: index}, view)
+                };
             case MapLayer:
                 switch (layer.props.render) {
                     case 'canvas':
-                        return {canvas: true, rendered: this.renderCanvasLayer(layer, {key: index})};
+                        return {
+                            canvas: true,
+                            rendered: this.renderCanvasLayer(layer, {key: index}, view)
+                        };
                     case 'html':
-                        return {canvas: false, rendered: this.renderHtmlLayer(layer, {key: index})};
+                        return {
+                            canvas: false,
+                            rendered: this.renderHtmlLayer(layer, {key: index}, view)
+                        };
                     default:
                         console.warn('Unknown layer render target for MapView: ' + layer.props.render);
                         break;
@@ -118,12 +133,20 @@ export default class MapView extends React.Component {
         let htmlLayers = transformedLayers.filter(transformedLayer => !transformedLayer.canvas);
 
         return <span>
-            <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
-                <Composition type="destination-over">
-                    {canvasLayers.reverse().map(canvasLayer => canvasLayer.rendered)}
-                </Composition>
-                <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
-            </Canvas>
+            <MapViewController
+                view={this.props.view}
+                onViewChange={this.props.onViewChange}
+                onLongViewChange={this.props.onLongViewChange}
+                onLocationSelect={this.props.onLocationSelect}
+                onTap={this.props.onTap}
+            >
+                <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
+                    <Composition type="destination-over">
+                        {canvasLayers.reverse().map(canvasLayer => canvasLayer.rendered)}
+                    </Composition>
+                    <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
+                </Canvas>
+            </MapViewController>
             {htmlLayers.map(htmlLayer => htmlLayer.rendered)}
         </span>;
     }

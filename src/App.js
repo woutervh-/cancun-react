@@ -103,50 +103,35 @@ export default class App extends React.Component {
         this.setState({view});
     }
 
-    handleLocationMarkerTap(event) {
-        //event.srcEvent.preventDefault();
-        //event.srcEvent.stopPropagation();
-        console.log('marker tap');
-        this.setState({debug: [...this.state.debug, 'marker tap']});
+    handleLocationMarkerTap() {
         this.setState({
             locationBox: {show: true},
             locationBoxInformation: this.state.locationMarkerInformation
         });
     }
 
-    handleMapTap(event) {
-        console.log('map tap');
-        this.setState({debug: [...this.state.debug, 'map tap ' + event.target]});
+    handleMapTap() {
         this.setState({locationBox: {show: false}});
     }
 
     render() {
-        let zoomLevel = Math.round(this.state.view.zoom);
-        let scale = Math.pow(2, this.state.view.zoom - zoomLevel);
-        let view = VectorUtil.multiply(this.state.view, Math.pow(2, zoomLevel - Math.floor(this.state.view.zoom)));
-
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
                     onDrawClick={this.handleToggle}/>
-            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
-                <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
-                    <MapTilesLayer/>
-                    <MapLayer {...this.state.locationMarkerInformation.location} render="html">
-                        {this.state.locationMarker.show
-                            ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap}><SearchMarker/></Marker>
-                            : null}
-                    </MapLayer>
-                    <MapLayer {...this.state.locationBoxInformation.location} render="html">
-                        <LocationInfoBox onClearClick={this.handleSearchClear} /* TODO: problem: event handles by MapViewController contain this element */
-                                         active={this.state.locationBox.show}
-                                         locationInformation={this.state.locationBoxInformation}/>
-                    </MapLayer>
-                </MapView>
-            </MapViewController>
-            <span style={{position: 'absolute', top: '4em', left: 0}}>
-                {JSON.stringify(this.state.debug, null, 2)}
-            </span>
+            <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
+                <MapTilesLayer/>
+                <MapLayer {...this.state.locationMarkerInformation.location} render="html">
+                    {this.state.locationMarker.show
+                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap}><SearchMarker/></Marker>
+                        : null}
+                </MapLayer>
+                <MapLayer {...this.state.locationBoxInformation.location} render="html">
+                    <LocationInfoBox onClearClick={this.handleSearchClear} /* TODO: problem: event handles by MapViewController contain this element */
+                                     active={this.state.locationBox.show}
+                                     locationInformation={this.state.locationBoxInformation}/>
+                </MapLayer>
+            </MapView>
         </span>;
     }
 };

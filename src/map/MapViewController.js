@@ -63,21 +63,8 @@ export default class MapViewController extends React.Component {
 
     componentDidMount() {
         this.hammer = new Hammer(this.refs.container);
-        //let pinch = new Hammer.Pinch();
-        //let pan = new Hammer.Pan();
-        //let tap = new Hammer.Tap();
-        //let press = new Hammer.Press();
-        //let doubleTap = new Hammer.Tap({event: 'doubletap', pointers: 2});
         let twoFingerTap = new Hammer.Tap({event: 'twofingertap', pointers: 2});
         this.hammer.add(twoFingerTap);
-        //this.hammer.add([tap, press, twoFingerTap]);
-        //press.recognizeWith(tap);
-        //tap.requireFailure(press);
-        //this.hammer.add([twoFingerTap, doubleTap, singleTap]);
-        //doubleTap.recognizeWith(singleTap);
-        //pinch.recognizeWith(singleTap);
-        //pan.recognizeWith(singleTap);
-        //singleTap.requireFailure([pan, pinch, doubleTap]);
         this.updateHammer(this.hammer);
     }
 
@@ -389,8 +376,7 @@ export default class MapViewController extends React.Component {
     }
 
     render() {
-        // TODO: contextMenu as click with button=2?
-        return <div ref="container" onWheel={this.handleWheel} className={classNames({[style['dragging']]: this.state.dragging})}>
+        return <div ref="container" onWheel={this.handleWheel} onContextMenu={this.handleContextMenu} className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;
     }
