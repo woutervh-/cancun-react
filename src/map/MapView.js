@@ -54,30 +54,6 @@ export default class MapView extends React.Component {
         this.setState({width: window.innerWidth, height: window.innerHeight});
     }
 
-    //transformCanvasLayer(layer) {
-    //    let center = MapHelper.project(layer.props, this.props.zoomLevel);
-    //    let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
-    //        x: this.state.width / 2 / this.props.scale,
-    //        y: this.state.height / 2 / this.props.scale
-    //    });
-    //    return <Translate {...offset}>
-    //        <Scale scaleWidth={1 / this.props.scale} scaleHeight={1 / this.props.scale}>
-    //            {layer.props.children}
-    //        </Scale>
-    //    </Translate>;
-    //}
-
-    //transformHtmlLayer(layer) {
-    //    let center = MapHelper.project(layer.props, this.props.zoomLevel);
-    //    let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
-    //        x: this.state.width / 2 / this.props.scale,
-    //        y: this.state.height / 2 / this.props.scale
-    //    });
-    //    return <div style={{position: 'absolute', top: offset.y, left: offset.x}}>
-    //        {layer.props.children}
-    //    </div>;
-    //}
-
     renderMapTilesLayer(layer, mixinProps = {}) {
         let layerProps = layer.props || {};
         let newProps = {
@@ -106,8 +82,15 @@ export default class MapView extends React.Component {
         </Translate>;
     }
 
-    renderHtmlLayer(layer) {
-        return null;
+    renderHtmlLayer(layer, mixinProps = {}) {
+        let center = MapHelper.project(layer.props, this.props.zoomLevel);
+        let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
+            x: this.state.width / 2 / this.props.scale,
+            y: this.state.height / 2 / this.props.scale
+        });
+        return <div style={{position: 'absolute', top: offset.y, left: offset.x}} {...mixinProps}>
+            {layer.props.children}
+        </div>;
     }
 
     transformLayer(layer, index) {
@@ -118,9 +101,13 @@ export default class MapView extends React.Component {
                 switch (layer.props.render) {
                     case 'canvas':
                         return {canvas: true, rendered: this.renderCanvasLayer(layer, {key: index})};
-                    default:
+                    case 'html':
                         return {canvas: false, rendered: this.renderHtmlLayer(layer, {key: index})};
+                    default:
+                        console.warn('Unknown layer render target for MapView: ' + layer.props.render);
+                        break;
                 }
+                break;
             default:
                 console.warn('Unknown layer type for MapView: ' + layer.type);
                 break;
@@ -132,11 +119,14 @@ export default class MapView extends React.Component {
         let canvasLayers = transformedLayers.filter(transformedLayer => transformedLayer.canvas);
         let htmlLayers = transformedLayers.filter(transformedLayer => !transformedLayer.canvas);
 
-        return <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
-            <Composition type="destination-over">
-                {canvasLayers.reverse().map(canvasLayer => canvasLayer.rendered)}
-            </Composition>
-            <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
-        </Canvas>;
+        return <span>
+            <Canvas ref="canvas" width={this.state.width} height={this.state.height}>
+                <Composition type="destination-over">
+                    {canvasLayers.reverse().map(canvasLayer => canvasLayer.rendered)}
+                </Composition>
+                <Rectangle width={this.state.width} height={this.state.height} strokeStyle="rgba(255, 0, 0, 1)" fillStyle="rgba(0, 0, 0, 0)"/>
+            </Canvas>
+            {htmlLayers.map(htmlLayer => htmlLayer.rendered)}
+        </span>;
     }
 };

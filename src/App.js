@@ -23,10 +23,10 @@ export default class App extends React.Component {
             y: 0,
             zoom: 0
         },
-        searchMarker: {
+        locationMarker: {
             show: false
         },
-        searchInformation: {
+        locationInformation: {
             name: '',
             location: {
                 latitude: 0,
@@ -45,10 +45,10 @@ export default class App extends React.Component {
                     y: center.y,
                     zoom: toZoom
                 },
-                searchMarker: {
+                locationMarker: {
                     show: true
                 },
-                searchInformation: {
+                locationInformation: {
                     name: input.isCoordinate ? 'Coordinate' : input.location,
                     location: {
                         latitude: input.latitude,
@@ -59,12 +59,12 @@ export default class App extends React.Component {
         }
     }
 
-    handleLocationSelect(location) {
+    handleLocationSelect(location, withDetails = false) {
         this.setState({
-            searchMarker: {
+            locationMarker: {
                 show: true
             },
-            searchInformation: {
+            locationInformation: {
                 name: 'Coordinate',
                 location
             }
@@ -72,7 +72,7 @@ export default class App extends React.Component {
     }
 
     handleSearchClear() {
-        this.setState({searchMarker: {show: false}});
+        this.setState({locationMarker: {show: false}});
     }
 
     handleViewChange(view) {
@@ -95,16 +95,18 @@ export default class App extends React.Component {
             <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
                     <MapTilesLayer/>
-                    <MapLayer {...this.state.searchInformation.location}>
-                        {this.state.searchMarker.show
+                    <MapLayer {...this.state.locationInformation.location}>
+                        {this.state.locationMarker.show
                             ? <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
                             : null}
                     </MapLayer>
+                    <MapLayer {...this.state.locationInformation.location} render="html">
+                        <LocationInfoBox onClearClick={this.handleSearchClear}
+                                         active={this.state.locationMarker.show}
+                                         locationInformation={this.state.locationInformation}/>
+                    </MapLayer>
                 </MapView>
             </MapViewController>
-            <LocationInfoBox onClearClick={this.handleSearchClear}
-                             active={this.state.searchMarker.show}
-                             searchInformation={this.state.searchInformation}/>
         </span>;
     }
 };

@@ -115,10 +115,7 @@ body {
   vertical-align: top;
 }
 
-.bottom-bar-container {
-}
-
-.bottom-bar {
+.location-box {
   position: fixed;
   right: 0;
   bottom: 0;
@@ -127,7 +124,7 @@ body {
   padding: 1 * $unit 1 * $unit;
   color: $color-black;
   background-color: $bottom-bar-background-color;
-  transition: all $animation-duration $animation-curve-default $animation-duration;
+  transition: opacity $animation-duration $animation-curve-default $animation-duration, transform $animation-duration $animation-curve-default $animation-duration;
   pointer-events: auto;
   box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
   display: flex;
@@ -143,37 +140,39 @@ body {
 }
 
 @media screen and (min-width: 720px) {
-  .bottom-bar {
+  .location-box {
     position: static;
     max-width: 32rem;
     &:not(.active) {
       transform: translateY(0);
+      opacity: 0;
       box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
     }
     &.active {
       transform: translateY(0);
+      opacity: 1;
       box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
     }
   }
 }
 
-.bottom-bar > * {
+.location-box > * {
   align-self: center;
   margin: 0.5 * $unit 0;
 }
 
-.bottom-bar-info {
+.location-box-info {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
 }
 
-.bottom-bar-info > * {
+.location-box-info > * {
   margin: 0 0.5 * $unit;
   align-self: center;
 }
 
-.bottom-bar-actions > * {
+.location-box-actions > * {
   margin: 0 0.5 * $unit;
 }
 

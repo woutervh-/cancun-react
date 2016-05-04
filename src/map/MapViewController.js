@@ -14,6 +14,7 @@ export default class MapViewController extends React.Component {
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
+        this.handleContextMenu = this.handleContextMenu.bind(this);
         this.handlePanStart = this.handlePanStart.bind(this);
         this.handlePan = this.handlePan.bind(this);
         this.handlePanEnd = this.handlePanEnd.bind(this);
@@ -264,6 +265,13 @@ export default class MapViewController extends React.Component {
         }
     }
 
+    handleContextMenu(event) {
+        event.preventDefault();
+        let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
+        let center = this.containerToMap(pointer);
+        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom));
+    }
+
     handlePanStart(event) {
         if (!this.state.dragging && !this.state.pinching) {
             this.startDragging({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
@@ -335,7 +343,7 @@ export default class MapViewController extends React.Component {
     }
 
     render() {
-        return <div ref="container" onWheel={this.handleWheel} className={classNames({[style['dragging']]: this.state.dragging})}>
+        return <div ref="container" onWheel={this.handleWheel} onContextMenu={this.handleContextMenu} className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;
     }

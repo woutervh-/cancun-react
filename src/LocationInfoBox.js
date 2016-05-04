@@ -9,7 +9,7 @@ export default class LocationInfoBox extends React.Component {
         onClearClick: React.PropTypes.func.isRequired,
         onSendLocation: React.PropTypes.func.isRequired,
         active: React.PropTypes.bool.isRequired,
-        searchInformation: React.PropTypes.shape({
+        locationInformation: React.PropTypes.shape({
             name: React.PropTypes.any.isRequired,
             location: React.PropTypes.shape({
                 latitude: React.PropTypes.number.isRequired,
@@ -29,26 +29,24 @@ export default class LocationInfoBox extends React.Component {
         return nextProps.onClearClick != this.props.onClearClick
             || nextProps.onSendLocation != this.props.onSendLocation
             || nextProps.active != this.props.active
-            || nextProps.searchInformation != this.props.searchInformation;
+            || nextProps.locationInformation != this.props.locationInformation;
     }
 
     render() {
-        return <span className={classNames(style['bottom-bar-container'], {[style['active']]: this.props.active})}>
-            <div className={classNames(style['bottom-bar'], {[style['active']]: this.props.active})}>
-                <div className={style['bottom-bar-info']}>
-                    <header>
-                        {this.props.searchInformation.name}
-                    </header>
-                    <p>
-                        {this.props.searchInformation.location.latitude},
-                        {this.props.searchInformation.location.longitude}
-                    </p>
-                </div>
-                <div className={style['bottom-bar-actions']}>
-                    <Button onClick={this.props.onClearClick} raised={true}><FontIcon value="clear" className={style['button-icon']}/> Clear Result</Button>
-                    <Button onClick={this.props.onSendLocation} raised={true}><Satellite viewBox="0 0 20 20"/> Send Location</Button>
-                </div>
+        return <div className={classNames(style['location-box'], {[style['active']]: this.props.active})}>
+            <div className={style['location-box-info']}>
+                <header>
+                    {this.props.locationInformation.name}
+                </header>
+                <p>
+                    {this.props.locationInformation.location.latitude},
+                    {this.props.locationInformation.location.longitude}
+                </p>
             </div>
-        </span>;
+            <div className={style['location-box-actions']}>
+                <Button onClick={this.props.onClearClick} raised={true}><FontIcon value="clear" className={style['button-icon']}/> Clear Result</Button>
+                <Button onClick={this.props.onSendLocation} raised={true}><Satellite viewBox="0 0 20 20"/> Send Location</Button>
+            </div>
+        </div>;
     }
 };
