@@ -1,6 +1,6 @@
 import TopBar from './TopBar';
 import LocationInfoBox from './LocationInfoBox';
-import {MapHelper, MapLayer, MapView, MapViewController} from './map';
+import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController} from './map';
 import {Picture} from './map/canvas';
 import React from 'react';
 import SearchBar from './SearchBar';
@@ -94,12 +94,11 @@ export default class App extends React.Component {
                     onDrawClick={this.handleToggle}/>
             <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
-                    {this.state.searchMarker.show ?
-                        <MapLayer {...this.state.searchInformation.location}>
-                            <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
-                        </MapLayer>
-                        : null }
+                    <MapTilesLayer/>
                     <MapLayer {...this.state.searchInformation.location}>
+                        {this.state.searchMarker.show
+                            ? <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
+                            : null}
                     </MapLayer>
                 </MapView>
             </MapViewController>
