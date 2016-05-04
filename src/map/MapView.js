@@ -71,22 +71,20 @@ export default class MapView extends React.Component {
 
     renderCanvasLayer(layer, mixinProps = {}) {
         let center = MapHelper.project(layer.props, this.props.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
-            x: this.state.width / 2 / this.props.scale,
-            y: this.state.height / 2 / this.props.scale
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, this.props), this.props.scale), {
+            x: this.state.width / 2,
+            y: this.state.height / 2
         });
         return <Translate {...offset} {...mixinProps}>
-            <Scale scaleWidth={1 / this.props.scale} scaleHeight={1 / this.props.scale}>
-                {layer.props.children}
-            </Scale>
+            {layer.props.children}
         </Translate>;
     }
 
     renderHtmlLayer(layer, mixinProps = {}) {
         let center = MapHelper.project(layer.props, this.props.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.subtract(center, this.props), {
-            x: this.state.width / 2 / this.props.scale,
-            y: this.state.height / 2 / this.props.scale
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, this.props), this.props.scale), {
+            x: this.state.width / 2,
+            y: this.state.height / 2
         });
         return <div style={{position: 'absolute', top: offset.y, left: offset.x}} {...mixinProps}>
             {layer.props.children}

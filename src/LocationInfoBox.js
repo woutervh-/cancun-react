@@ -2,7 +2,7 @@ import {Button, FontIcon} from 'react-toolbox';
 import React from 'react';
 import style from './style';
 import classNames from 'classnames';
-import Satellite from '../public/images/send-location';
+import SendLocation from '../public/images/send-location';
 
 export default class LocationInfoBox extends React.Component {
     static propTypes = {
@@ -44,8 +44,8 @@ export default class LocationInfoBox extends React.Component {
                 </p>
             </div>
             <div className={style['location-box-actions']}>
-                <Button onClick={this.props.onClearClick} raised={true}><FontIcon value="clear" className={style['button-icon']}/> Clear Result</Button>
-                <Button onClick={this.props.onSendLocation} raised={true}><Satellite viewBox="0 0 20 20"/> Send Location</Button>
+                <Button onClick={this.props.onClearClick} raised={false}><FontIcon value="clear" className={style['button-icon']}/> Clear Result</Button>
+                <Button onClick={this.props.onSendLocation} raised={false}><SendLocation viewBox="0 0 20 20"/> Send Location</Button>
             </div>
         </div>;
     }

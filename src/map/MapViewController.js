@@ -5,6 +5,7 @@ import React from 'react';
 import style from './style';
 import Hammer from 'hammerjs';
 import classNames from 'classnames';
+import EventUtil from '../EventUtil';
 
 export default class MapViewController extends React.Component {
     constructor() {
@@ -24,6 +25,7 @@ export default class MapViewController extends React.Component {
         this.handleTwoFingerTap = this.handleTwoFingerTap.bind(this);
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handlePress = this.handlePress.bind(this);
+        this.handleTap = this.handleTap.bind(this);
     }
 
     static propTypes = {
@@ -37,6 +39,7 @@ export default class MapViewController extends React.Component {
         onViewChange: React.PropTypes.func.isRequired,
         onLongViewChange: React.PropTypes.func.isRequired,
         onLocationSelect: React.PropTypes.func.isRequired,
+        onTap: React.PropTypes.func.isRequired,
         pinchZoomJumpThreshold: React.PropTypes.number.isRequired
     };
 
@@ -48,6 +51,8 @@ export default class MapViewController extends React.Component {
         },
         onLocationSelect: () => {
         },
+        onTap: () => {
+        },
         pinchZoomJumpThreshold: 0.2
     };
 
@@ -58,8 +63,21 @@ export default class MapViewController extends React.Component {
 
     componentDidMount() {
         this.hammer = new Hammer(this.refs.container);
+        //let pinch = new Hammer.Pinch();
+        //let pan = new Hammer.Pan();
+        //let tap = new Hammer.Tap();
+        //let press = new Hammer.Press();
+        //let doubleTap = new Hammer.Tap({event: 'doubletap', pointers: 2});
         let twoFingerTap = new Hammer.Tap({event: 'twofingertap', pointers: 2});
         this.hammer.add(twoFingerTap);
+        //this.hammer.add([tap, press, twoFingerTap]);
+        //press.recognizeWith(tap);
+        //tap.requireFailure(press);
+        //this.hammer.add([twoFingerTap, doubleTap, singleTap]);
+        //doubleTap.recognizeWith(singleTap);
+        //pinch.recognizeWith(singleTap);
+        //pan.recognizeWith(singleTap);
+        //singleTap.requireFailure([pan, pinch, doubleTap]);
         this.updateHammer(this.hammer);
     }
 
@@ -82,6 +100,7 @@ export default class MapViewController extends React.Component {
             || this.props.onViewChange != nextProps.onViewChange
             || this.props.onLongViewChange != nextProps.onLongViewChange
             || this.props.onLocationSelect != nextProps.onLocationSelect
+            || this.props.onTap != nextProps.onTap
             || this.props.pinchZoomJumpThreshold != nextProps.pinchZoomJumpThreshold
             || this.props.children != nextProps.children
             || this.state.dragging != nextState.dragging
@@ -89,17 +108,6 @@ export default class MapViewController extends React.Component {
     }
 
     updateHammer(hammer) {
-        //onPanStart={this.handlePanStart}
-        //onPan={this.handlePan}
-        //onPanEnd={this.handlePanEnd}
-        //onPinchStart={this.handlePinchStart}
-        //onPinch={this.handlePinch}
-        //onPinchEnd={this.handlePinchEnd}
-        //onTap={this.handleTap}
-        //onDoubleTap={this.handleDoubleTap}
-        //onPress={this.handlePress}
-        //options={{recognizers: {tap: {requireFailure: 'pinch'}, pinch: {enable: true, threshold: 0.1}, doubletap: {enable: true}}}}
-        //recognizeWith={{pinch: 'tap'}}
         hammer.off('panstart');
         hammer.on('panstart', this.handlePanStart);
         hammer.off('pan');
@@ -120,6 +128,8 @@ export default class MapViewController extends React.Component {
         hammer.on('doubletap', this.handleDoubleTap);
         hammer.off('press');
         hammer.on('press', this.handlePress);
+        hammer.off('tap');
+        hammer.on('tap', this.handleTap);
 
         hammer.get('pinch').set({enable: true, threshold: 0.1});
     }
@@ -253,6 +263,10 @@ export default class MapViewController extends React.Component {
     }
 
     handleWheel(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
         let oldZoom = this.props.view.zoom;
@@ -266,13 +280,21 @@ export default class MapViewController extends React.Component {
     }
 
     handleContextMenu(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         event.preventDefault();
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
-        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom));
+        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom), true);
     }
 
     handlePanStart(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         if (!this.state.dragging && !this.state.pinching) {
             this.startDragging({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
             document.body.classList.add(style['unselectable']);
@@ -293,6 +315,10 @@ export default class MapViewController extends React.Component {
     }
 
     handlePinchStart(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         if (this.state.dragging) {
             this.stopDragging();
         }
@@ -316,6 +342,10 @@ export default class MapViewController extends React.Component {
     }
 
     handleTwoFingerTap(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
         let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
         let center = VectorUtil.divide(VectorUtil.add(...([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))))), 2);
@@ -327,6 +357,10 @@ export default class MapViewController extends React.Component {
     }
 
     handleDoubleTap(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         let center = this.containerToMap(pointer);
         let oldZoom = this.props.view.zoom;
@@ -337,13 +371,26 @@ export default class MapViewController extends React.Component {
     }
 
     handlePress(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
         let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         let center = this.containerToMap(pointer);
         this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom));
     }
 
+    handleTap(event) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+            return;
+        }
+
+        this.props.onTap(event);
+    }
+
     render() {
-        return <div ref="container" onWheel={this.handleWheel} onContextMenu={this.handleContextMenu} className={classNames({[style['dragging']]: this.state.dragging})}>
+        // TODO: contextMenu as click with button=2?
+        return <div ref="container" onWheel={this.handleWheel} className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;
     }

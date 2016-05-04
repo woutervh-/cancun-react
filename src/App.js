@@ -6,6 +6,8 @@ import React from 'react';
 import SearchBar from './SearchBar';
 import style from './style';
 import VectorUtil from './VectorUtil';
+import SearchMarker from '../public/images/search-marker';
+import Marker from './Marker'
 
 export default class App extends React.Component {
     constructor() {
@@ -13,8 +15,9 @@ export default class App extends React.Component {
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handleSearchClear = this.handleSearchClear.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
-        this.handleLongViewChange = this.handleLongViewChange.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
+        this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
+        this.handleMapTap = this.handleMapTap.bind(this);
     }
 
     state = {
@@ -26,13 +29,24 @@ export default class App extends React.Component {
         locationMarker: {
             show: false
         },
-        locationInformation: {
+        locationMarkerInformation: {
             name: '',
             location: {
                 latitude: 0,
                 longitude: 0
             }
-        }
+        },
+        locationBox: {
+            show: false
+        },
+        locationBoxInformation: {
+            name: '',
+            location: {
+                latitude: 0,
+                longitude: 0
+            }
+        },
+        debug: []
     };
 
     handleSearchSubmit(input) {
@@ -48,12 +62,15 @@ export default class App extends React.Component {
                 locationMarker: {
                     show: true
                 },
-                locationInformation: {
+                locationMarkerInformation: {
                     name: input.isCoordinate ? 'Coordinate' : input.location,
                     location: {
                         latitude: input.latitude,
                         longitude: input.longitude
                     }
+                },
+                locationBox: {
+                    show: false
                 }
             });
         }
@@ -64,23 +81,43 @@ export default class App extends React.Component {
             locationMarker: {
                 show: true
             },
-            locationInformation: {
+            locationMarkerInformation: {
                 name: 'Coordinate',
                 location
-            }
+            },
+            locationBox: {
+                show: withDetails
+            },
+            locationBoxInformation: withDetails ? {
+                name: 'Coordinate',
+                location
+            } : this.state.locationBoxInformation
         });
     }
 
     handleSearchClear() {
-        this.setState({locationMarker: {show: false}});
+        this.setState({locationMarker: {show: false}, locationBox: {show: false}});
     }
 
     handleViewChange(view) {
         this.setState({view});
     }
 
-    handleLongViewChange(view) {
-        this.setState({view});
+    handleLocationMarkerTap(event) {
+        //event.srcEvent.preventDefault();
+        //event.srcEvent.stopPropagation();
+        console.log('marker tap');
+        this.setState({debug: [...this.state.debug, 'marker tap']});
+        this.setState({
+            locationBox: {show: true},
+            locationBoxInformation: this.state.locationMarkerInformation
+        });
+    }
+
+    handleMapTap(event) {
+        console.log('map tap');
+        this.setState({debug: [...this.state.debug, 'map tap ' + event.target]});
+        this.setState({locationBox: {show: false}});
     }
 
     render() {
@@ -92,21 +129,24 @@ export default class App extends React.Component {
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
                     onDrawClick={this.handleToggle}/>
-            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect}>
+            <MapViewController view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapView {...view} zoomLevel={zoomLevel} scale={scale}>
                     <MapTilesLayer/>
-                    <MapLayer {...this.state.locationInformation.location}>
+                    <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                         {this.state.locationMarker.show
-                            ? <Picture source="images/marker-search.svg" left={-10} top={-30} width={20} height={30}/>
+                            ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap}><SearchMarker/></Marker>
                             : null}
                     </MapLayer>
-                    <MapLayer {...this.state.locationInformation.location} render="html">
-                        <LocationInfoBox onClearClick={this.handleSearchClear}
-                                         active={this.state.locationMarker.show}
-                                         locationInformation={this.state.locationInformation}/>
+                    <MapLayer {...this.state.locationBoxInformation.location} render="html">
+                        <LocationInfoBox onClearClick={this.handleSearchClear} /* TODO: problem: event handles by MapViewController contain this element */
+                                         active={this.state.locationBox.show}
+                                         locationInformation={this.state.locationBoxInformation}/>
                     </MapLayer>
                 </MapView>
             </MapViewController>
+            <span style={{position: 'absolute', top: '4em', left: 0}}>
+                {JSON.stringify(this.state.debug, null, 2)}
+            </span>
         </span>;
     }
 };
