@@ -33,14 +33,16 @@ export default class LocationInfoBox extends React.Component {
     }
 
     render() {
+        const displayNumber = number => Math.round(number * 100000) / 100000;
+
         return <div className={classNames(style['location-box'], {[style['active']]: this.props.active})}>
             <div className={style['location-box-info']}>
                 <header>
                     {this.props.locationInformation.name}
                 </header>
                 <p>
-                    {this.props.locationInformation.location.latitude},
-                    {this.props.locationInformation.location.longitude}
+                    {displayNumber(this.props.locationInformation.location.latitude)},
+                    {displayNumber(this.props.locationInformation.location.longitude)}
                 </p>
             </div>
             <div className={style['location-box-actions']}>

@@ -125,7 +125,9 @@ body {
   padding: 1 * $unit 1 * $unit;
   color: $color-black;
   background-color: $bottom-bar-background-color;
-  transition: opacity $animation-duration $animation-curve-default 0s, transform $animation-duration $animation-curve-default $animation-duration;
+  transition: opacity $animation-duration $animation-curve-default 0s,
+  transform $animation-duration $animation-curve-default $animation-duration,
+  box-shadow $animation-duration $animation-curve-default $animation-duration;
   pointer-events: auto;
   box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
   display: flex;
