@@ -120,6 +120,7 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
+  top: auto;
   z-index: 10;
   padding: 1 * $unit 1 * $unit;
   color: $color-black;
@@ -143,8 +144,13 @@ body {
 
 @media screen and (min-width: 720px) {
   .location-box {
-    position: static;
-    max-width: 32rem;
+    position: absolute;
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 32rem;
+    height: auto;
     &:not(.active) {
       transform: translateY(0);
       opacity: 0;
