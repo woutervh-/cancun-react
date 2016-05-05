@@ -7,7 +7,7 @@ import SearchBar from './SearchBar';
 import style from './style';
 import VectorUtil from './VectorUtil';
 import SearchMarker from '../public/images/search-marker';
-import Marker from './Marker'
+import Marker from './Marker';
 
 export default class App extends React.Component {
     constructor() {
@@ -127,7 +127,7 @@ export default class App extends React.Component {
                         : null}
                 </MapLayer>
                 <MapLayer {...this.state.locationBoxInformation.location} render="html">
-                    <LocationInfoBox onClearClick={this.handleSearchClear} /* TODO: problem: event handles by MapViewController contain this element */
+                    <LocationInfoBox onClearClick={this.handleSearchClear}
                                      active={this.state.locationBox.show}
                                      locationInformation={this.state.locationBoxInformation}/>
                 </MapLayer>
