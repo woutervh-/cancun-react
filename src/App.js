@@ -7,7 +7,8 @@ import SearchBar from './SearchBar';
 import style from './style';
 import VectorUtil from './VectorUtil';
 import SearchMarker from '../public/images/search-marker';
-import Marker from './Marker'
+import Marker from './Marker';
+import EventUtil from './EventUtil';
 
 export default class App extends React.Component {
     constructor() {
@@ -18,6 +19,7 @@ export default class App extends React.Component {
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
         this.handleMapTap = this.handleMapTap.bind(this);
+        this.handleRemoveFocus = this.handleRemoveFocus.bind(this);
     }
 
     state = {
@@ -114,6 +116,12 @@ export default class App extends React.Component {
         this.setState({locationBox: {show: false}});
     }
 
+    handleRemoveFocus(event) {
+        if(!EventUtil.targetIsDescendant(event, this.refs.marker.refs.container)) {
+            this.setState({locationBox: {show: false}});
+        }
+    }
+
     render() {
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
@@ -123,11 +131,12 @@ export default class App extends React.Component {
                 <MapTilesLayer/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
-                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap}><SearchMarker/></Marker>
+                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} ref="marker"><SearchMarker/></Marker>
                         : null}
                 </MapLayer>
                 <MapLayer {...this.state.locationBoxInformation.location} render="html">
-                    <LocationInfoBox onClearClick={this.handleSearchClear} /* TODO: problem: event handles by MapViewController contain this element */
+                    <LocationInfoBox onClearClick={this.handleSearchClear}
+                                     onRemoveFocus={this.handleRemoveFocus}
                                      active={this.state.locationBox.show}
                                      locationInformation={this.state.locationBoxInformation}/>
                 </MapLayer>

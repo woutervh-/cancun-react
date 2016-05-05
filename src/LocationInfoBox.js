@@ -3,11 +3,22 @@ import React from 'react';
 import style from './style';
 import classNames from 'classnames';
 import SendLocation from '../public/images/send-location';
+import EventUtil from './EventUtil';
 
 export default class LocationInfoBox extends React.Component {
+    constructor() {
+        super();
+        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.handleDocumentClick = this.handleDocumentClick.bind(this);
+    }
+
     static propTypes = {
         onClearClick: React.PropTypes.func.isRequired,
         onSendLocation: React.PropTypes.func.isRequired,
+        onRemoveFocus: React.PropTypes.func.isRequired,
         active: React.PropTypes.bool.isRequired,
         locationInformation: React.PropTypes.shape({
             name: React.PropTypes.any.isRequired,
@@ -22,6 +33,8 @@ export default class LocationInfoBox extends React.Component {
         onClearClick: () => {
         },
         onSendLocation: () => {
+        },
+        onRemoveFocus: () => {
         }
     };
 
@@ -32,10 +45,36 @@ export default class LocationInfoBox extends React.Component {
             || nextProps.locationInformation != this.props.locationInformation;
     }
 
-    render() {
-        const displayNumber = number => Math.round(number * 100000) / 100000;
+    componentDidMount() {
+        if (this.props.active) {
+            document.addEventListener('click', this.handleDocumentClick);
+        }
+    }
 
-        return <div className={classNames(style['location-box'], {[style['active']]: this.props.active})}>
+    componentDidUpdate(prevProps) {
+        if (this.props.active && !prevProps.active) {
+            document.addEventListener('click', this.handleDocumentClick);
+        } else if (!this.props.active && prevProps.active) {
+            document.removeEventListener('click', this.handleDocumentClick);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.props.active) {
+            document.removeEventListener('click', this.handleDocumentClick);
+        }
+    }
+
+    handleDocumentClick(event) {
+        if (this.props.active && !EventUtil.targetIsDescendant(event, this.refs.container)) {
+            this.props.onRemoveFocus(event);
+        }
+    }
+
+    render() {
+        const displayNumber = number => Math.round(number * 1000000) / 1000000;
+
+        return <div ref="container" className={classNames(style['location-box'], {[style['active']]: this.props.active})}>
             <div className={style['location-box-info']}>
                 <header>
                     {this.props.locationInformation.name}
