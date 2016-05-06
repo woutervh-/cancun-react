@@ -2,6 +2,30 @@
 @import "~react-toolbox/lib/commons";
 @import './config';
 
+@font-face {
+  font-family: GothamSS;
+  src: url('/fonts/GothamSSm-Book.otf') format('opentype');
+}
+
+@font-face {
+  font-family: GothamSS;
+  font-weight: bold;
+  src: url('/fonts/GothamSSm-Bold.otf') format('opentype');
+}
+
+@font-face {
+  font-family: GothamSS;
+  font-style: italic;
+  src: url('/fonts/GothamSSm-BookItalic.otf') format('opentype');
+}
+
+@font-face {
+  font-family: GothamSS;
+  font-weight: bold;
+  font-style: italic;
+  src: url('/fonts/GothamSSm-BoldItalic.otf') format('opentype');
+}
+
 html, body {
   height: 100%;
   width: 100%;
