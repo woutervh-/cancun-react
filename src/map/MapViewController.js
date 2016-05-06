@@ -26,6 +26,8 @@ export default class MapViewController extends React.Component {
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handlePress = this.handlePress.bind(this);
         this.handleTap = this.handleTap.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
     }
 
     static propTypes = {
@@ -70,7 +72,8 @@ export default class MapViewController extends React.Component {
 
     componentDidUpdate() {
         if (this.hammer) {
-            this.updateHammer(this.hammer);
+            /* Not necessary when no bound methods are dependant on props/state */
+            //this.updateHammer(this.hammer);
         }
     }
 
@@ -284,7 +287,6 @@ export default class MapViewController extends React.Component {
 
         if (!this.state.dragging && !this.state.pinching) {
             this.startDragging({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
-            document.body.classList.add(style['unselectable']);
         }
     }
 
@@ -296,7 +298,6 @@ export default class MapViewController extends React.Component {
 
     handlePanEnd() {
         if (this.state.dragging) {
-            document.body.classList.remove(style['unselectable']);
             this.stopDragging();
         }
     }
@@ -375,8 +376,21 @@ export default class MapViewController extends React.Component {
         this.props.onTap(event);
     }
 
+    handleMouseDown() {
+        document.body.classList.add(style['unselectable']);
+    }
+
+    handleMouseUp() {
+        document.body.classList.remove(style['unselectable']);
+    }
+
     render() {
-        return <div ref="container" onWheel={this.handleWheel} onContextMenu={this.handleContextMenu} className={classNames({[style['dragging']]: this.state.dragging})}>
+        return <div ref="container"
+                    onWheel={this.handleWheel}
+                    onMouseDown={this.handleMouseDown}
+                    onMouseUp={this.handleMouseUp}
+                    onContextMenu={this.handleContextMenu}
+                    className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;
     }

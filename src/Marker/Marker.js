@@ -57,7 +57,8 @@ export default class Marker extends React.Component {
         return this.props.width != nextProps.width
             || this.props.height != nextProps.height
             || this.props.anchor != nextProps.anchor
-            || this.props.onTap != nextProps.onTap;
+            || this.props.onTap != nextProps.onTap
+            || this.props.children != nextProps.children;
     }
 
     updateHammer(hammer) {

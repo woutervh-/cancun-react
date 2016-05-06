@@ -45,8 +45,7 @@ export default class App extends React.Component {
                 latitude: 0,
                 longitude: 0
             }
-        },
-        debug: []
+        }
     };
 
     handleSearchSubmit(input) {

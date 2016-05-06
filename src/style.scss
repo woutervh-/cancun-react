@@ -115,24 +115,18 @@ body {
   vertical-align: top;
 }
 
-.location-box {
+.floating-location-box {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  left: 0;
   top: auto;
+  left: 0;
+  bottom: 0;
+  right: 0;
   z-index: 10;
-  padding: 1 * $unit 1 * $unit;
-  color: $color-black;
-  background-color: $bottom-bar-background-color;
+  box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
   transition: opacity $animation-duration $animation-curve-default 0s,
   transform $animation-duration $animation-curve-default $animation-duration,
   box-shadow $animation-duration $animation-curve-default $animation-duration;
-  pointer-events: auto;
-  box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+
   &:not(.active) {
     transform: translateY(100%);
     box-shadow: none;
@@ -145,14 +139,15 @@ body {
 }
 
 @media screen and (min-width: 720px) {
-  .location-box {
+  .floating-location-box {
     position: absolute;
     top: 0;
-    right: auto;
+    left: 0;
     bottom: auto;
-    left: auto;
+    right: auto;
     width: 32rem;
     height: auto;
+
     &:not(.active) {
       transform: translateY(0);
       opacity: 0;
@@ -164,28 +159,4 @@ body {
       box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
     }
   }
-}
-
-.location-box > * {
-  align-self: center;
-  margin: 0.5 * $unit 0;
-}
-
-.location-box-info {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-}
-
-.location-box-info > * {
-  margin: 0 0.5 * $unit;
-  align-self: center;
-}
-
-.location-box-actions > * {
-  margin: 0 0.5 * $unit;
-}
-
-.button-icon {
-  font-size: $button-font-icon-font-size;
 }
