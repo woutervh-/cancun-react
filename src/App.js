@@ -122,7 +122,7 @@ export default class App extends React.Component {
                 <MapTilesLayer/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
-                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap}><SearchMarker/></Marker>
+                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
                         : null}
                 </MapLayer>
                 <MapLayer {...this.state.locationBoxInformation.location} render="html">

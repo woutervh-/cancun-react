@@ -72,13 +72,15 @@ export default class Marker extends React.Component {
                 React.Children.only(this.props.children),
                 {
                     viewBox: [0, 0, this.props.width, this.props.height].join(' '),
-                    style: {
-                        position: 'absolute',
-                        bottom: 0,
-                        marginLeft: this.props.width / -2,
-                        cursor: 'hand',
-                        zIndex: 5
-                    }
+                    style: Object.assign({},
+                        {
+                            position: 'absolute',
+                            bottom: 0,
+                            marginLeft: 'calc(' + this.props.style.width + ' / -2)',
+                            cursor: 'hand',
+                            zIndex: 5
+                        },
+                        this.props.style)
                 }
             )}
         </div>;

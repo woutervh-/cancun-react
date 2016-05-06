@@ -52,7 +52,6 @@ body {
   /* UHD Desktop */
   html {
     font-size: 137.5%;
-    color: red;
   }
 }
 
@@ -159,4 +158,8 @@ body {
       box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
     }
   }
+}
+
+.button-icon {
+  font-size: $button-font-icon-font-size;
 }
