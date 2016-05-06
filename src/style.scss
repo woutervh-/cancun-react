@@ -59,11 +59,18 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  right: 0;
   width: 100%;
   z-index: 1;
   padding-top: 1 * $unit;
   padding-bottom: 1 * $unit;
   background-color: $top-bar-background-color;
+  transition: transform $animation-duration $animation-curve-default $animation-duration;
+  transform: translateY(0);
+
+  &.active {
+    transform: translateY(-100%); /* TODO: make active when hover nearby */
+  }
 }
 
 .top-bar > * {
