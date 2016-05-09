@@ -29,14 +29,16 @@ export default class TopBar extends React.Component {
     }
 
     render() {
-        return <AppBar className={style['top-bar']}>
-            <IconMenu icon='menu' position='top-left'>
-                <MenuItem caption='+' onClick={this.props.onPlusClick}/>
-                <MenuItem caption='-' onClick={this.props.onMinusClick}/>
-                <MenuDivider />
-                <MenuItem caption='Drawer' onClick={this.props.onDrawClick}/>
-            </IconMenu>
-            <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
-        </AppBar>;
+        return <div className={style['top-bar-hover-container']}>
+            <AppBar className={style['top-bar']}>
+                <IconMenu icon='menu' position='top-left'>
+                    <MenuItem caption='+' onClick={this.props.onPlusClick}/>
+                    <MenuItem caption='-' onClick={this.props.onMinusClick}/>
+                    <MenuDivider />
+                    <MenuItem caption='Drawer' onClick={this.props.onDrawClick}/>
+                </IconMenu>
+                <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
+            </AppBar>
+        </div>;
     }
 };
