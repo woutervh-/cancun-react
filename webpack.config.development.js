@@ -10,8 +10,8 @@ module.exports = {
         path.resolve(__dirname, 'src', 'main.js')
     ],
     output: {
-        path: path.resolve(__dirname, 'build'),
-        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'development'),
+        filename: 'javascripts/bundle.js',
         publicPath: '/'
     },
     resolve: {
