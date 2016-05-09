@@ -6,6 +6,7 @@ import MapViewController from './MapViewController';
 import React from 'react';
 import {Canvas, Composition, Picture, Rectangle, Scale, Translate} from './canvas';
 import VectorUtil from '../VectorUtil';
+import objectAssign from 'object-assign';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -64,7 +65,7 @@ export default class MapView extends React.Component {
             height: this.state.height,
             ...view
         };
-        Object.assign(newProps, layerProps, mixinProps);
+        objectAssign(newProps, layerProps, mixinProps);
         let mapTilesLayerHelper = new MapTilesLayerHelper(newProps);
         return mapTilesLayerHelper.render();
     }

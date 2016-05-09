@@ -1,4 +1,5 @@
 import React from 'react';
+import objectAssign from 'object-assign';
 
 export default class Marker extends React.Component {
     constructor() {
@@ -72,7 +73,7 @@ export default class Marker extends React.Component {
                 React.Children.only(this.props.children),
                 {
                     viewBox: [0, 0, this.props.width, this.props.height].join(' '),
-                    style: Object.assign({},
+                    style: objectAssign({},
                         {
                             position: 'absolute',
                             bottom: 0,
