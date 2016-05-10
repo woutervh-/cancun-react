@@ -1,4 +1,4 @@
-const poolSize = 64;
+const poolSize = 8;
 
 export default class ImageFrontier {
     constructor() {

@@ -1,21 +1,26 @@
 var path = require('path');
 var webpack = require('webpack');
+var autoprefixer = require('autoprefixer');
 
 module.exports = {
+    context: __dirname,
     devtool: 'cheap-module-eval-source-map',
     entry: [
         'webpack-hot-middleware/client',
-        path.resolve(__dirname, 'src/main.js')
+        path.resolve(__dirname, 'src', 'main.js')
     ],
     output: {
-        path: path.resolve(__dirname, 'public/javascripts'),
-        filename: 'bundle.js',
-        publicPath: '/javascripts/'
+        path: path.resolve(__dirname, 'development'),
+        filename: 'javascripts/bundle.js',
+        publicPath: '/'
     },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new webpack.NoErrorsPlugin()
-    ],
+    resolve: {
+        extensions: ['', '.js', '.jsx', '.scss', '.json', '.svg'],
+        modulesDirectories: [
+            'node_modules',
+            path.resolve(__dirname, './node_modules')
+        ]
+    },
     module: {
         loaders: [
             {
@@ -26,9 +31,22 @@ module.exports = {
                     presets: ['es2015', 'react', 'stage-0', 'react-hmre']
                 }
             }, {
-                test: /\.css$/,
-                loader: 'style!css?modules&localIdentName=[name]---[local]---[hash:base64:5]'
+                test: /\.s?css$/,
+                loader: 'style!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox'
+            }, {
+                test: /\.svg$/,
+                loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0&presets[]=react-hmre!react-svg'
             }
         ]
-    }
+    },
+    toolbox: {
+        theme: path.join(__dirname, 'src', 'toolbox-theme.scss')
+    },
+    plugins: [
+        new webpack.HotModuleReplacementPlugin(),
+        new webpack.NoErrorsPlugin(),
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('development')
+        })
+    ]
 };

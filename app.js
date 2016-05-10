@@ -5,15 +5,15 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var users = require('./routes/users');
-var webpack = require('webpack');
-var webpackDevMiddleware = require('webpack-dev-middleware');
-var webpackHotMiddleware = require('webpack-hot-middleware');
-var config = require('./webpack.config.development.js');
 
 var app = express();
 
 // hmr dev server
 if (app.get('env') === 'development') {
+    var webpack = require('webpack');
+    var config = require('./webpack.config.development.js');
+    var webpackDevMiddleware = require('webpack-dev-middleware');
+    var webpackHotMiddleware = require('webpack-hot-middleware');
     var compiler = webpack(config);
     app.use(webpackDevMiddleware(compiler, {
         publicPath: config.output.publicPath
@@ -33,6 +33,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+if (app.get('env') === 'development') {
+    app.use(express.static(path.join(__dirname, 'development')));
+}
+
 app.use('/users', users);
 //app.get('*', function(req, res) {
 //    res.send({});

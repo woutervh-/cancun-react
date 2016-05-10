@@ -1,0 +1,176 @@
+@import "~react-toolbox/lib/base";
+@import "~react-toolbox/lib/commons";
+@import './config';
+
+html {
+  font-size: 62.5%;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+@media screen and (min-width: 480px) {
+  /* Phone (portrait) */
+}
+
+@media screen and (min-width: 720px) {
+  /* Small tablet (portrait) */
+}
+
+@media screen and (min-width: 1280px) {
+  /* Large tablet (landscape), desktop */
+}
+
+@media screen and (min-width: 1920px) {
+  /* HD Desktop */
+}
+
+@media screen and (min-width: 2560px) {
+  /* WQHD Desktop */
+  html {
+    font-size: 100%;
+  }
+}
+
+@media screen and (min-width: 3840px) {
+  /* UHD Desktop */
+  html {
+    font-size: 137.5%;
+  }
+}
+
+.top-bar-hover-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 8rem;
+}
+
+.top-bar-hover-container > * {
+  transform: translateY(-100%);
+}
+
+.top-bar-hover-container:hover > * {
+  transform: translateY(0);
+}
+
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1;
+  padding-top: 1 * $unit;
+  padding-bottom: 1 * $unit;
+  background-color: $top-bar-background-color;
+  transition: transform $animation-duration $animation-curve-default $animation-duration;
+}
+
+.top-bar > * {
+  align-self: flex-start;
+}
+
+.suggestions {
+  margin-top: $input-padding;
+  background-color: $suggestions-background-color;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
+  position: absolute;
+  opacity: 0;
+  width: $suggestions-initial-width;
+  max-width: $suggestions-max-width;
+  pointer-events: none;
+  transition: opacity $suggestions-fade-duration $animation-curve-default;
+  overflow-y: auto;
+  &.active {
+    pointer-events: auto;
+    opacity: 1;
+  }
+}
+
+.suggestions * {
+  z-index: 500;
+}
+
+.suggestions .active {
+  background-color: $suggestions-active-background;
+}
+
+.suggestions li:hover {
+  &:not(.active) {
+    background-color: $suggestions-hover-background;
+  }
+}
+
+.suggestions-item {
+  display: inline-block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.search-form > * {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.floating-location-box {
+  position: fixed;
+  top: auto;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
+  transition: opacity $animation-duration $animation-curve-default 0s,
+  transform $animation-duration $animation-curve-default $animation-duration,
+  box-shadow $animation-duration $animation-curve-default $animation-duration;
+
+  &:not(.active) {
+    transform: translateY(100%);
+    box-shadow: none;
+    pointer-events: none;
+  }
+  &.active {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+@media screen and (min-width: 720px) {
+  .floating-location-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: auto;
+    right: auto;
+    width: 32rem;
+    height: auto;
+
+    &:not(.active) {
+      transform: translateY(0);
+      opacity: 0;
+      box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+    }
+    &.active {
+      transform: translateY(0);
+      opacity: 1;
+      box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+
+.button-icon {
+  font-size: $button-font-icon-font-size;
+}

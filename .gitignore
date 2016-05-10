@@ -1,4 +1,6 @@
 *.iml
+*.zip
+
 .idea/
 node_modules/
 public/javascripts/
