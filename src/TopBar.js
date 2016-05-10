@@ -7,10 +7,12 @@ import style from './style';
 import classNames from 'classnames';
 import EyeActive from '../public/images/eye-active';
 import EyeInactive from '../public/images/eye-inactive';
+import LocalStorageComponent from './LocalStorageComponent';
 
-export default class TopBar extends React.Component {
+export default class TopBar extends LocalStorageComponent {
     constructor() {
         super();
+        this.componentDidMount = this.componentDidMount.bind(this);
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handlePinClick = this.handlePinClick.bind(this);
     }
@@ -30,6 +32,11 @@ export default class TopBar extends React.Component {
     state = {
         pinned: false
     };
+
+    componentDidMount() {
+        this.setPersistenceKey('top-bar');
+        this.restoreState();
+    }
 
     shouldComponentUpdate(nextProps, nextState) {
         return nextProps.onSearchSubmit != this.props.onSearchSubmit

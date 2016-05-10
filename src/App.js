@@ -8,10 +8,12 @@ import style from './style';
 import VectorUtil from './VectorUtil';
 import SearchMarker from '../public/images/search-marker';
 import Marker from './Marker';
+import LocalStorageComponent from './LocalStorageComponent';
 
-export default class App extends React.Component {
+export default class App extends LocalStorageComponent {
     constructor() {
         super();
+        this.componentDidMount = this.componentDidMount.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handleSearchClear = this.handleSearchClear.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
@@ -47,6 +49,11 @@ export default class App extends React.Component {
             }
         }
     };
+
+    componentDidMount() {
+        this.setPersistenceKey('app');
+        this.restoreState();
+    }
 
     handleSearchSubmit(input) {
         if (!!input) {
