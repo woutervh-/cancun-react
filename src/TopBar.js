@@ -1,14 +1,18 @@
-import {AppBar, IconMenu, MenuDivider, MenuItem} from 'react-toolbox';
+import {AppBar, IconButton} from 'react-toolbox';
 import MapHelper from './map/MapHelper';
 import MapViewController from './map/MapViewController';
 import React from 'react';
 import SearchBar from './SearchBar';
 import style from './style';
+import classNames from 'classnames';
+import EyeActive from '../public/images/eye-active';
+import EyeInactive from '../public/images/eye-inactive';
 
 export default class TopBar extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+        this.handlePinClick = this.handlePinClick.bind(this);
     }
 
     static propTypes = {
@@ -23,20 +27,28 @@ export default class TopBar extends React.Component {
         }
     };
 
-    shouldComponentUpdate(nextProps) {
+    state = {
+        pinned: false
+    };
+
+    shouldComponentUpdate(nextProps, nextState) {
         return nextProps.onSearchSubmit != this.props.onSearchSubmit
-            || nextProps.onSearchClear != this.props.onSearchClear;
+            || nextProps.onSearchClear != this.props.onSearchClear
+            || nextState.pinned != this.state.pinned;
+    }
+
+    handlePinClick() {
+        this.setState({pinned: !this.state.pinned});
     }
 
     render() {
-        return <div className={style['top-bar-hover-container']}>
+        return <div className={classNames(style['top-bar-hover-container'], {[style['pinned']]: this.state.pinned})}>
             <AppBar className={style['top-bar']}>
-                <IconMenu icon='menu' position='top-left'>
-                    <MenuItem caption='+' onClick={this.props.onPlusClick}/>
-                    <MenuItem caption='-' onClick={this.props.onMinusClick}/>
-                    <MenuDivider />
-                    <MenuItem caption='Drawer' onClick={this.props.onDrawClick}/>
-                </IconMenu>
+                <IconButton onClick={this.handlePinClick}>
+                    {this.state.pinned
+                        ? <EyeActive viewBox="0 0 30 30"/>
+                        : <EyeInactive viewBox="0 0 30 30"/>}
+                </IconButton>
                 <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
             </AppBar>
         </div>;

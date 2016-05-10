@@ -60,7 +60,7 @@ body {
   transform: translateY(-100%);
 }
 
-.top-bar-hover-container:hover > * {
+.top-bar-hover-container:hover > *, .top-bar-hover-container.pinned > * {
   transform: translateY(0);
 }
 
