@@ -2,6 +2,8 @@ var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+var cssExtractTextPlugin = new ExtractTextPlugin(1, "stylesheets/[name].css");
+
 module.exports = {
     devtool: 'source-map',
     entry: path.resolve(__dirname, 'src/main.js'),
@@ -30,7 +32,7 @@ module.exports = {
                 warnings: false
             }
         }),
-        new ExtractTextPlugin('stylesheets/style.css')
+        cssExtractTextPlugin
     ],
     module: {
         loaders: [
@@ -43,8 +45,9 @@ module.exports = {
                 }
             }, {
                 test: /\.s?css$/,
-                loader: ExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')
+                loader: cssExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')
             }, {
+                /* TODO: in production load such that it renders as <img src="..." .../> */
                 test: /\.svg$/,
                 loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0!react-svg'
             }
