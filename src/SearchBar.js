@@ -10,7 +10,6 @@ export default class SearchBar extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.handleClearClick = this.handleClearClick.bind(this);
-        this.handleSearchClick = this.handleSearchClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleBlur = this.handleBlur.bind(this);
         this.handleFocus = this.handleFocus.bind(this);
@@ -94,10 +93,6 @@ export default class SearchBar extends React.Component {
     handleClearClick() {
         this.setState({query: '', results: [], error: null, index: -1});
         this.props.onClear();
-    }
-
-    handleSearchClick() {
-        this.submit();
     }
 
     handleChange(input) {
@@ -190,7 +185,6 @@ export default class SearchBar extends React.Component {
                 </div>
             </Input>
             <IconButton icon="clear" type="button" onClick={this.handleClearClick}/>
-            <IconButton icon="search" type="button" onClick={this.handleSearchClick}/>
         </form>;
     }
 };
