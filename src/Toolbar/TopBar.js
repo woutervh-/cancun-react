@@ -1,13 +1,13 @@
 import {Card, CardText, CardActions, IconButton, Navigation, RadioGroup, RadioButton} from 'react-toolbox';
 import MapHelper from './../Map/MapHelper';
 import React from 'react';
-import SearchBar from './../SearchBar';
+import SearchBar from '../SearchBar';
 import style from './style';
 import classNames from 'classnames';
 import EyeActive from '../../public/images/eye-active';
 import EyeInactive from '../../public/images/eye-inactive';
 import MapInactive from '../../public/images/map-inactive';
-import LocalStorageComponent from './../LocalStorageComponent';
+import LocalStorageComponent from '../LocalStorageComponent';
 import MapSelect from './MapSelect';
 import ToolbarItem from './ToolbarItem';
 import EventUtil from '../EventUtil';

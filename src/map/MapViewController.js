@@ -1,5 +1,4 @@
 import MapHelper from './MapHelper';
-import MapView from './MapView';
 import VectorUtil from '../VectorUtil';
 import React from 'react';
 import style from './style';
@@ -32,7 +31,7 @@ export default class MapViewController extends React.Component {
 
     static propTypes = {
         view: React.PropTypes.shape({
-            /* Pixel-space coordinate to center Map on */
+            /* Pixel-space coordinate to center map on */
             x: React.PropTypes.number.isRequired,
             y: React.PropTypes.number.isRequired,
             /* Zoom */
@@ -72,7 +71,7 @@ export default class MapViewController extends React.Component {
 
     componentDidUpdate() {
         if (this.hammer) {
-            /* Not necessary when no bound methods are dependant on props/state */
+            /* Not necessary when no bound methods are dependent on props/state */
             //this.updateHammer(this.hammer);
         }
     }
@@ -142,7 +141,7 @@ export default class MapViewController extends React.Component {
     }
 
     /**
-     * Converts a position in container coordinates to a position in Map coordinates.
+     * Converts a position in container coordinates to a position in map coordinates.
      * @param containerPosition
      * @param mapCenter
      * @param container
@@ -154,7 +153,7 @@ export default class MapViewController extends React.Component {
     }
 
     /**
-     * Calculates the coordinates of the center of the Map in zoom toZoom, that correspond to the given Map coordinates at zoom fromZoom.
+     * Calculates the coordinates of the center of the map in zoom toZoom, that correspond to the given map coordinates at zoom fromZoom.
      * @param x
      * @param y
      * @param fromZoom
