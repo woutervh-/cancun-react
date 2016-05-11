@@ -25,7 +25,7 @@ export default class MapTilesLayerHelper {
         for (let i = 0; i < endTile.x - startTile.x; i++) {
             for (let j = 0; j < endTile.y - startTile.y; j++) {
                 tiles.push({
-                    url: MapHelper.getTileUrl(startTile.x + i, startTile.y + j, this.props.zoomLevel + deltaZoomLevel),
+                    url: MapHelper.getTileUrl(startTile.x + i, startTile.y + j, this.props.zoomLevel + deltaZoomLevel, this.props.style),
                     left: MapHelper.tileWidth / deltaScale * i + offset.x,
                     top: MapHelper.tileHeight / deltaScale * j + offset.y,
                     width: MapHelper.tileWidth / deltaScale,

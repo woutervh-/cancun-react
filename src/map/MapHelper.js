@@ -18,6 +18,15 @@ const baseUrls = [
     'https://c.api.tomtom.com/lbs/map/3/basic',
     'https://d.api.tomtom.com/lbs/map/3/basic'
 ];
+const styles = [
+    {
+        label: 'Day',
+        value: '1'
+    }, {
+        label: 'Night',
+        value: 'night'
+    }
+];
 const minZoom = 0;
 const maxZoom = 18;
 const tileSize = 256;
@@ -27,17 +36,17 @@ let urlIndex = 0;
 let urlCache = {};
 
 export default class MapHelper {
-    static getTileUrl(x, y, zoom) {
+    static getTileUrl(x, y, zoom, style = '1') {
         zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
         let countTiles = Math.pow(2, zoom);
         x = (x % countTiles + countTiles) % countTiles;
         y = (y % countTiles + countTiles) % countTiles;
 
-        if (!([zoom, x, y] in urlCache)) {
-            urlCache[[zoom, x, y]] = baseUrls[urlIndex++ % baseUrls.length] + '/1/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey + '&tileSize=' + tileSize;
+        if (!([zoom, x, y, style] in urlCache)) {
+            urlCache[[zoom, x, y, style]] = baseUrls[urlIndex++ % baseUrls.length] + '/' + style + '/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey + '&tileSize=' + tileSize;
         }
 
-        return urlCache[[zoom, x, y]];
+        return urlCache[[zoom, x, y, style]];
     }
 
     static project({latitude = 0, longitude = 0}, zoom = 0) {
@@ -72,5 +81,9 @@ export default class MapHelper {
 
     static get tileHeight() {
         return tileSize;
+    }
+
+    static get styles() {
+        return styles;
     }
 };

@@ -20,6 +20,7 @@ export default class App extends LocalStorageComponent {
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
         this.handleMapTap = this.handleMapTap.bind(this);
+        this.handleMapSelect = this.handleMapSelect.bind(this);
     }
 
     state = {
@@ -28,6 +29,7 @@ export default class App extends LocalStorageComponent {
             y: 0,
             zoom: 0
         },
+        mapStyle: MapHelper.styles[0].value,
         locationMarker: {
             show: false
         },
@@ -120,13 +122,18 @@ export default class App extends LocalStorageComponent {
         this.setState({locationBox: {show: false}});
     }
 
+    handleMapSelect(value) {
+        this.setState({mapStyle: value});
+    }
+
     render() {
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
-                    onDrawClick={this.handleToggle}/>
+                    onMapSelect={this.handleMapSelect}
+                    mapStyle={this.state.mapStyle}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
-                <MapTilesLayer/>
+                <MapTilesLayer style={this.state.mapStyle}/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
                         ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
