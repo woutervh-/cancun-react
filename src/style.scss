@@ -47,43 +47,6 @@ body {
   }
 }
 
-.top-bar-hover-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  height: 8rem;
-}
-
-.top-bar-hover-container > * {
-  transform: translateY(-100%);
-}
-
-.top-bar-hover-container:hover > *, .top-bar-hover-container.pinned > * {
-  transform: translateY(0);
-}
-
-.top-bar {
-  position: absolute;
-  display: flex;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1;
-  padding-left: 1 * $unit;
-  padding-top: 1 * $unit;
-  padding-bottom: 1 * $unit;
-  background-color: $top-bar-background-color;
-  transition: transform $animation-duration $animation-curve-default $animation-duration;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, .26);
-}
-
-.top-bar > * {
-  align-self: flex-start;
-}
-
 .suggestions {
   margin-top: $input-padding;
   background-color: $suggestions-background-color;
@@ -176,32 +139,4 @@ body {
 
 .button-icon {
   font-size: $button-font-icon-font-size;
-}
-
-@media screen and (min-width: 720px) {
-  .toggle-side-bar-button {
-    display: none;
-  }
-}
-
-@media screen and (max-width: 719px) {
-  .toolbar-container {
-    background-color: white;
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100vh;
-    max-width: calc(100vw - #{4 * $unit});
-    overflow-x: auto;
-    transition: transform $animation-duration $animation-curve-default $animation-duration,
-    box-shadow $animation-duration $animation-curve-default $animation-duration;
-    &:not(.active) {
-      box-shadow: none;
-      transform: translateX(100%);
-    }
-    &.active {
-      box-shadow: 2px 0 5px rgba(0, 0, 0, .26);
-      transform: translateX(0);
-    }
-  }
 }

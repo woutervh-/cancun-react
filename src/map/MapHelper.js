@@ -23,7 +23,7 @@ const styles = [
         label: 'Day',
         value: '1'
     }, {
-        label: 'Night',
+        label: 'Night QSADKJLASJDKL',
         value: 'night'
     }
 ];

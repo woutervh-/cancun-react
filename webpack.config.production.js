@@ -5,7 +5,7 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var cssExtractTextPlugin = new ExtractTextPlugin(1, "stylesheets/[name].css");
 
 module.exports = {
-    devtool: 'source-map',
+    devtool: 'source-Map',
     entry: path.resolve(__dirname, 'src/main.js'),
     output: {
         path: path.resolve(__dirname, 'public'),

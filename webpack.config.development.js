@@ -4,7 +4,7 @@ var autoprefixer = require('autoprefixer');
 
 module.exports = {
     context: __dirname,
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'cheap-module-eval-source-Map',
     entry: [
         'webpack-hot-middleware/client',
         path.resolve(__dirname, 'src', 'main.js')

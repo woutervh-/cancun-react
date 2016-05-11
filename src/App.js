@@ -1,11 +1,8 @@
-import TopBar from './TopBar';
+import {TopBar} from './Toolbar';
 import LocationInfoBox from './LocationInfoBox';
-import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController} from './map';
-import {Picture} from './map/canvas';
+import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController} from './Map';
+import {Picture} from './Map/canvas';
 import React from 'react';
-import SearchBar from './SearchBar';
-import style from './style';
-import VectorUtil from './VectorUtil';
 import SearchMarker from '../public/images/search-marker';
 import Marker from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
