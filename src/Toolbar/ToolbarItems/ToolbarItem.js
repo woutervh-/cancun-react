@@ -35,13 +35,13 @@ export default class ToolbarItem extends React.Component {
     };
 
     shouldComponentUpdate(nextProps) {
-        return this.props.icon != nextProps.icon
+        return this.props.active != nextProps.active
+            || this.props.onToggle != nextProps.onToggle
+            || this.props.icon != nextProps.icon
             || this.props.label != nextProps.label
             || this.props.buttonClassName != nextProps.buttonClassName
             || this.props.cardClassName != nextProps.cardClassName
-            || this.props.children != nextProps.children
-            || this.props.active != nextProps.active
-            || this.props.onToggle!= nextProps.onToggle;
+            || this.props.children != nextProps.children;
     }
 
     componentDidMount() {
@@ -78,10 +78,15 @@ export default class ToolbarItem extends React.Component {
         let {icon, label, children, buttonClassName, cardClassName, ...rest} = this.props;
 
         return <div ref="container" {...rest}>
-            <Button onClick={this.handleClick} accent={this.props.active} primary={this.props.active} className={buttonClassName}>
+            <Button
+                onClick={this.handleClick}
+                accent={this.props.active}
+                primary={this.props.active}
+                className={classNames(style['button'], {[style['active']]: this.props.active}, buttonClassName)}
+            >
                 {icon} {label}
             </Button>
-            <Card className={classNames(style['toolbar-item-context-container'], {[style['active']]: this.props.active}, cardClassName)}>
+            <Card className={classNames(style['context-container'], {[style['active']]: this.props.active}, cardClassName)}>
                 <CardText>
                     {children}
                 </CardText>

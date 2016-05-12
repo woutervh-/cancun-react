@@ -6,12 +6,9 @@ import style from './style';
 import classNames from 'classnames';
 import EyeActive from '../../public/images/eye-active';
 import EyeInactive from '../../public/images/eye-inactive';
-import MapActive from '../../public/images/map-active';
-import MapInactive from '../../public/images/map-inactive';
 import LocalStorageComponent from '../LocalStorageComponent';
-import MapSelect from './MapSelect';
-import {ToolbarItem} from './ToolbarItem';
 import EventUtil from '../EventUtil';
+import {MapToolbarItem, TrafficToolbarItem} from './ToolbarItems/Map';
 
 export default class TopBar extends LocalStorageComponent {
     constructor() {
@@ -112,18 +109,8 @@ export default class TopBar extends LocalStorageComponent {
                     <IconButton icon="menu" onClick={this.handleMenuClick} className={style['toggle-side-bar-button']}/>
                 </div>
                 <div ref="toolbarContainer" className={classNames(style['toolbar-container'], {[style['active']]: this.state.toolbarActive})}>
-                    <ToolbarItem
-                        active={this.state.mapActive}
-                        onToggle={this.handleMapToggle}
-                        icon={this.state.mapActive
-                            ? <MapActive viewBox="0 0 30 30"/>
-                            : <MapInactive viewBox="0 0 30 30"/>}
-                        label="Map"
-                        className={style['toolbar-item']}
-                        buttonClassName={style['toolbar-button']}
-                        cardClassName={style['toolbar-context-container']}>
-                        <MapSelect selected={this.props.mapStyle} options={MapHelper.styles} onMapSelect={this.props.onMapSelect}/>
-                    </ToolbarItem>
+                    <MapToolbarItem mapStyle={this.props.mapStyle} onMapSelect={this.props.onMapSelect}/>
+                    <TrafficToolbarItem/>
                 </div>
             </div>
         </div>;

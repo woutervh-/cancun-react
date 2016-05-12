@@ -40,13 +40,6 @@
 }
 
 @media screen and (max-width: 719px) {
-  .toolbar-button, .toolbar-context-container {
-    float: left;
-    clear: both;
-    width: 100%;
-    text-align: left;
-  }
-
   .toolbar-item-context-container {
     position: static;
     display: inline-flex;
@@ -58,6 +51,12 @@
 @media screen and (min-width: 720px) {
   .toggle-side-bar-button {
     display: none;
+  }
+}
+
+@media screen and (min-width: 720px) {
+  .toolbar-container {
+    display: flex;
   }
 }
 
@@ -82,16 +81,4 @@
       transform: translateX(0);
     }
   }
-
-  .toolbar-item {
-    width: 100%;
-  }
-}
-
-.radio-button {
-  cursor: pointer;
-}
-
-.radio-button:last-child {
-  margin-bottom: 0;
 }

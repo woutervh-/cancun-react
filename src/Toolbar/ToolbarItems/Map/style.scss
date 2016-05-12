@@ -1,0 +1,22 @@
+.radio-button {
+  cursor: pointer;
+}
+
+.radio-button:last-child {
+  margin-bottom: 0;
+}
+
+@media screen and (max-width: 719px) {
+  .toolbar-item {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 719px) {
+  .toolbar-button, .toolbar-context-container {
+    float: left;
+    clear: both;
+    width: 100%;
+    text-align: left;
+  }
+}

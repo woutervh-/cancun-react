@@ -1,7 +1,7 @@
 @import "~react-toolbox/lib/base";
 @import "~react-toolbox/lib/commons";
 
-.toolbar-item-context-container {
+.context-container {
   z-index: 250;
   position: absolute;
   width: auto;
@@ -15,9 +15,15 @@
 }
 
 @media screen and (max-width: 719px) {
-  .toolbar-item-context-container {
+  .context-container {
     position: static;
     display: inline-flex;
     min-width: 100%;
+  }
+}
+
+.button {
+  &.active {
+    background-color: rgba(155, 175, 45, 0.2);
   }
 }
