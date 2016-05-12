@@ -13,11 +13,15 @@ export default class ToolbarItem extends React.Component {
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleClick = this.handleClick.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
+        this.handleMouseOver = this.handleMouseOver.bind(this);
+        this.handleMouseOut = this.handleMouseOut.bind(this);
     }
 
     static propTypes = {
+        show: React.PropTypes.bool.isRequired,
         active: React.PropTypes.bool.isRequired,
-        onToggle: React.PropTypes.func.isRequired,
+        onToggleShow: React.PropTypes.func.isRequired,
+        onToggleActive: React.PropTypes.func.isRequired,
         icon: React.PropTypes.any.isRequired,
         label: React.PropTypes.any.isRequired,
         buttonClassName: React.PropTypes.string.isRequired,
@@ -25,18 +29,19 @@ export default class ToolbarItem extends React.Component {
     };
 
     static defaultProps = {
-        active: false,
-        onToggle: () => {
+        onToggleShow: () => {
         },
-        icon: null,
-        label: null,
+        onToggleActive: () => {
+        },
         buttonClassName: '',
         cardClassName: ''
     };
 
     shouldComponentUpdate(nextProps) {
-        return this.props.active != nextProps.active
-            || this.props.onToggle != nextProps.onToggle
+        return this.props.show != nextProps.show
+            || this.props.active != nextProps.active
+            || this.props.onToggleShow != nextProps.onToggleShow
+            || this.props.onToggleActive != nextProps.onToggleActive
             || this.props.icon != nextProps.icon
             || this.props.label != nextProps.label
             || this.props.buttonClassName != nextProps.buttonClassName
@@ -45,48 +50,55 @@ export default class ToolbarItem extends React.Component {
     }
 
     componentDidMount() {
-        if (this.props.active) {
+        if (this.props.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentDidUpdate(prevProps) {
-        if (this.props.active && !prevProps.active) {
+        if (this.props.show && !prevProps.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
-        } else if (!this.props.active && prevProps.active) {
+        } else if (!this.props.show && prevProps.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentWillUnmount() {
-        if (this.props.active) {
+        if (this.props.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     handleClick() {
-        this.props.onToggle(!this.props.active);
+        this.props.onToggleActive(!this.props.active);
     }
 
     handleDocumentClick(event) {
-        if (this.props.active && !EventUtil.targetIsDescendant(event, this.refs.container)) {
-            this.props.onToggle(false);
+        if (this.props.show && !EventUtil.targetIsDescendant(event, this.refs.container)) {
+            this.props.onToggleActive(false);
         }
+    }
+
+    handleMouseOver() {
+        this.props.onToggleShow(true);
+    }
+
+    handleMouseOut() {
+        this.props.onToggleShow(false);
     }
 
     render() {
         let {icon, label, children, buttonClassName, cardClassName, ...rest} = this.props;
 
-        return <div ref="container" {...rest}>
+        return <div ref="container" onMouseOver={this.handleMouseOver} onMouseOut={this.handleMouseOut} {...rest}>
             <Button
                 onClick={this.handleClick}
-                accent={this.props.active}
                 primary={this.props.active}
-                className={classNames(style['button'], {[style['active']]: this.props.active}, buttonClassName)}
+                className={classNames(style['button'], {[style['active']]: this.props.show}, buttonClassName)}
             >
                 {icon} {label}
             </Button>
-            <Card className={classNames(style['context-container'], {[style['active']]: this.props.active}, cardClassName)}>
+            <Card className={classNames(style['context-container'], {[style['active']]: this.props.show}, cardClassName)}>
                 <CardText>
                     {children}
                 </CardText>

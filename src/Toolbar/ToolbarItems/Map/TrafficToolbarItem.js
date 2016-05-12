@@ -9,32 +9,41 @@ export default class TrafficToolbarItem extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
-        this.handleToggle = this.handleToggle.bind(this);
     }
 
     static propTypes = {
+        show: React.PropTypes.bool.isRequired,
+        active: React.PropTypes.bool.isRequired,
+        onToggleShow: React.PropTypes.func.isRequired,
+        onToggleActive: React.PropTypes.func.isRequired,
+        traffic: React.PropTypes.object.isRequired,
+        onTrafficChange: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
+        show: false,
+        onToggleShow: () => {
+        },
+        onTrafficChange: () => {
+        }
     };
 
-    state = {
-        active: false
-    };
-
-    shouldComponentUpdate(prevProps, prevState) {
-        return this.state.active != prevState.active;
-    }
-
-    handleToggle(active) {
-        this.setState({active});
+    shouldComponentUpdate(prevProps) {
+        return this.props.show != prevProps.show
+            || this.props.active != prevProps.active
+            || this.props.onToggleShow != prevProps.onToggleShow
+            || this.props.onToggleActive != prevProps.onToggleActive
+            || this.props.traffic != prevProps.traffic
+            || this.props.onTrafficChange != prevProps.onTrafficChange;
     }
 
     render() {
         return <ToolbarItem
-            active={this.state.active}
-            onToggle={this.handleToggle}
-            icon={this.state.active
+            show={this.props.show}
+            active={this.props.active}
+            onToggleShow={this.props.onToggleShow}
+            onToggleActive={this.props.onToggleActive}
+            icon={this.props.active
                             ? <TrafficActive viewBox="0 0 30 30"/>
                             : <TrafficInactive viewBox="0 0 30 30"/>}
             label="Traffic"
@@ -42,7 +51,7 @@ export default class TrafficToolbarItem extends React.Component {
             buttonClassName={style['toolbar-button']}
             cardClassName={style['toolbar-context-container']}
         >
-            <TrafficContext/>
+            <TrafficContext traffic={this.props.traffic} onTrafficChange={this.props.onTrafficChange}/>
         </ToolbarItem>;
     }
 };

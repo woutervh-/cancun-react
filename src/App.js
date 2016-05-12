@@ -18,6 +18,7 @@ export default class App extends LocalStorageComponent {
         this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
         this.handleMapTap = this.handleMapTap.bind(this);
         this.handleMapSelect = this.handleMapSelect.bind(this);
+        this.handleTrafficToggle = this.handleTrafficToggle.bind(this);
     }
 
     state = {
@@ -27,6 +28,9 @@ export default class App extends LocalStorageComponent {
             zoom: 0
         },
         mapStyle: MapHelper.styles[0].value,
+        traffic: {
+            show: false
+        },
         locationMarker: {
             show: false
         },
@@ -124,12 +128,18 @@ export default class App extends LocalStorageComponent {
         this.setState({mapStyle: value});
     }
 
+    handleTrafficToggle(active) {
+        this.setState({traffic: {show: active}});
+    }
+
     render() {
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
                     onMapSelect={this.handleMapSelect}
-                    mapStyle={this.state.mapStyle}/>
+                    mapStyle={this.state.mapStyle}
+                    onTrafficToggle={this.handleTrafficToggle}
+                    traffic={this.state.traffic}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer style={this.state.mapStyle}/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">

@@ -10,46 +10,42 @@ export default class MapToolbarItem extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
-        this.handleToggle = this.handleToggle.bind(this);
     }
 
     static propTypes = {
+        show: React.PropTypes.bool.isRequired,
+        onToggleShow: React.PropTypes.func.isRequired,
         mapStyle: React.PropTypes.string.isRequired,
         onMapSelect: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
+        show: false,
+        onToggleShow: () => {
+        },
         onMapSelect: () => {
         }
     };
 
-    state = {
-        active: false
-    };
-
-    shouldComponentUpdate(prevProps, prevState) {
-        return this.props.mapStyle != prevProps.mapStyle
-            || this.props.onMapSelect != prevProps.onMapSelect
-            || this.state.active != prevState.active;
-    }
-
-    handleToggle(active) {
-        this.setState({active});
+    shouldComponentUpdate(prevProps) {
+        return this.props.show != prevProps.show
+            || this.props.onToggleShow != prevProps.onToggleShow
+            || this.props.mapStyle != prevProps.mapStyle
+            || this.props.onMapSelect != prevProps.onMapSelect;
     }
 
     render() {
         return <ToolbarItem
-            active={this.state.active}
-            onToggle={this.handleToggle}
-            icon={this.state.active
-                            ? <MapActive viewBox="0 0 30 30"/>
-                            : <MapInactive viewBox="0 0 30 30"/>}
+            show={this.props.show}
+            active={false}
+            onToggleShow={this.props.onToggleShow}
+            icon={<MapInactive viewBox="0 0 30 30"/>}
             label="Map"
             className={style['toolbar-item']}
             buttonClassName={style['toolbar-button']}
             cardClassName={style['toolbar-context-container']}
         >
-            <MapContext selected={this.props.mapStyle} options={MapHelper.styles} onMapSelect={this.props.onMapSelect}/>
+            <MapContext selected={this.props.mapStyle} onMapSelect={this.props.onMapSelect}/>
         </ToolbarItem>;
     }
 };
