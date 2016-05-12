@@ -1,4 +1,4 @@
-import {Card, CardText, CardActions, IconButton, Navigation, RadioGroup, RadioButton} from 'react-toolbox';
+import {IconButton} from 'react-toolbox';
 import MapHelper from '../Map/MapHelper';
 import React from 'react';
 import SearchBar from '../SearchBar';
