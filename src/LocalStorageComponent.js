@@ -5,6 +5,10 @@ export default class LocalStorageComponent extends React.Component {
         this.key = key;
     }
 
+    setStateMapping(mapping) {
+        this.mapping = mapping;
+    }
+
     restoreState() {
         if (!!localStorage[this.key]) {
             super.setState(JSON.parse(localStorage[this.key]));
@@ -13,7 +17,7 @@ export default class LocalStorageComponent extends React.Component {
 
     setState(nextState, callback) {
         super.setState(nextState, () => {
-            localStorage[this.key] = JSON.stringify(this.state);
+            localStorage[this.key] = JSON.stringify(!!this.mapping ? this.mapping(this.state) : this.state);
             if (!!callback) {
                 callback();
             }

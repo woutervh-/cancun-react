@@ -39,26 +39,15 @@
   align-self: flex-start;
 }
 
-.toolbar-context-container {
-  z-index: 250;
-  position: absolute;
-  width: auto;
-  transition: max-height $animation-duration $animation-curve-default $animation-duration;
-  &.active {
-    max-height: 100vh;
-  }
-  &:not(.active) {
-    max-height: 0;
-  }
-}
-
 @media screen and (max-width: 719px) {
-  .toolbar-button {
+  .toolbar-button, .toolbar-context-container {
     float: left;
     clear: both;
+    width: 100%;
+    text-align: left;
   }
 
-  .toolbar-context-container {
+  .toolbar-item-context-container {
     position: static;
     display: inline-flex;
     float: left;
@@ -96,11 +85,6 @@
 
   .toolbar-item {
     width: 100%;
-  }
-
-  .toolbar-item > * {
-    width: 100%;
-    text-align: left;
   }
 }
 

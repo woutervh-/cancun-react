@@ -1,15 +1,16 @@
 import {Card, CardText, CardActions, IconButton, Navigation, RadioGroup, RadioButton} from 'react-toolbox';
-import MapHelper from './../Map/MapHelper';
+import MapHelper from '../Map/MapHelper';
 import React from 'react';
 import SearchBar from '../SearchBar';
 import style from './style';
 import classNames from 'classnames';
 import EyeActive from '../../public/images/eye-active';
 import EyeInactive from '../../public/images/eye-inactive';
+import MapActive from '../../public/images/map-active';
 import MapInactive from '../../public/images/map-inactive';
 import LocalStorageComponent from '../LocalStorageComponent';
 import MapSelect from './MapSelect';
-import ToolbarItem from './ToolbarItem';
+import {ToolbarItem} from './ToolbarItem';
 import EventUtil from '../EventUtil';
 
 export default class TopBar extends LocalStorageComponent {
@@ -22,6 +23,7 @@ export default class TopBar extends LocalStorageComponent {
         this.handlePinClick = this.handlePinClick.bind(this);
         this.handleMenuClick = this.handleMenuClick.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
+        this.handleMapToggle = this.handleMapToggle.bind(this);
     }
 
     static propTypes = {
@@ -42,11 +44,13 @@ export default class TopBar extends LocalStorageComponent {
 
     state = {
         pinned: false,
-        toolbarActive: false
+        toolbarActive: false,
+        mapActive: false
     };
 
     componentDidMount() {
         this.setPersistenceKey('top-bar');
+        this.setStateMapping(state => ({pinned: state.pinned}));
         this.restoreState();
         if (this.state.toolbarActive) {
             document.addEventListener('mousedown', this.handleDocumentClick);
@@ -73,7 +77,8 @@ export default class TopBar extends LocalStorageComponent {
             || nextProps.onSearchClear != this.props.onSearchClear
             || nextProps.onMapSelect != this.props.onMapSelect
             || nextState.pinned != this.state.pinned
-            || nextState.toolbarActive != this.state.toolbarActive;
+            || nextState.toolbarActive != this.state.toolbarActive
+            || nextState.mapActive != this.state.mapActive;
     }
 
     handlePinClick() {
@@ -90,6 +95,10 @@ export default class TopBar extends LocalStorageComponent {
         }
     }
 
+    handleMapToggle(active) {
+        this.setState({mapActive: active});
+    }
+
     render() {
         return <div className={classNames(style['top-bar-hover-container'], {[style['pinned']]: this.state.pinned})}>
             <div className={style['top-bar']}>
@@ -103,7 +112,16 @@ export default class TopBar extends LocalStorageComponent {
                     <IconButton icon="menu" onClick={this.handleMenuClick} className={style['toggle-side-bar-button']}/>
                 </div>
                 <div ref="toolbarContainer" className={classNames(style['toolbar-container'], {[style['active']]: this.state.toolbarActive})}>
-                    <ToolbarItem icon={<MapInactive viewBox="0 0 30 30"/>} label="Map" className={style['toolbar-item']}>
+                    <ToolbarItem
+                        active={this.state.mapActive}
+                        onToggle={this.handleMapToggle}
+                        icon={this.state.mapActive
+                            ? <MapActive viewBox="0 0 30 30"/>
+                            : <MapInactive viewBox="0 0 30 30"/>}
+                        label="Map"
+                        className={style['toolbar-item']}
+                        buttonClassName={style['toolbar-button']}
+                        cardClassName={style['toolbar-context-container']}>
                         <MapSelect selected={this.props.mapStyle} options={MapHelper.styles} onMapSelect={this.props.onMapSelect}/>
                     </ToolbarItem>
                 </div>

@@ -4,7 +4,7 @@ import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController} from './
 import {Picture} from './Map/canvas';
 import React from 'react';
 import SearchMarker from '../public/images/search-marker';
-import Marker from './Marker';
+import {Marker} from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
 
 export default class App extends LocalStorageComponent {
@@ -51,6 +51,7 @@ export default class App extends LocalStorageComponent {
 
     componentDidMount() {
         this.setPersistenceKey('app');
+        this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle}));
         this.restoreState();
     }
 

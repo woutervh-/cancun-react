@@ -1,0 +1,23 @@
+@import "~react-toolbox/lib/base";
+@import "~react-toolbox/lib/commons";
+
+.toolbar-item-context-container {
+  z-index: 250;
+  position: absolute;
+  width: auto;
+  transition: max-height $animation-duration $animation-curve-default $animation-duration;
+  &.active {
+    max-height: 50vh;
+  }
+  &:not(.active) {
+    max-height: 0;
+  }
+}
+
+@media screen and (max-width: 719px) {
+  .toolbar-item-context-container {
+    position: static;
+    display: inline-flex;
+    min-width: 100%;
+  }
+}

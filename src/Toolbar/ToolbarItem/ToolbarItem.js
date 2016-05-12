@@ -2,7 +2,7 @@ import {Button, Card, CardText} from 'react-toolbox';
 import React from 'react';
 import style from './style';
 import classNames from 'classnames';
-import EventUtil from '../EventUtil';
+import EventUtil from '../../EventUtil';
 
 export default class ToolbarItem extends React.Component {
     constructor() {
@@ -16,64 +16,72 @@ export default class ToolbarItem extends React.Component {
     }
 
     static propTypes = {
+        active: React.PropTypes.bool.isRequired,
+        onToggle: React.PropTypes.func.isRequired,
         icon: React.PropTypes.any.isRequired,
-        label: React.PropTypes.any.isRequired
+        label: React.PropTypes.any.isRequired,
+        buttonClassName: React.PropTypes.string.isRequired,
+        cardClassName: React.PropTypes.string.isRequired
     };
 
     static defaultProps = {
+        active: false,
+        onToggle: () => {
+        },
         icon: null,
-        label: null
+        label: null,
+        buttonClassName: '',
+        cardClassName: ''
     };
 
-    state = {
-        active: false
-    };
-
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps) {
         return this.props.icon != nextProps.icon
             || this.props.label != nextProps.label
+            || this.props.buttonClassName != nextProps.buttonClassName
+            || this.props.cardClassName != nextProps.cardClassName
             || this.props.children != nextProps.children
-            || this.state.active != nextProps.active;
+            || this.props.active != nextProps.active
+            || this.props.onToggle!= nextProps.onToggle;
     }
 
     componentDidMount() {
-        if (this.state.active) {
+        if (this.props.active) {
             document.addEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        if (this.state.active && !prevState.active) {
+    componentDidUpdate(prevProps) {
+        if (this.props.active && !prevProps.active) {
             document.addEventListener('mousedown', this.handleDocumentClick);
-        } else if (!this.state.active && prevState.active) {
+        } else if (!this.props.active && prevProps.active) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentWillUnmount() {
-        if (this.state.active) {
+        if (this.props.active) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     handleClick() {
-        this.setState({active: !this.state.active});
+        this.props.onToggle(!this.props.active);
     }
 
     handleDocumentClick(event) {
-        if (this.state.active && !EventUtil.targetIsDescendant(event, this.refs.container)) {
-            this.setState({active: false});
+        if (this.props.active && !EventUtil.targetIsDescendant(event, this.refs.container)) {
+            this.props.onToggle(false);
         }
     }
 
     render() {
-        let {icon, label, children, ...rest} = this.props;
+        let {icon, label, children, buttonClassName, cardClassName, ...rest} = this.props;
 
         return <div ref="container" {...rest}>
-            <Button onClick={this.handleClick} accent={this.state.active} primary={this.state.active} className={style['toolbar-button']}>
+            <Button onClick={this.handleClick} accent={this.props.active} primary={this.props.active} className={buttonClassName}>
                 {icon} {label}
             </Button>
-            <Card className={classNames(style['toolbar-context-container'], {[style['active']]: this.state.active})}>
+            <Card className={classNames(style['toolbar-item-context-container'], {[style['active']]: this.props.active}, cardClassName)}>
                 <CardText>
                     {children}
                 </CardText>
