@@ -40,9 +40,10 @@
 }
 
 .toolbar-context-container {
+  z-index: 250;
   position: absolute;
   width: auto;
-  transition: $animation-duration $animation-curve-default $animation-duration;
+  transition: max-height $animation-duration $animation-curve-default $animation-duration;
   &.active {
     max-height: 100vh;
   }
@@ -52,8 +53,16 @@
 }
 
 @media screen and (max-width: 719px) {
+  .toolbar-button {
+    float: left;
+    clear: both;
+  }
+
   .toolbar-context-container {
     position: static;
+    display: inline-flex;
+    float: left;
+    clear: both;
   }
 }
 
@@ -70,8 +79,8 @@
     top: 0;
     right: 0;
     height: 100vh;
-    overflow-x: auto; /* needs lots of inline-block display in children elements */
-    max-width: calc(100vw - #{4 * $unit});
+    overflow-x: auto;
+    width: calc(100vw - #{6 * $unit});
     transition: transform $animation-duration $animation-curve-default $animation-duration,
     box-shadow $animation-duration $animation-curve-default $animation-duration;
     z-index: 100;
@@ -83,6 +92,15 @@
       box-shadow: -2px 0 5px rgba(0, 0, 0, .26);
       transform: translateX(0);
     }
+  }
+
+  .toolbar-item {
+    width: 100%;
+  }
+
+  .toolbar-item > * {
+    width: 100%;
+    text-align: left;
   }
 }
 

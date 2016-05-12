@@ -85,7 +85,7 @@ export default class TopBar extends LocalStorageComponent {
     }
 
     handleDocumentClick(event) {
-        if (!EventUtil.targetIsDescendant(event, this.refs.toolbarContainer)) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.toolbarContainer) && !EventUtil.targetIsDescendant(event, this.refs.toolbarToggleContainer)) {
             this.setState({toolbarActive: false});
         }
     }
@@ -99,13 +99,13 @@ export default class TopBar extends LocalStorageComponent {
                         : <EyeInactive viewBox="0 0 30 30"/>}
                 </IconButton>
                 <SearchBar onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
-                <div ref="toolbarContainer">
+                <div ref="toolbarToggleContainer">
                     <IconButton icon="menu" onClick={this.handleMenuClick} className={style['toggle-side-bar-button']}/>
-                    <div className={classNames(style['toolbar-container'], {[style['active']]: this.state.toolbarActive})}>
-                        <ToolbarItem icon={<MapInactive viewBox="0 0 30 30"/>} label="Map">
-                            <MapSelect selected={this.props.mapStyle} options={MapHelper.styles} onMapSelect={this.props.onMapSelect}/>
-                        </ToolbarItem>
-                    </div>
+                </div>
+                <div ref="toolbarContainer" className={classNames(style['toolbar-container'], {[style['active']]: this.state.toolbarActive})}>
+                    <ToolbarItem icon={<MapInactive viewBox="0 0 30 30"/>} label="Map" className={style['toolbar-item']}>
+                        <MapSelect selected={this.props.mapStyle} options={MapHelper.styles} onMapSelect={this.props.onMapSelect}/>
+                    </ToolbarItem>
                 </div>
             </div>
         </div>;

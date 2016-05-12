@@ -67,12 +67,15 @@ export default class ToolbarItem extends React.Component {
     }
 
     render() {
-        return <div ref="container">
-            <Button onClick={this.handleClick} raised={this.state.active}
-                    primary={this.state.active}>{this.props.icon} {this.props.label}</Button>
+        let {icon, label, children, ...rest} = this.props;
+
+        return <div ref="container" {...rest}>
+            <Button onClick={this.handleClick} accent={this.state.active} primary={this.state.active} className={style['toolbar-button']}>
+                {icon} {label}
+            </Button>
             <Card className={classNames(style['toolbar-context-container'], {[style['active']]: this.state.active})}>
                 <CardText>
-                    {this.props.children}
+                    {children}
                 </CardText>
             </Card>
         </div>;
