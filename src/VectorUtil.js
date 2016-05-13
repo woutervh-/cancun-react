@@ -36,4 +36,16 @@ export default class VectorUtil {
     static divide(p, s) {
         return {x: p.x / s, y: p.y / s};
     }
+
+    static floor(p) {
+        return {x: Math.floor(p.x), y: Math.floor(p.y)};
+    }
+
+    static round(p) {
+        return {x: Math.round(p.x), y: Math.round(p.y)};
+    }
+
+    static ceil(p) {
+        return {x: Math.ceil(p.x), y: Math.ceil(p.y)};
+    }
 };

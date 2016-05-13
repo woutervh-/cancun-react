@@ -27,8 +27,8 @@ const styles = [
         value: 'night'
     }
 ];
-const minZoom = 0;
-const maxZoom = 18;
+const minZoomLevel = 0;
+const maxZoomLevel = 18;
 const tileSize = 256;
 const maxLatitude = (360 * Math.atan(Math.exp(Math.PI)) / Math.PI - 90);
 
@@ -36,21 +36,21 @@ let urlIndex = 0;
 let urlCache = {};
 
 export default class MapHelper {
-    static getTileUrl(x, y, zoom, style = '1') {
-        zoom = Math.max(minZoom, Math.min(maxZoom, zoom));
-        let countTiles = Math.pow(2, zoom);
+    static getTileUrl(x, y, zoomLevel, style = styles[0].value) {
+        zoomLevel = Math.max(minZoomLevel, Math.min(maxZoomLevel, zoomLevel));
+        let countTiles = Math.pow(2, zoomLevel);
         x = (x % countTiles + countTiles) % countTiles;
         y = (y % countTiles + countTiles) % countTiles;
 
-        if (!([zoom, x, y, style] in urlCache)) {
-            urlCache[[zoom, x, y, style]] = baseUrls[urlIndex++ % baseUrls.length] + '/' + style + '/' + zoom + '/' + x + '/' + y + '.png?key=' + apiKey + '&tileSize=' + tileSize;
+        if (!([zoomLevel, x, y, style] in urlCache)) {
+            urlCache[[zoomLevel, x, y, style]] = baseUrls[urlIndex++ % baseUrls.length] + '/' + style + '/' + zoomLevel + '/' + x + '/' + y + '.png?key=' + apiKey + '&tileSize=' + tileSize;
         }
 
-        return urlCache[[zoom, x, y, style]];
+        return urlCache[[zoomLevel, x, y, style]];
     }
 
     static project({latitude = 0, longitude = 0}, zoom = 0) {
-        let scale = Math.pow(2, Math.max(minZoom, Math.min(maxZoom, zoom))) * tileSize;
+        let scale = Math.pow(2, Math.max(minZoomLevel, Math.min(maxZoomLevel, zoom))) * tileSize;
         latitude = Math.min(maxLatitude, Math.max(-maxLatitude, latitude));
         longitude = Math.min(180, Math.max(-180, longitude));
         let x = scale / 2 * (longitude / 180 + 1);
@@ -59,7 +59,7 @@ export default class MapHelper {
     }
 
     static unproject({x = 0, y = 0} = {}, zoom = 0) {
-        let scale = Math.pow(2, Math.max(minZoom, Math.min(maxZoom, zoom))) * tileSize;
+        let scale = Math.pow(2, Math.max(minZoomLevel, Math.min(maxZoomLevel, zoom))) * tileSize;
         x = (x % scale + scale) % scale;
         y = (y % scale + scale) % scale;
         let latitude = -360 / Math.PI * Math.atan(Math.exp((y / scale * 2 - 1) * Math.PI)) + 90;
@@ -67,12 +67,12 @@ export default class MapHelper {
         return {latitude, longitude}
     }
 
-    static get minZoom() {
-        return minZoom;
+    static get minZoomLevel() {
+        return minZoomLevel;
     }
 
-    static get maxZoom() {
-        return maxZoom;
+    static get maxZoomLevel() {
+        return maxZoomLevel;
     }
 
     static get tileWidth() {

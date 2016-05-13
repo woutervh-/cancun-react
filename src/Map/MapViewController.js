@@ -212,7 +212,7 @@ export default class MapViewController extends React.Component {
         let distance = VectorUtil.distance(pointers[0], pointers[1]);
         let deltaCenter = VectorUtil.subtract(center, this.state.startPointer);
         let oldZoom = this.state.startView.zoom;
-        let newZoom = Math.min(MapHelper.maxZoom, Math.max(MapHelper.minZoom, oldZoom + Math.log2(distance / this.state.startDistance)));
+        let newZoom = Math.min(MapHelper.maxZoomLevel, Math.max(MapHelper.minZoomLevel, oldZoom + Math.log2(distance / this.state.startDistance)));
         let scale = Math.pow(2, newZoom - oldZoom);
         let newCenter = VectorUtil.subtract(VectorUtil.lerp(this.state.startView, center, (scale - 1) / scale), deltaCenter);
         this.setState({endPointer: center});
@@ -225,10 +225,10 @@ export default class MapViewController extends React.Component {
         let center = this.state.endPointer;
         if (startZoom < newZoom) {
             newZoom = newZoom - startZoom > this.props.pinchZoomJumpThreshold ? Math.ceil(newZoom) : Math.floor(newZoom);
-            newZoom = Math.min(MapHelper.maxZoom, newZoom);
+            newZoom = Math.min(MapHelper.maxZoomLevel, newZoom);
         } else if (startZoom > newZoom) {
             newZoom = startZoom - newZoom > this.props.pinchZoomJumpThreshold ? Math.floor(newZoom) : Math.ceil(newZoom);
-            newZoom = Math.max(MapHelper.minZoom, newZoom);
+            newZoom = Math.max(MapHelper.minZoomLevel, newZoom);
         }
         let scale = Math.pow(2, newZoom - startZoom);
         let deltaCenter = VectorUtil.subtract(center, this.state.startPointer);
@@ -259,10 +259,10 @@ export default class MapViewController extends React.Component {
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
         let oldZoom = this.props.view.zoom;
-        if (event.deltaY < 0 && this.props.view.zoom < MapHelper.maxZoom) {
+        if (event.deltaY < 0 && this.props.view.zoom < MapHelper.maxZoomLevel) {
             let newZoom = this.props.view.zoom + 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom, true);
-        } else if (event.deltaY > 0 && this.props.view.zoom > MapHelper.minZoom) {
+        } else if (event.deltaY > 0 && this.props.view.zoom > MapHelper.minZoomLevel) {
             let newZoom = this.props.view.zoom - 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom, true);
         }
@@ -337,7 +337,7 @@ export default class MapViewController extends React.Component {
         let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
         let center = VectorUtil.divide(VectorUtil.add(...([p1, p2].map(p => this.containerToMap(this.screenToContainer(p))))), 2);
         let oldZoom = this.props.view.zoom;
-        if (this.props.view.zoom > MapHelper.minZoom) {
+        if (this.props.view.zoom > MapHelper.minZoomLevel) {
             let newZoom = this.props.view.zoom - 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), -1), newZoom, true);
         }
@@ -351,7 +351,7 @@ export default class MapViewController extends React.Component {
         let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         let center = this.containerToMap(pointer);
         let oldZoom = this.props.view.zoom;
-        if (this.props.view.zoom < MapHelper.maxZoom) {
+        if (this.props.view.zoom < MapHelper.maxZoomLevel) {
             let newZoom = this.props.view.zoom + 1;
             this.centerOn(VectorUtil.lerp(this.positionAtZoom(this.props.view, oldZoom, newZoom), this.positionAtZoom(center, oldZoom, newZoom), 0.5), newZoom, true);
         }

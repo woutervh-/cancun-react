@@ -1,13 +1,20 @@
 import React from 'react';
+import Group from './Group';
 
-export default class Scale extends React.Component {
-    static propTypes = {
-        scaleWidth: React.PropTypes.number.isRequired,
-        scaleHeight: React.PropTypes.number.isRequired
-    };
+const defaultProps = {
+    scaleWidth: 1,
+    scaleHeight: 1
+};
 
-    static defaultProps = {
-        scaleWidth: 1,
-        scaleHeight: 1
+export default function Scale(props) {
+    const propsWithDefaults = objectAssign({}, defaultProps, props);
+    
+    return {
+        draw: (context) => {
+            context.save();
+            context.scale(propsWithDefaults.scaleWidth, propsWithDefaults.scaleHeight);
+            Group(props).draw(context);
+            context.restore();
+        }
     };
 };

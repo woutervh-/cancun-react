@@ -1,11 +1,20 @@
 import React from 'react';
+import Group from './Group';
+import objectAssign from 'object-assign';
 
-export default class Composition extends React.Component {
-    static propTypes = {
-        type: React.PropTypes.string.isRequired
-    };
+const defaultProps = {
+    type: 'source-over'
+};
 
-    static defaultProps = {
-        type: 'source-over'
+export default function Composition(props) {
+    const propsWithDefaults = objectAssign({}, defaultProps, props);
+
+    return {
+        draw: (context) => {
+            let oldCompositeOperation = context.globalCompositeOperation;
+            context.globalCompositeOperation = propsWithDefaults.type;
+            Group(props).draw(context);
+            context.globalCompositeOperation = oldCompositeOperation;
+        }
     };
 };

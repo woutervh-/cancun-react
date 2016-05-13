@@ -1,7 +1,7 @@
 import {TopBar} from './Toolbar';
 import LocationInfoBox from './LocationInfoBox';
-import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController} from './Map';
-import {Picture} from './Map/canvas';
+import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController, TrafficHelper} from './Map';
+import {Composition} from './Map/canvas';
 import React from 'react';
 import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
@@ -18,6 +18,7 @@ export default class App extends LocalStorageComponent {
         this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
         this.handleMapTap = this.handleMapTap.bind(this);
         this.handleMapSelect = this.handleMapSelect.bind(this);
+        this.handleTrafficChange = this.handleTrafficChange.bind(this);
         this.handleTrafficToggle = this.handleTrafficToggle.bind(this);
     }
 
@@ -29,7 +30,9 @@ export default class App extends LocalStorageComponent {
         },
         mapStyle: MapHelper.styles[0].value,
         traffic: {
-            show: false
+            show: false,
+            showTubes: false,
+            showIcons: false
         },
         locationMarker: {
             show: false
@@ -55,7 +58,7 @@ export default class App extends LocalStorageComponent {
 
     componentDidMount() {
         this.setPersistenceKey('app');
-        this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle}));
+        this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle, traffic: state.traffic}));
         this.restoreState();
     }
 
@@ -128,20 +131,28 @@ export default class App extends LocalStorageComponent {
         this.setState({mapStyle: value});
     }
 
+    handleTrafficChange(traffic) {
+        this.setState({traffic: {...this.state.traffic, ...traffic}});
+    }
+
     handleTrafficToggle(active) {
-        this.setState({traffic: {show: active}});
+        this.setState({traffic: {...this.state.traffic, show: active}});
     }
 
     render() {
+        let projectedView = MapHelper.unproject(this.state.view, Math.floor(this.state.view.zoom));
+
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
                     onMapSelect={this.handleMapSelect}
                     mapStyle={this.state.mapStyle}
+                    onTrafficChange={this.handleTrafficChange}
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
-                <MapTilesLayer style={this.state.mapStyle}/>
+                <MapTilesLayer {...projectedView} tileProvider={MapHelper} style={this.state.mapStyle} localToGlobalPriority={priority => priority * (MapTilesLayer.highPriority + 1) + MapTilesLayer.highPriority}/>
+                <MapTilesLayer {...projectedView} tileProvider={TrafficHelper} style="s3" localToGlobalPriority={priority => priority * (MapTilesLayer.highPriority + 1)} preloadLevels={0}/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
                         ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>

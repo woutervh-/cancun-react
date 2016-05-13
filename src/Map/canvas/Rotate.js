@@ -1,11 +1,20 @@
 import React from 'react';
+import Group from './Group';
+import objectAssign from 'object-assign';
 
-export default class Rotate extends React.Component {
-    static propTypes = {
-        angle: React.PropTypes.number.isRequired
-    };
+const defaultProps = {
+    angle: 0
+};
 
-    static defaultProps = {
-        angle: 0
+export default function Rotate(props) {
+    const propsWithDefaults = objectAssign({}, defaultProps, props);
+    
+    return {
+        draw: (context) => {
+            context.save();
+            context.rotate(propsWithDefaults.angle);
+            Group(props).draw(context);
+            context.restore();
+        }
     };
 };

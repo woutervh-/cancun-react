@@ -1,8 +1,11 @@
 import MapHelper from './MapHelper';
 import MapLayer from './MapLayer';
 import MapTilesLayer from './MapTilesLayer';
-import MapTilesLayerHelper from './MapTilesLayerHelper';
+import MapTilesLayerWrapper from './MapTilesLayerWrapper';
 import MapView from './MapView';
 import MapViewController from './MapViewController';
+import TrafficHelper from './TrafficHelper';
 
-export {MapHelper, MapLayer, MapTilesLayer, MapTilesLayerHelper, MapView, MapViewController};
+/* todo: update me */
+
+export {MapHelper, MapLayer, MapTilesLayer, MapTilesLayerWrapper, MapView, MapViewController, TrafficHelper};
