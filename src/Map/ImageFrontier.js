@@ -6,7 +6,8 @@ export default class ImageFrontier {
     constructor() {
         this.sourceQueue = new Heap((a, b) => b.priority - a.priority);
         this.sourceToImage = {};
-        this.sourceToCallback = {};
+        this.callback = () => {
+        };
         this.countLoading = 0;
     }
 
@@ -19,8 +20,8 @@ export default class ImageFrontier {
                 this.sourceToImage[source].src = source;
                 let handleOnLoad = () => {
                     this.countLoading -= 1;
-                    if (!!this.sourceToCallback[source]) {
-                        this.sourceToCallback[source](this.sourceToImage[source]);
+                    if (!!this.callback) {
+                        this.callback();
                     }
                 };
                 if (this.sourceToImage[source].complete) {
@@ -48,8 +49,8 @@ export default class ImageFrontier {
         setImmediate(this.task.bind(this));
     }
 
-    setCallback(source, callback) {
-        this.sourceToCallback[source] = callback;
+    setCallback(callback) {
+        this.callback = callback;
     }
 
     clear() {
