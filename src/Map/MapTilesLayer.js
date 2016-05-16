@@ -10,14 +10,14 @@ class MapTilesLayer extends React.Component {
         preloadHorizontal: React.PropTypes.number.isRequired,
         preloadVertical: React.PropTypes.number.isRequired,
         preloadLevels: React.PropTypes.number.isRequired,
-        localToGlobalPriority: React.PropTypes.func.isRequired
+        displayCachedTiles: React.PropTypes.bool.isRequired
     };
 
     static defaultProps = {
         preloadHorizontal: 0.5,
         preloadVertical: 0.5,
         preloadLevels: 1,
-        localToGlobalPriority: priority => priority
+        displayCachedTiles: false
     };
 
     static lowPriority = 0;

@@ -1,6 +1,6 @@
 import Heap from 'heap';
 
-const poolSize = 8;
+const poolSize = 1;
 
 export default class ImageFrontier {
     constructor() {

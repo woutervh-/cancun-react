@@ -151,8 +151,8 @@ export default class App extends LocalStorageComponent {
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
-                <MapTilesLayer {...projectedView} tileProvider={MapHelper} style={this.state.mapStyle} localToGlobalPriority={priority => priority * (MapTilesLayer.highPriority + 1) + MapTilesLayer.highPriority}/>
-                <MapTilesLayer {...projectedView} tileProvider={TrafficHelper} style="s3" localToGlobalPriority={priority => priority * (MapTilesLayer.highPriority + 1)} preloadLevels={0}/>
+                <MapTilesLayer {...projectedView} tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
+                <MapTilesLayer {...projectedView} tileProvider={TrafficHelper} style="s3"/>
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
                         ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>

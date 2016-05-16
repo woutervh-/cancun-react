@@ -66,117 +66,111 @@ export default class MapView extends React.Component {
         window.removeEventListener('resize', this.handleResize);
     }
 
-    static parent([i, j]) {
-        return [Math.floor(i / 2), Math.floor(j / 2)];
-    }
-
-    static generateTilesHierarchy([x, y], [width, height], zoomLevel, tileProvider, isLoaded) {
-        let tiles = [];
-        let parents = [];
-        let currentZoomLevel = zoomLevel;
-        let current = MapView.generateTilesList([x, y], [width, height], Math.pow(2, zoomLevel - currentZoomLevel), tileProvider);
-        while (current.length > 0 || parents.length > 0) {
-            tiles[currentZoomLevel] = [];
-            while (current.length > 0) {
-                let tile = current.pop();
-                let {i, j} = tile;
-                if (isLoaded([i, j], currentZoomLevel)) {
-                    tiles[currentZoomLevel].push(tile);
-                } else if (currentZoomLevel > tileProvider.minZoomLevel) {
-                    parents.push(MapView.parent([i, j]));
-                }
-            }
-            currentZoomLevel -= 1;
-            current = parents;
-            parents = [];
-        }
-        return tiles;
-    }
-
-    static generateTilesList([x, y], [width, height], scale, tileProvider) {
+    static generateTilesList([x, y], [width, height], zoomLevel, tileProvider, firstLoadedAncestor) {
         let startTile = {
-            i: Math.floor(x / tileProvider.tileWidth / scale),
-            j: Math.floor(y / tileProvider.tileHeight / scale)
+            i: Math.floor(x / tileProvider.tileWidth),
+            j: Math.floor(y / tileProvider.tileHeight)
         };
         let endTile = {
-            i: Math.ceil((x + width) / tileProvider.tileWidth / scale),
-            j: Math.ceil((y + height) / tileProvider.tileHeight / scale)
+            i: Math.ceil((x + width) / tileProvider.tileWidth),
+            j: Math.ceil((y + height) / tileProvider.tileHeight)
         };
-        let offset = {
-            x: startTile.i * tileProvider.tileWidth * scale - x,
-            y: startTile.j * tileProvider.tileHeight * scale - y
-        };
-        let tiles = [];
-        for (let di = 0; di < endTile.i - startTile.i; di++) {
-            for (let dj = 0; dj < endTile.j - startTile.j; dj++) {
-                tiles.push({
-                    i: startTile.i + di,
-                    j: startTile.j + dj,
-                    top: tileProvider.tileHeight * scale * dj + offset.y,
-                    left: tileProvider.tileWidth * scale * di + offset.x,
-                    width: tileProvider.tileWidth * scale,
-                    height: tileProvider.tileHeight * scale
-                });
+        let loadedTiles = {};
+        let toLoadTiles = [];
+        for (let i = startTile.i; i < endTile.i; i++) {
+            for (let j = startTile.j; j < endTile.j; j++) {
+                let [ai, aj, aZoomLevel] = firstLoadedAncestor(i, j, zoomLevel);
+                if (i != ai || j != aj || zoomLevel != aZoomLevel) {
+                    let top = j * tileProvider.tileHeight - y;
+                    let left = i * tileProvider.tileWidth - x;
+                    toLoadTiles.push([i, j, zoomLevel, top, left]);
+                }
+                if (ai != null && aj != null && aZoomLevel != null) {
+                    let deltaZoomLevel = zoomLevel - aZoomLevel;
+                    let scale = Math.pow(2, deltaZoomLevel);
+                    loadedTiles[[ai, aj, aZoomLevel]] = {
+                        i: ai,
+                        j: aj,
+                        zoomLevel: aZoomLevel,
+                        top: aj * tileProvider.tileHeight * scale - y,
+                        left: ai * tileProvider.tileWidth * scale - x,
+                        width: tileProvider.tileWidth * scale,
+                        height: tileProvider.tileHeight * scale
+                    };
+                }
             }
         }
-        return tiles;
+        return [loadedTiles, toLoadTiles]
     }
 
     transformMapTilesLayer(layer) {
+        let tileProvider = layer.props.tileProvider;
+        let imageFrontier = this.props.imageFrontier;
+
         const {width, height} = this.state;
         const zoomLevel = Math.round(this.props.view.zoom);
         const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
-        const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+        const {x, y} = VectorUtil.multiply(tileProvider.project(layer.props, zoomLevel), Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
 
-        let tileProvider = layer.props.tileProvider;
-
-        let isLoaded = (i, j, zoomLevel) => {
-            let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
-            return this.props.imageFrontier.isLoaded(source);
+        let firstLoadedAncestor = (i, j, zoomLevel) => {
+            let isLoaded = (i, j, zoomLevel) => {
+                let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
+                return imageFrontier.isLoaded(source);
+            };
+            while (zoomLevel >= tileProvider.minZoomLevel && !isLoaded(i, j, zoomLevel) && layer.props.displayCachedTiles) {
+                i = Math.floor(i / 2);
+                j = Math.floor(j / 2);
+                zoomLevel -= 1;
+            }
+            if (isLoaded(i, j, zoomLevel)) {
+                return [i, j, zoomLevel];
+            } else {
+                return [null, null, null];
+            }
         };
 
-        let topLeft = {
+        let byDistanceFromCenter = ([,,, aTop, aLeft], [,,, bTop, bLeft]) => {
+            let adx = aLeft + tileProvider.tileWidth / 2 - width / 2;
+            let ady = aTop + tileProvider.tileHeight / 2 - height / 2;
+            let bdx = bLeft + tileProvider.tileWidth / 2 - width / 2;
+            let bdy = bTop + tileProvider.tileHeight / 2 - height / 2;
+            let adr = adx * adx + ady * ady;
+            let bdr = bdx * bdx + bdy * bdy;
+            return adr - bdr;
+        };
+
+        let topLeft = VectorUtil.round({
             x: x - width / 2 / scale,
             y: y - height / 2 / scale
-        };
+        });
 
-        let displayTiles = [];
-        let tiles = MapView.generateTilesList([topLeft.x, topLeft.y], [width, height], 1, tileProvider);
-        for (let tile of tiles) {
-            if (isLoaded(tile.i, tile.j, zoomLevel)) {
-                displayTiles.push(tile);
-            } else {
-                let parent = MapView.parent([tile.i, tile.j]);
-                let currentZoomLevel = zoomLevel;
-                while (currentZoomLevel-- > tileProvider.minZoomLevel && !isLoaded(parent.i, parent.j, currentZoomLevel)) {
-                    parent = MapView.parent(parent);
-                    currentZoomLevel -= 1;
-                }
-                if(isLoaded(parent.i, parent.j, currentZoomLevel)) {
-                    displayTiles.push(parent);
-                }
-            }
-        }
+        let [loadedTiles, toLoadTiles] = MapView.generateTilesList([topLeft.x, topLeft.y], [width, height], zoomLevel, tileProvider, firstLoadedAncestor);
 
-        // TODO: lots
+        let priority = 0;
+        toLoadTiles.sort(byDistanceFromCenter).forEach(([i, j, zoomLevel]) => {
+            let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
+            imageFrontier.fetch(source, priority--);
+        });
 
         return {
             type: Group,
             props: {
-                children: displayTiles.map(({i, j, top, left, width, height}, zoomLevel) => {
-                    let source = layer.props.tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
-                    return {
-                        type: Picture,
-                        props: {
-                            image: this.props.imageFrontier.getLoadedImage(source),
-                            top,
-                            left,
-                            width,
-                            height
+                children: Object.keys(loadedTiles)
+                    .sort((keyA, keyB) => loadedTiles[keyA].zoomLevel - loadedTiles[keyB].zoomLevel)
+                    .map(key => {
+                        let {i, j, zoomLevel, top, left, width, height} = loadedTiles[key];
+                        let source = layer.props.tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
+                        return {
+                            type: Picture,
+                            props: {
+                                image: this.props.imageFrontier.getLoadedImage(source),
+                                top,
+                                left,
+                                width,
+                                height
+                            }
                         }
-                    }
-                    this.props.imageFrontier.fetch(source, 0);
-                })
+                    })
             }
         };
     }
