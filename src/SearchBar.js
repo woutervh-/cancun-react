@@ -1,6 +1,6 @@
 import {IconButton, Input, List, ListItem} from 'react-toolbox';
 import classNames from 'classnames';
-import GeocodingHelper from './GeocodingHelper';
+import GeocodingHelper from './Map/GeocodingHelper';
 import React from 'react';
 import style from './style';
 

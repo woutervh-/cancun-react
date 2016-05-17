@@ -7,6 +7,7 @@ import React from 'react';
 import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
+import {IncidentsHelper} from './Map/Incidents';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -15,6 +16,8 @@ export default class App extends LocalStorageComponent {
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handleSearchClear = this.handleSearchClear.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
+        this.handleLongViewChange = this.handleLongViewChange.bind(this);
+        this.updateIncidents = this.updateIncidents.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleLocationMarkerTap = this.handleLocationMarkerTap.bind(this);
         this.handleMapTap = this.handleMapTap.bind(this);
@@ -61,6 +64,7 @@ export default class App extends LocalStorageComponent {
         this.setPersistenceKey('app');
         this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle, traffic: state.traffic}));
         this.restoreState();
+        this.updateIncidents(this.state.view);
     }
 
     handleSearchSubmit(input) {
@@ -117,6 +121,26 @@ export default class App extends LocalStorageComponent {
         this.setState({view});
     }
 
+    handleLongViewChange(view) {
+        this.setState({view});
+        this.updateIncidents(view);
+    }
+
+    updateIncidents(view, force = false) {
+        if (force || this.state.traffic.show && this.state.traffic.showIcons) {
+            let zoomLevel = Math.round(view.zoom);
+            IncidentsHelper.viewportDescription(view, zoomLevel, (error, data)=> {
+                if (!error) {
+                    IncidentsHelper.trafficIcons(view, zoomLevel, data['viewpResp']['trafficState']['@trafficModelId'], (error, data) => {
+                        if (!error) {
+                            this.setState({traffic: {...this.state.traffic, trafficIcons: data['tm']['poi']}});
+                        }
+                    });
+                }
+            });
+        }
+    }
+
     handleLocationMarkerTap() {
         this.setState({
             locationBox: {show: true},
@@ -134,6 +158,7 @@ export default class App extends LocalStorageComponent {
 
     handleTrafficChange(traffic) {
         this.setState({traffic: {...this.state.traffic, ...traffic}});
+        this.updateIncidents(this.state.view, true); // todo: smarter strategy for updating traffic incidents
     }
 
     handleTrafficToggle(active) {
@@ -141,6 +166,9 @@ export default class App extends LocalStorageComponent {
     }
 
     render() {
+        let img = new Image();
+        img.src = 'http://cancun.flatns.net/images/traffic-icons/cropped/traffic-major.png';
+
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
@@ -149,10 +177,16 @@ export default class App extends LocalStorageComponent {
                     onTrafficChange={this.handleTrafficChange}
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
-            <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
+            <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
                 {this.state.traffic.show && this.state.traffic.showTubes
                     ? <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
+                    : null}
+                {this.state.traffic.trafficIcons
+                    ? this.state.traffic.trafficIcons.map((poi, index) => {
+                    //IncidentsHelper.lookupIconType(poi)
+                    return <Picture key={index} top={100} left={0} width={10} height={10} image={img}/>;
+                })
                     : null}
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
