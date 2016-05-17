@@ -1,13 +1,12 @@
 import Heap from 'heap';
 
-const poolSize = 1;
+const poolSize = 8;
 
 export default class ImageFrontier {
     constructor() {
         this.sourceQueue = new Heap((a, b) => b.priority - a.priority);
         this.sourceToImage = {};
-        this.callback = () => {
-        };
+        this.sourceToCallback = {};
         this.countLoading = 0;
     }
 
@@ -20,8 +19,8 @@ export default class ImageFrontier {
                 this.sourceToImage[source].src = source;
                 let handleOnLoad = () => {
                     this.countLoading -= 1;
-                    if (!!this.callback) {
-                        this.callback();
+                    if (!!this.sourceToCallback[source]) {
+                        this.sourceToCallback[source]();
                     }
                 };
                 if (this.sourceToImage[source].complete) {
@@ -44,13 +43,12 @@ export default class ImageFrontier {
         return this.sourceToImage[source];
     }
 
-    fetch(source, priority = 0) {
+    fetch(source, priority = 0, callback = null) {
         this.sourceQueue.push({source, priority});
+        if (!!callback) {
+            this.sourceToCallback[source] = callback;
+        }
         setImmediate(this.task.bind(this));
-    }
-
-    setCallback(callback) {
-        this.callback = callback;
     }
 
     clear() {

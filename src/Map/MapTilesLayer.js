@@ -3,7 +3,7 @@ import MapHelper from './MapHelper';
 import TrafficHelper from './TrafficHelper';
 import MapLayer from './MapLayer';
 
-class MapTilesLayer extends React.Component {
+export default class MapTilesLayer extends React.Component {
     static propTypes = {
         tileProvider: React.PropTypes.oneOf([MapHelper, TrafficHelper]).isRequired,
         style: React.PropTypes.oneOf([...MapHelper.styles.map(style => style.value), ...TrafficHelper.styles.map(style => style.value)]).isRequired,
@@ -23,5 +23,3 @@ class MapTilesLayer extends React.Component {
     static lowPriority = 0;
     static highPriority = 1;
 }
-
-export default MapLayer(MapTilesLayer);
