@@ -151,17 +151,18 @@ export default class App extends LocalStorageComponent {
                     traffic={this.state.traffic}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
-                <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
+                {this.state.traffic.show && this.state.traffic.showTubes
+                    ? <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
+                    : null}
+                <MapLayer {...this.state.locationMarkerInformation.location} render="html">
+                    {this.state.locationMarker.show
+                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
+                        : null}
+                </MapLayer>
+                <MapLayer {...this.state.locationBoxInformation.location} render="html">
+                    <LocationInfoBox onClearClick={this.handleSearchClear} active={this.state.locationBox.show} locationInformation={this.state.locationBoxInformation}/>
+                </MapLayer>
             </MapView>
         </span>;
-
-        //    <MapLayer {...this.state.locationMarkerInformation.location} render="html">
-        //        {this.state.locationMarker.show
-        //            ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
-        //            : null}
-        //    </MapLayer>
-        //    <MapLayer {...this.state.locationBoxInformation.location} render="html">
-        //        <LocationInfoBox onClearClick={this.handleSearchClear} active={this.state.locationBox.show} locationInformation={this.state.locationBoxInformation}/>
-        //</MapLayer>
     }
 };

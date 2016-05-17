@@ -112,19 +112,16 @@ export default class MapView extends React.Component {
         if (layer.type == MapTilesLayer) {
             return this.transformMapTilesLayer(layer);
         } else {
-            const imageFrontier = this.props.imageFrontier;
             const {width, height} = this.state;
             const zoomLevel = Math.round(this.props.view.zoom);
             const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
             const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
-
 
             let center = this.props.projection.project(layer.props, zoomLevel);
             let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, {x, y}), scale), {
                 x: width / 2,
                 y: height / 2
             });
-            console.log(offset);
             return {
                 type: Translate,
                 props: {
@@ -223,13 +220,18 @@ export default class MapView extends React.Component {
         };
     }
 
-    transformHtmlLayer(layer) {
-        let center = MapHelper.project(layer.props, view.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, view), view.scale), {
-            x: this.state.width / 2,
-            y: this.state.height / 2
+    transformHtmlLayer(layer, index) {
+        const {width, height} = this.state;
+        const zoomLevel = Math.round(this.props.view.zoom);
+        const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+        const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+
+        let center = this.props.projection.project(layer.props, zoomLevel);
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, {x, y}), scale), {
+            x: width / 2,
+            y: height / 2
         });
-        return <div style={{position: 'absolute', top: offset.y, left: offset.x}} {...mixinProps}>
+        return <div key={index} style={{position: 'absolute', top: offset.y, left: offset.x}}>
             {layer.props.children}
         </div>;
     }
