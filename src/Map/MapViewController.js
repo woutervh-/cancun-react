@@ -5,6 +5,7 @@ import style from './style';
 import Hammer from 'hammerjs';
 import classNames from 'classnames';
 import EventUtil from '../EventUtil';
+import {WebMercator} from './Projections';
 
 export default class MapViewController extends React.Component {
     constructor() {
@@ -41,7 +42,8 @@ export default class MapViewController extends React.Component {
         onLongViewChange: React.PropTypes.func.isRequired,
         onLocationSelect: React.PropTypes.func.isRequired,
         onTap: React.PropTypes.func.isRequired,
-        pinchZoomJumpThreshold: React.PropTypes.number.isRequired
+        pinchZoomJumpThreshold: React.PropTypes.number.isRequired,
+        projection: React.PropTypes.oneOf([WebMercator]).isRequired
     };
 
     static defaultProps = {
@@ -91,6 +93,7 @@ export default class MapViewController extends React.Component {
             || this.props.onLocationSelect != nextProps.onLocationSelect
             || this.props.onTap != nextProps.onTap
             || this.props.pinchZoomJumpThreshold != nextProps.pinchZoomJumpThreshold
+            || this.props.projection != nextProps.projection
             || this.props.children != nextProps.children
             || this.state.dragging != nextState.dragging
             || this.state.pinching != nextState.pinching;
@@ -276,7 +279,7 @@ export default class MapViewController extends React.Component {
         event.preventDefault();
         let pointer = this.screenToContainer({x: event.clientX, y: event.clientY});
         let center = this.containerToMap(pointer);
-        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom), true);
+        this.props.onLocationSelect(this.props.projection.unproject(center, this.props.view.zoom), true);
     }
 
     handlePanStart(event) {
@@ -364,7 +367,7 @@ export default class MapViewController extends React.Component {
 
         let pointer = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         let center = this.containerToMap(pointer);
-        this.props.onLocationSelect(MapHelper.unproject(center, this.props.view.zoom));
+        this.props.onLocationSelect(this.props.projection.unproject(center, this.props.view.zoom));
     }
 
     handleTap(event) {

@@ -6,6 +6,7 @@ import {Canvas, Composition, Group, Picture, Rectangle, Scale, Translate} from '
 import VectorUtil from '../VectorUtil';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
+import {WebMercator} from './Projections';
 
 export default class MapView extends React.Component {
     constructor() {
@@ -16,7 +17,11 @@ export default class MapView extends React.Component {
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleResize = this.handleResize.bind(this);
         this.draw = this.draw.bind(this);
+        this.shouldTransformToCanvas = this.shouldTransformToCanvas.bind(this);
+        this.shouldTransformToHtml = this.shouldTransformToHtml.bind(this);
+        this.transformCanvasLayer = this.transformCanvasLayer.bind(this);
         this.transformMapTilesLayer = this.transformMapTilesLayer.bind(this);
+        this.transformHtmlLayer = this.transformHtmlLayer.bind(this);
     }
 
     static propTypes = {
@@ -29,10 +34,12 @@ export default class MapView extends React.Component {
         onLongViewChange: React.PropTypes.func.isRequired,
         onLocationSelect: React.PropTypes.func.isRequired,
         onTap: React.PropTypes.func.isRequired,
+        projection: React.PropTypes.oneOf([WebMercator]).isRequired,
         imageFrontier: React.PropTypes.instanceOf(ImageFrontier).isRequired
     };
 
     static defaultProps = {
+        projection: WebMercator,
         imageFrontier: new ImageFrontier()
     };
 
@@ -47,6 +54,8 @@ export default class MapView extends React.Component {
             || this.props.onLongViewChange != nextProps.onLongViewChange
             || this.props.onLocationSelect != nextProps.onLocationSelect
             || this.props.onTap != nextProps.onTap
+            || this.props.projection != nextProps.projection
+            || this.props.imageFrontier != nextProps.imageFrontier
             || this.props.children != nextProps.children
             || this.state.width != nextState.width
             || this.state.height != nextState.height;
@@ -65,46 +74,70 @@ export default class MapView extends React.Component {
         window.removeEventListener('resize', this.handleResize);
     }
 
-    static generateTilesList([x, y], [width, height], zoomLevel, tileProvider, firstLoadedAncestor) {
-        let startTile = {
-            i: Math.floor(x / tileProvider.tileWidth),
-            j: Math.floor(y / tileProvider.tileHeight)
-        };
-        let endTile = {
-            i: Math.ceil((x + width) / tileProvider.tileWidth),
-            j: Math.ceil((y + height) / tileProvider.tileHeight)
-        };
-        let loadedTiles = {};
-        let toLoadTiles = [];
-        for (let i = startTile.i; i < endTile.i; i++) {
-            for (let j = startTile.j; j < endTile.j; j++) {
-                let [ai, aj, aZoomLevel] = firstLoadedAncestor(i, j, zoomLevel);
-                if (i != ai || j != aj || zoomLevel != aZoomLevel) {
-                    let top = j * tileProvider.tileHeight - y;
-                    let left = i * tileProvider.tileWidth - x;
-                    toLoadTiles.push([i, j, zoomLevel, top, left]);
-                }
-                if (ai != null && aj != null && aZoomLevel != null) {
-                    let scale = Math.pow(2, zoomLevel - aZoomLevel);
-                    loadedTiles[[ai, aj, aZoomLevel]] = {
-                        i: ai,
-                        j: aj,
-                        zoomLevel: aZoomLevel,
-                        top: aj * tileProvider.tileHeight * scale - y,
-                        left: ai * tileProvider.tileWidth * scale - x,
-                        width: tileProvider.tileWidth * scale,
-                        height: tileProvider.tileHeight * scale
-                    };
-                }
+    handleResize() {
+        this.setState({width: window.innerWidth, height: window.innerHeight});
+    }
+
+    draw() {
+        this.props.imageFrontier.clear();
+        let layers = React.Children.toArray(this.props.children);
+        this.refs.canvas.draw({
+            type: Group,
+            props: {
+                children: [
+                    ...layers.filter(this.shouldTransformToCanvas).map(this.transformCanvasLayer),
+                    {
+                        type: Rectangle,
+                        props: {
+                            width: this.state.width,
+                            height: this.state.height,
+                            strokeStyle: 'rgba(255, 0, 0, 1)',
+                            fillStyle: 'rgba(0, 0, 0, 0)'
+                        }
+                    }
+                ]
             }
+        });
+    }
+
+    shouldTransformToCanvas(layer) {
+        return layer.type == MapTilesLayer || layer.type == MapLayer && layer.props.render == 'canvas';
+    }
+
+    shouldTransformToHtml(layer) {
+        return layer.type == MapLayer && layer.props.render == 'html';
+    }
+
+    transformCanvasLayer(layer) {
+        if (layer.type == MapTilesLayer) {
+            return this.transformMapTilesLayer(layer);
+        } else {
+            const imageFrontier = this.props.imageFrontier;
+            const {width, height} = this.state;
+            const zoomLevel = Math.round(this.props.view.zoom);
+            const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+            const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+
+
+            let center = this.props.projection.project(layer.props, zoomLevel);
+            let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, {x, y}), scale), {
+                x: width / 2,
+                y: height / 2
+            });
+            console.log(offset);
+            return {
+                type: Translate,
+                props: {
+                    ...offset,
+                    children: layer.props.children
+                }
+            };
         }
-        return [loadedTiles, toLoadTiles]
     }
 
     transformMapTilesLayer(layer) {
-        let tileProvider = layer.props.tileProvider;
-        let imageFrontier = this.props.imageFrontier;
-
+        const tileProvider = layer.props.tileProvider;
+        const imageFrontier = this.props.imageFrontier;
         const {width, height} = this.state;
         const zoomLevel = Math.round(this.props.view.zoom);
         const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
@@ -190,50 +223,7 @@ export default class MapView extends React.Component {
         };
     }
 
-    draw() {
-        this.props.imageFrontier.clear();
-
-        let layers = React.Children.toArray(this.props.children);
-
-        this.refs.canvas.draw({
-            type: Group,
-            props: {
-                children: [
-                    ...layers.filter(layer => layer.type == MapTilesLayer).map(this.transformMapTilesLayer),
-                    {
-                        type: Rectangle,
-                        props: {
-                            width: this.state.width,
-                            height: this.state.height,
-                            strokeStyle: 'rgba(255, 0, 0, 1)',
-                            fillStyle: 'rgba(0, 0, 0, 0)'
-                        }
-                    }
-                ]
-            }
-        });
-    }
-
-    handleResize() {
-        this.setState({width: window.innerWidth, height: window.innerHeight});
-    }
-
-    transformCanvasLayer(view, layer) {
-        let center = MapHelper.project(layer.props, view.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, view), view.scale), {
-            x: this.state.width / 2,
-            y: this.state.height / 2
-        });
-        return {
-            type: Translate,
-            props: {
-                ...offset,
-                children: layer.props.children
-            }
-        };
-    }
-
-    renderHtmlLayer(layer, mixinProps, view) {
+    transformHtmlLayer(layer) {
         let center = MapHelper.project(layer.props, view.zoomLevel);
         let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, view), view.scale), {
             x: this.state.width / 2,
@@ -244,48 +234,43 @@ export default class MapView extends React.Component {
         </div>;
     }
 
-    transformLayer(layer, index) {
-        let zoomLevel = Math.round(this.props.view.zoom);
-        let scale = Math.pow(2, this.props.view.zoom - zoomLevel);
-        let view = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
-        view.zoomLevel = zoomLevel;
-        view.scale = scale;
-
-        switch (layer.type) {
-            case MapTilesLayer:
-                return {
-                    canvas: true,
-                    rendered: this.renderMapTilesLayer(layer, {key: index}, view)
-                };
-            case MapLayer:
-                switch (layer.props.render) {
-                    case 'canvas':
-                        return {
-                            canvas: true,
-                            rendered: this.transformCanvasLayer(layer, {key: index}, view)
-                        };
-                    case 'html':
-                        return {
-                            canvas: false,
-                            rendered: this.renderHtmlLayer(layer, {key: index}, view)
-                        };
-                    default:
-                        console.warn('Unknown layer render target for MapView: ' + layer.props.render);
-                        break;
+    static generateTilesList([x, y], [width, height], zoomLevel, tileProvider, firstLoadedAncestor) {
+        let startTile = {
+            i: Math.floor(x / tileProvider.tileWidth),
+            j: Math.floor(y / tileProvider.tileHeight)
+        };
+        let endTile = {
+            i: Math.ceil((x + width) / tileProvider.tileWidth),
+            j: Math.ceil((y + height) / tileProvider.tileHeight)
+        };
+        let loadedTiles = {};
+        let toLoadTiles = [];
+        for (let i = startTile.i; i < endTile.i; i++) {
+            for (let j = startTile.j; j < endTile.j; j++) {
+                let [ai, aj, aZoomLevel] = firstLoadedAncestor(i, j, zoomLevel);
+                if (i != ai || j != aj || zoomLevel != aZoomLevel) {
+                    let top = j * tileProvider.tileHeight - y;
+                    let left = i * tileProvider.tileWidth - x;
+                    toLoadTiles.push([i, j, zoomLevel, top, left]);
                 }
-                break;
-            default:
-                console.warn('Unknown layer type for MapView: ' + layer.type);
-                break;
+                if (ai != null && aj != null && aZoomLevel != null) {
+                    let scale = Math.pow(2, zoomLevel - aZoomLevel);
+                    loadedTiles[[ai, aj, aZoomLevel]] = {
+                        i: ai,
+                        j: aj,
+                        zoomLevel: aZoomLevel,
+                        top: aj * tileProvider.tileHeight * scale - y,
+                        left: ai * tileProvider.tileWidth * scale - x,
+                        width: tileProvider.tileWidth * scale,
+                        height: tileProvider.tileHeight * scale
+                    };
+                }
+            }
         }
+        return [loadedTiles, toLoadTiles]
     }
 
     render() {
-        //let transformedLayers = React.Children.map(this.props.children, this.transformLayer);
-        //let canvasLayers = transformedLayers.filter(transformedLayer => transformedLayer.canvas);
-        //let htmlLayers = transformedLayers.filter(transformedLayer => !transformedLayer.canvas);
-        //{htmlLayers.map(htmlLayer => htmlLayer.rendered)}
-
         return <span>
             <MapViewController
                 view={this.props.view}
@@ -293,9 +278,11 @@ export default class MapView extends React.Component {
                 onLongViewChange={this.props.onLongViewChange}
                 onLocationSelect={this.props.onLocationSelect}
                 onTap={this.props.onTap}
+                projection={this.props.projection}
             >
                 <Canvas ref="canvas" width={this.state.width} height={this.state.height}/>
             </MapViewController>
+            {React.Children.toArray(this.props.children).filter(this.shouldTransformToHtml).map(this.transformHtmlLayer)}
         </span>;
     }
 };

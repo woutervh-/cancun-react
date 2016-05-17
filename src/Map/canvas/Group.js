@@ -11,7 +11,7 @@ export default function Group(props) {
     return {
         draw: (context) => {
             if (!!props.children) {
-                props.children.forEach(child => {
+                (Array.isArray(props.children) ? props.children : [props.children]).forEach(child => {
                     if (!!child) {
                         switch (child.type) {
                             case Composition:

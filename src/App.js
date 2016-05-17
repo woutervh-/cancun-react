@@ -1,7 +1,8 @@
 import {TopBar} from './Toolbar';
 import LocationInfoBox from './LocationInfoBox';
 import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController, TrafficHelper} from './Map';
-import {Composition} from './Map/canvas';
+import {WebMercator} from './Map/Projections';
+import {Composition, Picture} from './Map/canvas';
 import React from 'react';
 import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
@@ -65,7 +66,7 @@ export default class App extends LocalStorageComponent {
     handleSearchSubmit(input) {
         if (!!input) {
             let toZoom = Math.max(12, Math.floor(this.state.view.zoom));
-            let center = MapHelper.project(input, toZoom);
+            let center = WebMercator.project(input, toZoom);
             this.setState({
                 view: {
                     x: center.x,
@@ -140,8 +141,6 @@ export default class App extends LocalStorageComponent {
     }
 
     render() {
-        let projectedView = MapHelper.unproject(this.state.view, Math.floor(this.state.view.zoom));
-
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
@@ -153,17 +152,16 @@ export default class App extends LocalStorageComponent {
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
                 <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
-                <MapLayer {...this.state.locationMarkerInformation.location} render="html">
-                    {this.state.locationMarker.show
-                        ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
-                        : null}
-                </MapLayer>
-                <MapLayer {...this.state.locationBoxInformation.location} render="html">
-                    <LocationInfoBox onClearClick={this.handleSearchClear}
-                                     active={this.state.locationBox.show}
-                                     locationInformation={this.state.locationBoxInformation}/>
-                </MapLayer>
             </MapView>
         </span>;
+
+        //    <MapLayer {...this.state.locationMarkerInformation.location} render="html">
+        //        {this.state.locationMarker.show
+        //            ? <Marker width={20} height={30} onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker/></Marker>
+        //            : null}
+        //    </MapLayer>
+        //    <MapLayer {...this.state.locationBoxInformation.location} render="html">
+        //        <LocationInfoBox onClearClick={this.handleSearchClear} active={this.state.locationBox.show} locationInformation={this.state.locationBoxInformation}/>
+        //</MapLayer>
     }
 };
