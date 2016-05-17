@@ -1,5 +1,6 @@
 import Group from './Group';
 import React from 'react';
+import raf from 'raf';
 
 export default class Canvas extends React.Component {
     constructor() {
@@ -23,11 +24,13 @@ export default class Canvas extends React.Component {
     }
 
     draw(template) {
-        let canvas = this.refs.canvas;
-        let context = canvas.getContext('2d');
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0, 0, this.props.width, this.props.height);
-        Group(template.props).draw(context);
+        raf(() => {
+            let canvas = this.refs.canvas;
+            let context = canvas.getContext('2d');
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.clearRect(0, 0, this.props.width, this.props.height);
+            Group(template.props).draw(context);
+        });
     }
 
     render() {

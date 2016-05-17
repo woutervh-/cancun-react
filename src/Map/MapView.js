@@ -160,32 +160,6 @@ export default class MapView extends React.Component {
             tileProvider,
             (i, j, zoomLevel) => [null, null, null]
         );
-        for (let i = 0; i < layer.props.preloadLevels; i++) {
-            let deltaLevelLow = -(i + 1);
-            let deltaLevelHigh = i + 1;
-            if (zoomLevel + deltaLevelLow >= tileProvider.minZoomLevel) {
-                let deltaScale = Math.pow(2, deltaLevelLow);
-                let [, levelPreFetchTiles] = MapView.generateTilesList(
-                    [preTopLeft.x * deltaScale, preTopLeft.y * deltaScale],
-                    [width / scale * deltaScale * (1 + layer.props.preloadHorizontal), height / scale * deltaScale * (1 + layer.props.preloadVertical)],
-                    zoomLevel + deltaLevelLow,
-                    tileProvider,
-                    (i, j, zoomLevel) => [null, null, null]
-                );
-                preFetchTiles = preFetchTiles.concat(levelPreFetchTiles);
-            }
-            if (zoomLevel + deltaLevelHigh <= tileProvider.maxZoomLevel) {
-                let deltaScale = Math.pow(2, deltaLevelHigh);
-                let [, levelPreFetchTiles] = MapView.generateTilesList(
-                    [preTopLeft.x * deltaScale, preTopLeft.y * deltaScale],
-                    [width / scale * (1 + layer.props.preloadHorizontal), height / scale * (1 + layer.props.preloadVertical)],
-                    zoomLevel + deltaLevelHigh,
-                    tileProvider,
-                    (i, j, zoomLevel) => [null, null, null]
-                );
-                preFetchTiles = preFetchTiles.concat(levelPreFetchTiles);
-            }
-        }
         preFetchTiles.sort(byDistanceFromCenter).forEach(([i, j, zoomLevel]) => {
             let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
             imageFrontier.fetch(source, priority--);
