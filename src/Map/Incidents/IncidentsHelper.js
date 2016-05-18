@@ -1,6 +1,7 @@
 import jsonp from 'jsonp';
 import {WebMercator} from '../Projections';
 import VectorUtil from '../../VectorUtil';
+import PlaceHolder from '../../../public/images/place-holder';
 
 //const apiKey = '8havdz9a6s5theax5zk334ge';
 const apiKey = 'wqz3ad2zvhnfsnwpddk6wgqq';
@@ -42,37 +43,76 @@ export default class IncidentsHelper {
     }
 
     static lookupIconType(poi) {
+        let marker = '';
         switch (poi['ic']) {
             case 0:
-                return 'Unknown';
+                marker += 'unknown';
+                break;
             case 1:
-                return 'Accident';
+                marker += 'accident';
+                break;
             case 2:
-                return 'Fog';
+                marker += 'fog';
+                break;
             case 3:
-                return 'Dangerous';
+                marker += 'dangerous';
+                break;
             case 4:
-                return 'Rain';
+                marker += 'rain';
+                break;
             case 5:
-                return 'Ice';
+                marker += 'ice';
+                break;
             case 6:
-                return 'Jam';
+                marker += 'jam';
+                break;
             case 7:
-                return 'Lane';
+                marker += 'lane';
+                break;
             case 8:
-                return 'Road';
+                marker += 'road';
+                break;
             case 9:
-                return 'Road';
+                marker += 'road';
+                break;
             case 10:
-                return 'Wind';
+                marker += 'wind';
+                break;
             case 11:
-                return 'Flooding';
+                marker += 'flooding';
+                break;
             case 12:
-                return 'Detour';
+                marker += 'detour';
+                break;
             case 13:
-                return 'Cluster';
+                marker += 'cluster';
+                break;
+            default:
+                throw new Error('Unknown icon from incident data: ' + poi['ic']);
         }
 
-        // TODO: inspect severity for icon
+        marker += '-';
+
+        switch (poi['ty']) {
+            case 0:
+                marker += 'unknown';
+                break;
+            case 1:
+                marker += 'minor';
+                break;
+            case 2:
+                marker += 'moderate';
+                break;
+            case 3:
+                marker += 'major';
+                break;
+            case 4:
+                marker += 'undefined,';
+                break;
+            default:
+                throw new Error('Unknown severity from incident data: ' + poi['ty']);
+        }
+
+        return PlaceHolder;
     }
 };

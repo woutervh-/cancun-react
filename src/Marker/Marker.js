@@ -11,8 +11,6 @@ export default class Marker extends React.Component {
     }
 
     static propTypes = {
-        width: React.PropTypes.number.isRequired,
-        height: React.PropTypes.number.isRequired,
         onTap: React.PropTypes.func.isRequired,
         anchor: React.PropTypes.oneOf([
             'top-left',
@@ -28,8 +26,6 @@ export default class Marker extends React.Component {
     };
 
     static defaultProps = {
-        width: 0,
-        height: 0,
         onTap: ()=> {
         },
         anchor: 'bottom-center'
@@ -55,9 +51,7 @@ export default class Marker extends React.Component {
     }
 
     shouldComponentUpdate(nextProps) {
-        return this.props.width != nextProps.width
-            || this.props.height != nextProps.height
-            || this.props.anchor != nextProps.anchor
+        return this.props.anchor != nextProps.anchor
             || this.props.onTap != nextProps.onTap
             || this.props.children != nextProps.children;
     }
@@ -72,7 +66,6 @@ export default class Marker extends React.Component {
             {React.cloneElement(
                 React.Children.only(this.props.children),
                 {
-                    viewBox: [0, 0, this.props.width, this.props.height].join(' '),
                     style: objectAssign({},
                         {
                             position: 'absolute',
