@@ -1,5 +1,5 @@
 import React from 'react';
-import {Checkbox} from 'react-toolbox';
+import {Checkbox, Switch} from 'react-toolbox';
 import style from './style';
 
 export default class TrafficContext extends React.Component {
@@ -8,6 +8,7 @@ export default class TrafficContext extends React.Component {
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handleTubesChange = this.handleTubesChange.bind(this);
         this.handleIconsChange = this.handleIconsChange.bind(this);
+        this.handleShowChange = this.handleShowChange.bind(this);
     }
 
     static propTypes = {
@@ -33,8 +34,13 @@ export default class TrafficContext extends React.Component {
         this.props.onTrafficChange({showIcons: value});
     }
 
+    handleShowChange(value) {
+        this.props.onTrafficChange({show: value});
+    }
+
     render() {
         return <div>
+            <Switch checked={this.props.traffic.show} label="Show traffic" onChange={this.handleShowChange}/>
             <Checkbox className={style['checkbox']} checked={this.props.traffic.showTubes} label="Traffic tubes" onChange={this.handleTubesChange}/>
             <Checkbox className={style['checkbox']} checked={this.props.traffic.showIcons} label="Traffic icons" onChange={this.handleIconsChange}/>
         </div>;
