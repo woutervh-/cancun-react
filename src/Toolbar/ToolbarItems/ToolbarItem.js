@@ -19,10 +19,7 @@ export default class ToolbarItem extends React.Component {
         icon: React.PropTypes.any.isRequired,
         label: React.PropTypes.any.isRequired,
         buttonClassName: React.PropTypes.string.isRequired,
-        cardClassName: React.PropTypes.string.isRequired,
-        show: React.PropTypes.bool.isRequired,
-        onToggleShow: React.PropTypes.func.isRequired,
-        onMouseOver: React.PropTypes.func.isRequired
+        cardClassName: React.PropTypes.string.isRequired
     };
 
     static defaultProps = {
@@ -30,57 +27,59 @@ export default class ToolbarItem extends React.Component {
         cardClassName: ''
     };
 
-    shouldComponentUpdate(nextProps) {
+    state = {
+        show: false
+    };
+
+    shouldComponentUpdate(nextProps, nextState) {
         return this.props.icon != nextProps.icon
             || this.props.label != nextProps.label
             || this.props.buttonClassName != nextProps.buttonClassName
             || this.props.cardClassName != nextProps.cardClassName
             || this.props.children != nextProps.children
-            || this.props.show != nextProps.show
-            || this.props.onToggleShow != nextProps.onToggleShow
-            || this.props.onMouseOver != nextProps.onMouseOver;
+            || this.state.show != nextState.show;
     }
 
     componentDidMount() {
-        if (this.props.show) {
+        if (this.state.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
-    componentDidUpdate(prevProps) {
-        if (this.props.show && !prevProps.show) {
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.show && !prevState.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
-        } else if (!this.props.show && prevProps.show) {
+        } else if (!this.state.show && prevState.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentWillUnmount() {
-        if (this.props.show) {
+        if (this.state.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     handleClick() {
-        this.props.onToggleShow(!this.props.show);
+        this.setState({show: !this.state.show});
     }
 
     handleDocumentClick(event) {
-        if (this.props.show && !EventUtil.targetIsDescendant(event, this.refs.container)) {
-            this.props.onToggleShow(false);
+        if (this.state.show && !EventUtil.targetIsDescendant(event, this.refs.container)) {
+            this.setState({show: false});
         }
     }
 
     render() {
         let {icon, label, children, buttonClassName, cardClassName, ...rest} = this.props;
 
-        return <div ref="container" onMouseOver={this.props.onMouseOver} {...rest}>
+        return <div ref="container" {...rest}>
             <Button onClick={this.handleClick}
-                    primary={this.props.show}
-                    className={classNames(style['button'], {[style['active']]: this.props.show}, buttonClassName)}>
+                    primary={this.state.show}
+                    className={classNames(style['button'], {[style['active']]: this.state.show}, buttonClassName)}>
                 {icon} {label}
             </Button>
-            <Card className={classNames(style['context-container'], {[style['active']]: this.props.show}, cardClassName)}>
+            <Card className={classNames(style['context-container'], {[style['active']]: this.state.show}, cardClassName)}>
                 <CardText>
                     {children}
                 </CardText>

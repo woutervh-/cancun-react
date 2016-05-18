@@ -96,20 +96,6 @@ export default class TopBar extends LocalStorageComponent {
         }
     }
 
-    handleToggleShow(item, show) {
-        if (show) {
-            this.setState({toolbarItem: item});
-        } else if (this.state.toolbarItem == item) {
-            this.setState({toolbarItem: null});
-        }
-    }
-
-    handleToolbarItemMouseOver(item) {
-        if (this.state.toolbarItem != null) {
-            this.setState({toolbarItem: item});
-        }
-    }
-
     render() {
         return <div className={classNames(style['top-bar-hover-container'], {[style['pinned']]: this.state.pinned})}>
             <div className={style['top-bar']}>
@@ -123,8 +109,8 @@ export default class TopBar extends LocalStorageComponent {
                     <IconButton icon="menu" onClick={this.handleMenuClick} className={style['toggle-side-bar-button']}/>
                 </div>
                 <div ref="toolbarContainer" className={classNames(style['toolbar-container'], {[style['active']]: this.state.toolbarActive})}>
-                    <MapToolbarItem show={this.state.toolbarItem == 'map'} onToggleShow={this.handleToggleShow.bind(this, 'map')} onMouseOver={this.handleToolbarItemMouseOver.bind(this, 'map')} mapStyle={this.props.mapStyle} onMapSelect={this.props.onMapSelect}/>
-                    <TrafficToolbarItem show={this.state.toolbarItem == 'traffic'} onToggleShow={this.handleToggleShow.bind(this, 'traffic')} onMouseOver={this.handleToolbarItemMouseOver.bind(this, 'traffic')} traffic={this.props.traffic} onTrafficChange={this.props.onTrafficChange}/>
+                    <MapToolbarItem show={this.state.toolbarItem == 'map'} mapStyle={this.props.mapStyle} onMapSelect={this.props.onMapSelect}/>
+                    <TrafficToolbarItem show={this.state.toolbarItem == 'traffic'} traffic={this.props.traffic} onTrafficChange={this.props.onTrafficChange}/>
                 </div>
             </div>
         </div>;

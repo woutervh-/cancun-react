@@ -40,7 +40,7 @@ export default class TrafficContext extends React.Component {
 
     render() {
         return <div>
-            <Switch checked={this.props.traffic.show} label="Show traffic" onChange={this.handleShowChange}/>
+            <Switch className={style['switch']} checked={this.props.traffic.show} label="Show traffic" onChange={this.handleShowChange}/>
             <Checkbox className={style['checkbox']} checked={this.props.traffic.showTubes} label="Traffic tubes" onChange={this.handleTubesChange}/>
             <Checkbox className={style['checkbox']} checked={this.props.traffic.showIcons} label="Traffic icons" onChange={this.handleIconsChange}/>
         </div>;
