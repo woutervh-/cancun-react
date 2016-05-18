@@ -4,7 +4,6 @@ import MapViewController from './MapViewController';
 import React from 'react';
 import {Canvas, Composition, Group, Picture, Rectangle, Scale, Translate} from './canvas';
 import VectorUtil from '../VectorUtil';
-import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import {WebMercator} from './Projections';
 
@@ -22,8 +21,6 @@ export default class MapView extends React.Component {
         this.transformCanvasLayer = this.transformCanvasLayer.bind(this);
         this.transformMapTilesLayer = this.transformMapTilesLayer.bind(this);
         this.transformHtmlLayer = this.transformHtmlLayer.bind(this);
-        this.handleViewChange = this.handleViewChange.bind(this);
-        this.handleLongViewChange = this.handleLongViewChange.bind(this);
     }
 
     static propTypes = {
@@ -32,6 +29,7 @@ export default class MapView extends React.Component {
             y: React.PropTypes.number.isRequired,
             zoom: React.PropTypes.number.isRequired
         }).isRequired,
+        onViewChange: React.PropTypes.func.isRequired,
         onLongViewChange: React.PropTypes.func.isRequired,
         onLocationSelect: React.PropTypes.func.isRequired,
         onTap: React.PropTypes.func.isRequired,
@@ -45,24 +43,19 @@ export default class MapView extends React.Component {
     };
 
     state = {
-        viewOffset: {
-            x: 0,
-            y: 0,
-            zoom: 0
-        },
         width: window.innerWidth,
         height: window.innerHeight
     };
 
     shouldComponentUpdate(nextProps, nextState) {
         return this.props.view != nextProps.view
+            || this.props.onViewChange != nextProps.onViewChange
             || this.props.onLongViewChange != nextProps.onLongViewChange
             || this.props.onLocationSelect != nextProps.onLocationSelect
             || this.props.onTap != nextProps.onTap
             || this.props.projection != nextProps.projection
             || this.props.imageFrontier != nextProps.imageFrontier
             || this.props.children != nextProps.children
-            || this.state.viewOffset != nextState.viewOffset
             || this.state.width != nextState.width
             || this.state.height != nextState.height;
     }
@@ -86,19 +79,12 @@ export default class MapView extends React.Component {
 
     draw() {
         this.props.imageFrontier.clear();
-
-        const {width, height} = this.state;
-        const zoomLevel = Math.round(this.props.view.zoom + this.state.viewOffset.zoom);
-        const scale = Math.pow(2, this.props.view.zoom + this.state.viewOffset.zoom - zoomLevel);
-        const {x, y} = VectorUtil.multiply(VectorUtil.add(this.props.view, this.state.viewOffset), Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom + this.state.viewOffset.zoom)));
-        const options = {width, height, zoomLevel, scale, x, y};
-
         let layers = React.Children.toArray(this.props.children);
         this.refs.canvas.draw({
             type: Group,
             props: {
                 children: [
-                    ...layers.filter(this.shouldTransformToCanvas).map(layer => this.transformCanvasLayer(layer, options)),
+                    ...layers.filter(this.shouldTransformToCanvas).map(this.transformCanvasLayer),
                     {
                         type: Rectangle,
                         props: {
@@ -121,14 +107,19 @@ export default class MapView extends React.Component {
         return layer.type == MapLayer && layer.props.render == 'html';
     }
 
-    transformCanvasLayer(layer, options) {
+    transformCanvasLayer(layer) {
         if (layer.type == MapTilesLayer) {
-            return this.transformMapTilesLayer(layer, options);
+            return this.transformMapTilesLayer(layer);
         } else {
-            let center = this.props.projection.project(layer.props, options.zoomLevel);
-            let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, options), options.scale), {
-                x: options.width / 2,
-                y: options.height / 2
+            const {width, height} = this.state;
+            const zoomLevel = Math.round(this.props.view.zoom);
+            const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+            const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+
+            let center = this.props.projection.project(layer.props, zoomLevel);
+            let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, {x, y}), scale), {
+                x: width / 2,
+                y: height / 2
             });
             return {
                 type: Translate,
@@ -140,14 +131,17 @@ export default class MapView extends React.Component {
         }
     }
 
-    transformMapTilesLayer(layer, options) {
+    transformMapTilesLayer(layer) {
         const tileProvider = layer.props.tileProvider;
         const imageFrontier = this.props.imageFrontier;
-        const style = layer.props.style;
+        const {width, height} = this.state;
+        const zoomLevel = Math.round(this.props.view.zoom);
+        const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+        const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
 
         let firstLoadedAncestor = (i, j, zoomLevel) => {
             let isLoaded = (i, j, zoomLevel) => {
-                let source = tileProvider.getTileUrl(i, j, zoomLevel, style);
+                let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
                 return imageFrontier.isLoaded(source);
             };
             while (zoomLevel >= tileProvider.minZoomLevel && !isLoaded(i, j, zoomLevel) && layer.props.displayCachedTiles) {
@@ -163,10 +157,10 @@ export default class MapView extends React.Component {
         };
 
         let byDistanceFromCenter = ([,,, aTop, aLeft], [,,, bTop, bLeft]) => {
-            let adx = aLeft + tileProvider.tileWidth / 2 - options.width / 2;
-            let ady = aTop + tileProvider.tileHeight / 2 - options.height / 2;
-            let bdx = bLeft + tileProvider.tileWidth / 2 - options.width / 2;
-            let bdy = bTop + tileProvider.tileHeight / 2 - options.height / 2;
+            let adx = aLeft + tileProvider.tileWidth / 2 - width / 2;
+            let ady = aTop + tileProvider.tileHeight / 2 - height / 2;
+            let bdx = bLeft + tileProvider.tileWidth / 2 - width / 2;
+            let bdy = bTop + tileProvider.tileHeight / 2 - height / 2;
             let adr = adx * adx + ady * ady;
             let bdr = bdx * bdx + bdy * bdy;
             return adr - bdr;
@@ -175,45 +169,45 @@ export default class MapView extends React.Component {
         let priority = 0;
 
         let topLeft = VectorUtil.round({
-            x: options.x - options.width / 2 / options.scale,
-            y: options.y - options.height / 2 / options.scale
+            x: x - width / 2 / scale,
+            y: y - height / 2 / scale
         });
-        let [loadedTiles, toLoadTiles] = MapView.generateTilesList([topLeft.x, topLeft.y], [options.width / options.scale, options.height / options.scale], options.zoomLevel, tileProvider, firstLoadedAncestor);
+        let [loadedTiles, toLoadTiles] = MapView.generateTilesList([topLeft.x, topLeft.y], [width / scale, height / scale], zoomLevel, tileProvider, firstLoadedAncestor);
         toLoadTiles.sort(byDistanceFromCenter).forEach(([i, j, zoomLevel]) => {
-            let source = tileProvider.getTileUrl(i, j, zoomLevel, style);
+            let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
             imageFrontier.fetch(source, priority--, this.draw);
         });
 
         let preTopLeft = VectorUtil.round({
-            x: options.x - options.width / 2 / options.scale * (1 + layer.props.preloadHorizontal),
-            y: options.y - options.height / 2 / options.scale * (1 + layer.props.preloadVertical)
+            x: x - width / 2 / scale * (1 + layer.props.preloadHorizontal),
+            y: y - height / 2 / scale * (1 + layer.props.preloadVertical)
         });
         let [, preFetchTiles] = MapView.generateTilesList(
             [preTopLeft.x, preTopLeft.y],
-            [options.width / options.scale * (1 + layer.props.preloadHorizontal), options.height / options.scale * (1 + layer.props.preloadVertical)],
-            options.zoomLevel,
+            [width / scale * (1 + layer.props.preloadHorizontal), height / scale * (1 + layer.props.preloadVertical)],
+            zoomLevel,
             tileProvider,
             (i, j, zoomLevel) => [null, null, null]
         );
         preFetchTiles.sort(byDistanceFromCenter).forEach(([i, j, zoomLevel]) => {
-            let source = tileProvider.getTileUrl(i, j, zoomLevel, style);
+            let source = tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
             imageFrontier.fetch(source, priority--);
         });
 
         return {
             type: Scale,
             props: {
-                scaleWidth: options.scale,
-                scaleHeight: options.scale,
+                scaleWidth: scale,
+                scaleHeight: scale,
                 children: Object.keys(loadedTiles)
                     .sort((keyA, keyB) => loadedTiles[keyA].zoomLevel - loadedTiles[keyB].zoomLevel)
                     .map(key => {
                         let {i, j, zoomLevel, top, left, width, height} = loadedTiles[key];
-                        let source = tileProvider.getTileUrl(i, j, zoomLevel, style);
+                        let source = layer.props.tileProvider.getTileUrl(i, j, zoomLevel, layer.props.style);
                         return {
                             type: Picture,
                             props: {
-                                image: imageFrontier.getLoadedImage(source),
+                                image: this.props.imageFrontier.getLoadedImage(source),
                                 top,
                                 left,
                                 width,
@@ -225,11 +219,16 @@ export default class MapView extends React.Component {
         };
     }
 
-    transformHtmlLayer(layer, index, options) {
-        let center = this.props.projection.project(layer.props, options.zoomLevel);
-        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, options), options.scale), {
-            x: options.width / 2,
-            y: options.height / 2
+    transformHtmlLayer(layer, index) {
+        const {width, height} = this.state;
+        const zoomLevel = Math.round(this.props.view.zoom);
+        const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
+        const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
+
+        let center = this.props.projection.project(layer.props, zoomLevel);
+        let offset = VectorUtil.add(VectorUtil.multiply(VectorUtil.subtract(center, {x, y}), scale), {
+            x: width / 2,
+            y: height / 2
         });
         return <div key={index} style={{position: 'absolute', top: offset.y, left: offset.x}}>
             {layer.props.children}
@@ -272,46 +271,19 @@ export default class MapView extends React.Component {
         return [loadedTiles, toLoadTiles]
     }
 
-    handleViewChange(view) {
-        this.setState({
-            viewOffset: {
-                x: view.x - this.props.view.x,
-                y: view.y - this.props.view.y,
-                zoom: view.zoom - this.props.view.zoom
-            }
-        });
-    }
-
-    handleLongViewChange(view) {
-        this.props.onLongViewChange(view);
-        this.setState({viewOffset: {x: 0, y: 0, zoom: 0}});
-    }
-
     render() {
-        const {width, height} = this.state;
-        const zoomLevel = Math.round(this.props.view.zoom);
-        const scale = Math.pow(2, this.props.view.zoom - zoomLevel);
-        const {x, y} = VectorUtil.multiply(this.props.view, Math.pow(2, zoomLevel - Math.floor(this.props.view.zoom)));
-        const options = {width, height, zoomLevel, scale, x, y};
-        const offset = {
-            top: -this.state.viewOffset.y,
-            left: -this.state.viewOffset.x
-        };
-
-        return <div style={{position: 'absolute'}}>
+        return <span>
             <MapViewController
-                view={{x: this.props.view.x + this.state.viewOffset.x, y: this.props.view.y + this.state.viewOffset.y, zoom: this.props.view.zoom + this.state.viewOffset.zoom}}
-                onViewChange={this.handleViewChange}
-                onLongViewChange={this.handleLongViewChange}
+                view={this.props.view}
+                onViewChange={this.props.onViewChange}
+                onLongViewChange={this.props.onLongViewChange}
                 onLocationSelect={this.props.onLocationSelect}
                 onTap={this.props.onTap}
                 projection={this.props.projection}
             >
                 <Canvas ref="canvas" width={this.state.width} height={this.state.height}/>
             </MapViewController>
-            <div style={{position: 'absolute', ...offset}}>
-                {React.Children.toArray(this.props.children).filter(this.shouldTransformToHtml).map((layer, index) => this.transformHtmlLayer(layer, index, options))}
-            </div>
-        </div>;
+            {React.Children.toArray(this.props.children).filter(this.shouldTransformToHtml).map(this.transformHtmlLayer)}
+        </span>;
     }
 };

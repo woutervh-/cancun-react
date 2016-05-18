@@ -8,7 +8,6 @@ import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
 import {IncidentsHelper} from './Map/Incidents';
-import VectorUtil from './VectorUtil';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -16,6 +15,7 @@ export default class App extends LocalStorageComponent {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handleSearchClear = this.handleSearchClear.bind(this);
+        this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLongViewChange = this.handleLongViewChange.bind(this);
         this.updateIncidents = this.updateIncidents.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
@@ -117,6 +117,10 @@ export default class App extends LocalStorageComponent {
         this.setState({locationMarker: {show: false}, locationBox: {show: false}});
     }
 
+    handleViewChange(view) {
+        this.setState({view});
+    }
+
     handleLongViewChange(view) {
         this.setState({view});
         this.updateIncidents(view);
@@ -173,21 +177,20 @@ export default class App extends LocalStorageComponent {
                     onTrafficChange={this.handleTrafficChange}
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
-            <MapView view={this.state.view} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
+            <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
                 {this.state.traffic.show && this.state.traffic.showTubes
                     ? <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
                     : null}
                 {this.state.traffic.show && this.state.traffic.showIcons
-                    ? <MapLayer latitude={0} longitude={0} render="html">
-                    {this.state.traffic.trafficIcons.map((poi, index) => {
-                        let {p: {x: longitude, y: latitude}} = poi;
-                        let offset = VectorUtil.subtract(WebMercator.project({latitude, longitude}, Math.round(this.state.view.zoom)), WebMercator.project(this.state.view, Math.round(this.state.view.zoom)));
-                        // const IconType = IncidentsHelper.lookupIconType(poi);
-                        // <IconType viewBox="0 0 20 20"/>
-                        return <img key={index} src="images/place-holder.svg" width="20" height="20" style={{position: 'absolute', top: offset.y - 10, left: offset.x - 10}}/>;
-                    })}
-                </MapLayer>
+                    ? this.state.traffic.trafficIcons.map((poi, index) => {
+                    let {p: {x: longitude, y: latitude}} = poi;
+                    const IconType = IncidentsHelper.lookupIconType(poi);
+                    // <IconType viewBox="0 0 20 20"/>
+                    return <MapLayer key={index} latitude={latitude} longitude={longitude} render="html">
+                        <img src="images/place-holder.svg" width="20" height="20"/>
+                    </MapLayer>;
+                })
                     : null}
                 <MapLayer {...this.state.locationMarkerInformation.location} render="html">
                     {this.state.locationMarker.show
