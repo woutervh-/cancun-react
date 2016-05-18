@@ -7,7 +7,7 @@
   width: auto;
   transition: max-height $animation-duration $animation-curve-default $animation-duration;
   &.active {
-    max-height: 50vh;
+    max-height: 500vh;
   }
   &:not(.active) {
     max-height: 0;
