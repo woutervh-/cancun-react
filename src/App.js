@@ -1,8 +1,8 @@
 import {TopBar} from './Toolbar';
 import LocationInfoBox from './LocationInfoBox';
-import {MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController, TrafficHelper} from './Map';
+import {FlowHelper, MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController, TrafficHelper} from './Map';
 import {WebMercator} from './Map/Projections';
-import {Composition, Picture} from './Map/canvas';
+import {Composition, Picture} from './Map/Canvas';
 import React from 'react';
 import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
@@ -36,7 +36,9 @@ export default class App extends LocalStorageComponent {
         traffic: {
             show: false,
             showTubes: false,
-            showIcons: false
+            showIcons: false,
+            showFlow: false,
+            flowStyle: FlowHelper.styles[0].value
         },
         locationMarker: {
             show: false
@@ -166,9 +168,6 @@ export default class App extends LocalStorageComponent {
     }
 
     render() {
-        let img = new Image();
-        img.src = 'http://cancun.flatns.net/images/traffic-icons/cropped/traffic-major.png';
-
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
                     onSearchClear={this.handleSearchClear}
@@ -179,9 +178,8 @@ export default class App extends LocalStorageComponent {
                     traffic={this.state.traffic}/>
             <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
                 <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
-                {this.state.traffic.show && this.state.traffic.showTubes
-                    ? <MapTilesLayer tileProvider={TrafficHelper} style="s3"/>
-                    : null}
+                <MapTilesLayer tileProvider={FlowHelper} style={this.state.traffic.flowStyle} active={this.state.traffic.show && this.state.traffic.showFlow}/>
+                <MapTilesLayer tileProvider={TrafficHelper} style="s3" active={this.state.traffic.show && this.state.traffic.showTubes}/>
                 {this.state.traffic.show && this.state.traffic.showIcons
                     ? this.state.traffic.trafficIcons.map((poi, index) => {
                     let {p: {x: longitude, y: latitude}} = poi;
@@ -192,13 +190,13 @@ export default class App extends LocalStorageComponent {
                     </MapLayer>;
                 })
                     : null}
-                <MapLayer {...this.state.locationMarkerInformation.location} render="html">
-                    {this.state.locationMarker.show
-                        ? <Marker onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}><SearchMarker viewBox="0 0 20 30"/></Marker>
-                        : null}
+                <MapLayer {...this.state.locationMarkerInformation.location} render="html" active={this.state.locationMarker.show}>
+                    <Marker onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}>
+                        <SearchMarker viewBox="0 0 20 30"/>
+                    </Marker>
                 </MapLayer>
-                <MapLayer {...this.state.locationBoxInformation.location} render="html">
-                    <LocationInfoBox onClearClick={this.handleSearchClear} active={this.state.locationBox.show} locationInformation={this.state.locationBoxInformation}/>
+                <MapLayer {...this.state.locationBoxInformation.location} render="html" active={this.state.locationBox.show}>
+                    <LocationInfoBox onClearClick={this.handleSearchClear} locationInformation={this.state.locationBoxInformation}/>
                 </MapLayer>
             </MapView>
         </span>;

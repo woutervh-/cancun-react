@@ -2,7 +2,7 @@ import MapLayer from './MapLayer';
 import MapTilesLayer from './MapTilesLayer';
 import MapViewController from './MapViewController';
 import React from 'react';
-import {Canvas, Composition, Group, Picture, Rectangle, Scale, Translate} from './canvas';
+import {Canvas, Composition, Group, Picture, Rectangle, Scale, Translate} from './Canvas';
 import VectorUtil from '../VectorUtil';
 import ImageFrontier from './ImageFrontier';
 import {WebMercator} from './Projections';
@@ -100,11 +100,11 @@ export default class MapView extends React.Component {
     }
 
     shouldTransformToCanvas(layer) {
-        return layer.type == MapTilesLayer || layer.type == MapLayer && layer.props.render == 'canvas';
+        return layer.props.active && (layer.type == MapTilesLayer || layer.type == MapLayer && layer.props.render == 'canvas');
     }
 
     shouldTransformToHtml(layer) {
-        return layer.type == MapLayer && layer.props.render == 'html';
+        return layer.props.active && layer.type == MapLayer && layer.props.render == 'html';
     }
 
     transformCanvasLayer(layer) {
