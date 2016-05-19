@@ -31,8 +31,13 @@ module.exports = {
                     presets: ['es2015', 'react', 'stage-0', 'react-hmre']
                 }
             }, {
-                test: /\.s?css$/,
+                test: /\.css$/,
+                loader: 'style!css'
+            }, {
+                test: /\.scss$/,
                 loader: 'style!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox'
+            }, {
+                test: /\.(png|jpg)$/, loader: "file-loader?name=images/[name].[ext]"
             }, {
                 test: /\.svg$/,
                 loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0&presets[]=react-hmre!react-svg'

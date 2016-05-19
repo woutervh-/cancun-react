@@ -8,6 +8,8 @@ import SearchMarker from '../public/images/search-marker';
 import {Marker} from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
 import {IncidentsHelper} from './Map/Incidents';
+import {Map, TileLayer} from 'react-leaflet';
+import leafletStyle from 'leaflet/dist/leaflet.css';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -24,13 +26,16 @@ export default class App extends LocalStorageComponent {
         this.handleMapSelect = this.handleMapSelect.bind(this);
         this.handleTrafficChange = this.handleTrafficChange.bind(this);
         this.handleTrafficToggle = this.handleTrafficToggle.bind(this);
+        this.handleMoveEnd = this.handleMoveEnd.bind(this);
     }
 
     state = {
         view: {
-            x: 0,
-            y: 0,
-            zoom: 0
+            position: {
+                latitude: 0,
+                longitude: 0
+            },
+            zoomLevel: 0
         },
         mapStyle: MapHelper.styles[0].value,
         traffic: {
@@ -71,13 +76,14 @@ export default class App extends LocalStorageComponent {
 
     handleSearchSubmit(input) {
         if (!!input) {
-            let toZoom = Math.max(12, Math.floor(this.state.view.zoom));
-            let center = WebMercator.project(input, toZoom);
+            let toZoomLevel = Math.max(12, Math.floor(this.state.view.zoom));
             this.setState({
                 view: {
-                    x: center.x,
-                    y: center.y,
-                    zoom: toZoom
+                    position: {
+                        latitude: input.latitude,
+                        longitude: input.longitude
+                    },
+                    zoomLevel: toZoomLevel
                 },
                 locationMarker: {
                     show: true
@@ -167,6 +173,10 @@ export default class App extends LocalStorageComponent {
         this.setState({traffic: {...this.state.traffic, show: active}});
     }
 
+    handleMoveEnd(event) {
+        console.log(event.latlng);
+    }
+
     render() {
         return <span>
             <TopBar onSearchSubmit={this.handleSearchSubmit}
@@ -176,29 +186,38 @@ export default class App extends LocalStorageComponent {
                     onTrafficChange={this.handleTrafficChange}
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
-            <MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
-                <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
-                <MapTilesLayer tileProvider={FlowHelper} style={this.state.traffic.flowStyle} active={this.state.traffic.show && this.state.traffic.showFlow}/>
-                <MapTilesLayer tileProvider={TrafficHelper} style="s3" active={this.state.traffic.show && this.state.traffic.showTubes}/>
-                {this.state.traffic.show && this.state.traffic.showIcons
-                    ? this.state.traffic.trafficIcons.map((poi, index) => {
-                    let {p: {x: longitude, y: latitude}} = poi;
-                    const IconType = IncidentsHelper.lookupIconType(poi);
-                    // <IconType viewBox="0 0 20 20"/>
-                    return <MapLayer key={index} latitude={latitude} longitude={longitude} render="html">
-                        <img src="images/place-holder.svg" width="20" height="20"/>
-                    </MapLayer>;
-                })
-                    : null}
-                <MapLayer {...this.state.locationMarkerInformation.location} render="html" active={this.state.locationMarker.show}>
-                    <Marker onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}>
-                        <SearchMarker viewBox="0 0 20 30"/>
-                    </Marker>
-                </MapLayer>
-                <MapLayer {...this.state.locationBoxInformation.location} render="html" active={this.state.locationBox.show}>
-                    <LocationInfoBox onClearClick={this.handleSearchClear} locationInformation={this.state.locationBoxInformation}/>
-                </MapLayer>
-            </MapView>
+            <Map center={[this.state.view.position.latitude, this.state.view.position.longitude]}
+                 zoom={13}
+                 zoomControl={false}
+                 attributionControl={false}
+                 style={{height: '100%'}}
+                 onMoveend={this.handleMoveEnd}>
+                <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" subdomains={['a', 'b', 'c', 'd']}/>
+            </Map>
         </span>;
+
+        //<MapView view={this.state.view} onViewChange={this.handleViewChange} onLongViewChange={this.handleLongViewChange} onLocationSelect={this.handleLocationSelect} onTap={this.handleMapTap}>
+        //    <MapTilesLayer tileProvider={MapHelper} style={this.state.mapStyle} displayCachedTiles={true}/>
+        //    <MapTilesLayer tileProvider={FlowHelper} style={this.state.traffic.flowStyle} active={this.state.traffic.show && this.state.traffic.showFlow}/>
+        //    <MapTilesLayer tileProvider={TrafficHelper} style="s3" active={this.state.traffic.show && this.state.traffic.showTubes}/>
+        //    {this.state.traffic.show && this.state.traffic.showIcons
+        //        ? this.state.traffic.trafficIcons.map((poi, index) => {
+        //        let {p: {x: longitude, y: latitude}} = poi;
+        //        const IconType = IncidentsHelper.lookupIconType(poi);
+        //        // <IconType viewBox="0 0 20 20"/>
+        //        return <MapLayer key={index} latitude={latitude} longitude={longitude} render="html">
+        //            <img src="images/place-holder.svg" width="20" height="20"/>
+        //        </MapLayer>;
+        //    })
+        //        : null}
+        //    <MapLayer {...this.state.locationMarkerInformation.location} render="html" active={this.state.locationMarker.show}>
+        //        <Marker onTap={this.handleLocationMarkerTap} style={{width: '2rem', height: '3rem'}}>
+        //            <SearchMarker viewBox="0 0 20 30"/>
+        //        </Marker>
+        //    </MapLayer>
+        //    <MapLayer {...this.state.locationBoxInformation.location} render="html" active={this.state.locationBox.show}>
+        //        <LocationInfoBox onClearClick={this.handleSearchClear} locationInformation={this.state.locationBoxInformation}/>
+        //    </MapLayer>
+        //</MapView>
     }
 };

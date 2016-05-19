@@ -44,12 +44,13 @@ module.exports = {
                     presets: ['es2015', 'react', 'stage-0']
                 }
             }, {
-                test: /\.s?css$/,
+                test: /\.css$/,
+                loader: 'style!css'
+            }, {
+                test: /\.scss$/,
                 loader: cssExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')
             }, {
-                /* TODO: in production load such that it renders as <img src="..." .../> */
-                test: /\.svg$/,
-                loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0!react-svg'
+                test: /\.(png|jpg|svg)$/, loader: "file-loader?name=images/[name].[ext]"
             }
         ]
     },
