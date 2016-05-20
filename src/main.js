@@ -2,7 +2,7 @@ import App from './App';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
-import LeafletPlugins from './LeafletPlugins';
+import {Injector, ReactIcon, TwoFingerZoom} from './LeafletPlugins';
 import style from './style';
 
 // Needed for onTouchTap
@@ -11,7 +11,7 @@ import style from './style';
 // https://github.com/zilverline/react-tap-event-plugin
 injectTapEventPlugin();
 
-LeafletPlugins.inject();
+Injector.inject(ReactIcon, TwoFingerZoom);
 
 ReactDOM.render(
     <App/>,

@@ -91,48 +91,42 @@ body {
   vertical-align: top;
 }
 
-.floating-location-box {
-  position: fixed;
-  top: auto;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 10;
-  box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
-  transition: opacity $animation-duration $animation-curve-default 0s,
-  transform $animation-duration $animation-curve-default $animation-duration,
-  box-shadow $animation-duration $animation-curve-default $animation-duration;
+@media screen and (max-width: 719px) {
+  .floating-location-box {
+    position: fixed;
+    top: auto;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    transition: transform $animation-duration $animation-curve-default $animation-duration,
+    box-shadow $animation-duration $animation-curve-default $animation-duration;
 
-  &:not(.active) {
-    transform: translateY(100%);
-    box-shadow: none;
-    pointer-events: none;
-  }
-  &.active {
-    transform: translateY(0);
-    pointer-events: auto;
+    &:not(.active) {
+      transform: translateY(100%);
+      box-shadow: none;
+      pointer-events: none;
+    }
+    &.active {
+      transform: translateY(0);
+      box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
+      pointer-events: auto;
+    }
   }
 }
 
 @media screen and (min-width: 720px) {
   .floating-location-box {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: auto;
-    right: auto;
     width: 32rem;
-    height: auto;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+    transition: opacity $animation-duration $animation-curve-default 0s;
 
     &:not(.active) {
-      transform: translateY(0);
       opacity: 0;
-      box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+      pointer-events: none;
     }
     &.active {
-      transform: translateY(0);
       opacity: 1;
-      box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+      pointer-events: auto;
     }
   }
 }

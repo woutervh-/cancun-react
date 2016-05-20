@@ -1,15 +1,15 @@
 import {TopBar} from './Toolbar';
 import LocationInfoBox from './LocationInfoBox';
-import {FlowHelper, MapHelper, MapLayer, MapTilesLayer, MapView, MapViewController, TrafficHelper} from './Map';
+import {FlowHelper, MapHelper, MapView, MapViewController, TrafficHelper} from './Map';
 import {WebMercator} from './Map/Projections';
 import {Composition, Picture} from './Map/Canvas';
 import React from 'react';
 import SearchMarker from '../public/images/search-marker';
-import {Marker} from './Marker';
 import LocalStorageComponent from './LocalStorageComponent';
 import {IncidentsHelper} from './Map/Incidents';
-import {Map, TileLayer} from 'react-leaflet';
-import leafletStyle from 'leaflet/dist/leaflet.css';
+import {LayerGroup, Map, Marker, Popup, TileLayer} from 'react-leaflet';
+import Leaflet from 'leaflet';
+import leafletStyle from './leaflet-style';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -27,6 +27,8 @@ export default class App extends LocalStorageComponent {
         this.handleTrafficChange = this.handleTrafficChange.bind(this);
         this.handleTrafficToggle = this.handleTrafficToggle.bind(this);
         this.handleMoveEnd = this.handleMoveEnd.bind(this);
+        this.handleContextMenu = this.handleContextMenu.bind(this);
+        this.handleClick = this.handleClick.bind(this);
     }
 
     state = {
@@ -46,24 +48,20 @@ export default class App extends LocalStorageComponent {
             flowStyle: FlowHelper.styles[0].value
         },
         locationMarker: {
-            show: false
-        },
-        locationMarkerInformation: {
-            name: '',
-            location: {
+            show: false,
+            position: {
                 latitude: 0,
                 longitude: 0
             }
         },
         locationBox: {
-            show: false
-        },
-        locationBoxInformation: {
-            name: '',
-            location: {
+            show: false,
+            position: {
                 latitude: 0,
                 longitude: 0
-            }
+            },
+            name: '',
+            details: ''
         }
     };
 
@@ -173,8 +171,37 @@ export default class App extends LocalStorageComponent {
         this.setState({traffic: {...this.state.traffic, show: active}});
     }
 
-    handleMoveEnd(event) {
-        console.log(event.latlng);
+    handleMoveEnd() {
+        let {lat: latitude, lng: longitude} = this.refs.map.getLeafletElement().getCenter();
+        let zoomLevel = this.refs.map.getLeafletElement().getZoom();
+        let view = {position: {latitude, longitude}, zoomLevel};
+        this.setState({view});
+    }
+
+    handleContextMenu(event) {
+        const displayNumber = number => Math.round(number * 1000000) / 1000000;
+        let {lat: latitude, lng: longitude} = event.latlng;
+        this.setState({
+            locationMarker: {
+                show: true,
+                position: {latitude, longitude}
+            },
+            locationBox: {
+                show: true,
+                position: {latitude, longitude},
+                name: 'Coordinate',
+                details: [latitude, longitude].map(displayNumber).join(', ')
+            }
+        });
+    }
+
+    handleClick() {
+        this.setState({
+            locationBox: {
+                ...this.state.locationBox,
+                show: false
+            }
+        });
     }
 
     render() {
@@ -186,13 +213,27 @@ export default class App extends LocalStorageComponent {
                     onTrafficChange={this.handleTrafficChange}
                     onTrafficToggle={this.handleTrafficToggle}
                     traffic={this.state.traffic}/>
-            <Map center={[this.state.view.position.latitude, this.state.view.position.longitude]}
-                 zoom={13}
+            <Map ref="map"
+                 center={[this.state.view.position.latitude, this.state.view.position.longitude]}
+                 zoom={this.state.view.zoomLevel}
                  zoomControl={false}
                  attributionControl={false}
-                 style={{height: '100%'}}
-                 onMoveend={this.handleMoveEnd}>
+                 style={{height: '100%', width: '100%', cursor: 'default'}}
+                 onClick={this.handleClick}
+                 onMoveend={this.handleMoveEnd}
+                 onContextmenu={this.handleContextMenu}>
                 <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" subdomains={['a', 'b', 'c', 'd']}/>
+                {this.state.locationMarker.show
+                    ? <Marker
+                    position={[this.state.locationMarker.position.latitude, this.state.locationMarker.position.longitude]}
+                    icon={
+                        new Leaflet.ReactIcon({
+                            element: <SearchMarker viewBox="0 0 20 30"/>,
+                            iconAnchor: [10, 30]
+                        })
+                    }/>
+                    : null}
+                <LocationInfoBox onClearClick={this.handleSearchClear} locationInformation={this.state.locationBox} active={this.state.locationBox.show}/>
             </Map>
         </span>;
 
