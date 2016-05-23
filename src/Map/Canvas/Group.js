@@ -1,4 +1,3 @@
-import React from 'react';
 import Composition from './Composition';
 import Picture from './Picture';
 import Rectangle from './Rectangle';

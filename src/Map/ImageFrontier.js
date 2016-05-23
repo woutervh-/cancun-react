@@ -8,6 +8,7 @@ export default class ImageFrontier {
         this.sourceToImage = {};
         this.sourceToCallback = {};
         this.countLoading = 0;
+        this.task = this.task.bind(this);
     }
 
     task() {
@@ -28,7 +29,7 @@ export default class ImageFrontier {
                 } else {
                     this.sourceToImage[source].onload = () => {
                         handleOnLoad();
-                        setImmediate(this.task.bind(this));
+                        setImmediate(this.task);
                     };
                 }
             }
@@ -48,7 +49,7 @@ export default class ImageFrontier {
         if (!!callback) {
             this.sourceToCallback[source] = callback;
         }
-        setImmediate(this.task.bind(this));
+        setImmediate(this.task);
     }
 
     clear() {

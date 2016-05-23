@@ -1,4 +1,3 @@
-import React from 'react';
 import Group from './Group';
 import objectAssign from 'object-assign';
 
@@ -23,7 +22,7 @@ export default function Transform(props) {
             } else {
                 context.transform(propsWithDefaults.a, propsWithDefaults.b, propsWithDefaults.c, propsWithDefaults.d, propsWithDefaults.e, propsWithDefaults.f);
             }
-            Group(props).draw(context);
+            Group(propsWithDefaults).draw(context);
             context.restore();
         }
     };

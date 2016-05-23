@@ -1,4 +1,3 @@
-import React from 'react';
 import Group from './Group';
 import objectAssign from 'object-assign';
 
@@ -14,7 +13,7 @@ export default function Scale(props) {
         draw: (context) => {
             context.save();
             context.scale(propsWithDefaults.scaleWidth, propsWithDefaults.scaleHeight);
-            Group(props).draw(context);
+            Group(propsWithDefaults).draw(context);
             context.restore();
         }
     };

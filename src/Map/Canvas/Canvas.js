@@ -9,6 +9,8 @@ export default class Canvas extends React.Component {
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.tick = this.tick.bind(this);
         this.draw = this.draw.bind(this);
+
+        this.forceRedraw = true;
         this.lastTemplate = {};
         this.nextTemplate = {props: {type: Group, children: []}};
     }
@@ -32,13 +34,19 @@ export default class Canvas extends React.Component {
             || this.props.height != prevProps.height;
     }
 
+    componentDidUpdate() {
+        this.forceRedraw = true;
+    }
+
     tick() {
-        if (this.lastTemplate != this.nextTemplate) {
+        if (this.lastTemplate != this.nextTemplate || this.forceRedraw) {
             let canvas = this.refs.canvas;
             let context = canvas.getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
             context.clearRect(0, 0, this.props.width, this.props.height);
             Group(this.nextTemplate.props).draw(context);
+
+            this.forceRedraw = false;
             this.lastTemplate = this.nextTemplate;
         }
         raf(this.tick);

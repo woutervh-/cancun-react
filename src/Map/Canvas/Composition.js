@@ -1,4 +1,3 @@
-import React from 'react';
 import Group from './Group';
 import objectAssign from 'object-assign';
 
@@ -13,7 +12,7 @@ export default function Composition(props) {
         draw: (context) => {
             let oldCompositeOperation = context.globalCompositeOperation;
             context.globalCompositeOperation = propsWithDefaults.type;
-            Group(props).draw(context);
+            Group(propsWithDefaults).draw(context);
             context.globalCompositeOperation = oldCompositeOperation;
         }
     };
