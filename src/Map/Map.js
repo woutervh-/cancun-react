@@ -212,7 +212,7 @@ export default class Map extends React.Component {
         let rootStyle = objectAssign({}, {position: 'absolute'}, style);
 
         return <div style={rootStyle} {...other}>
-            <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute', width, height}}>
+            <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute'}}>
                 Your browser does not support the HTML5 canvas tag.
             </Canvas>
         </div>;
