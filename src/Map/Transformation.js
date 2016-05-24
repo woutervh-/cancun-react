@@ -4,6 +4,9 @@ export default class Transformation {
         this.b = b;
         this.c = c;
         this.d = d;
+
+        this.transform = this.transform.bind(this);
+        this.untransform = this.untransform.bind(this);
     }
 
     transform({x, y}, scale = 1) {

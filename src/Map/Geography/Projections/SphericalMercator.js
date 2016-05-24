@@ -2,6 +2,12 @@ const maxLatitude = (360 * Math.atan(Math.exp(Math.PI)) / Math.PI - 90);
 const earthRadius = 6378137;
 
 export default class SphericalMercator {
+    constructor() {
+        this.project = this.project.bind(this);
+        this.unproject = this.unproject.bind(this);
+        this.bounds = this.bounds.bind(this);
+    }
+
     project({latitude, longitude}) {
         let degreesToRadians = Math.PI / 180;
         let sin = Math.sin(Math.max(Math.min(maxLatitude, latitude), -maxLatitude) * degreesToRadians);

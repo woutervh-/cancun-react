@@ -8,10 +8,14 @@ export default class Base {
     }
 
     scale(zoomLevel) {
-        return 256 * Math.pow(2, zoomLevel);
+        return this.tileSize() * Math.pow(2, zoomLevel);
     }
 
     zoomLevel(scale) {
-        return Math.log2(scale / 256);
+        return Math.log2(scale / this.tileSize());
+    }
+
+    tileSize() {
+        return 256;
     }
 };

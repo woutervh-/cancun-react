@@ -7,25 +7,20 @@ export default class Canvas extends React.Component {
         super();
         this.componentDidMount = this.componentDidMount.bind(this);
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+
         this.tick = this.tick.bind(this);
         this.draw = this.draw.bind(this);
-
-        this.forceRedraw = true;
-        this.lastTemplate = {};
-        this.nextTemplate = {props: {type: Group, children: []}};
     }
 
     static propTypes = {
         width: React.PropTypes.number.isRequired,
-        height: React.PropTypes.number.isRequired
-    };
-
-    static defaultProps = {
-        width: 0,
-        height: 0
+        height: React.PropTypes.number.isRequired,
     };
 
     componentDidMount() {
+        this.stop = false;
+        this.lastTemplate = this.nextTemplate = {};
         this.tick();
     }
 
@@ -34,22 +29,22 @@ export default class Canvas extends React.Component {
             || this.props.height != prevProps.height;
     }
 
-    componentDidUpdate() {
-        this.forceRedraw = true;
+    componentWillUnmount() {
+        this.stop = true;
     }
 
     tick() {
-        if (this.lastTemplate != this.nextTemplate || this.forceRedraw) {
+        if (this.lastTemplate != this.nextTemplate) {
             let canvas = this.refs.canvas;
             let context = canvas.getContext('2d');
             context.setTransform(1, 0, 0, 1, 0, 0);
             context.clearRect(0, 0, this.props.width, this.props.height);
             Group(this.nextTemplate.props).draw(context);
-
-            this.forceRedraw = false;
             this.lastTemplate = this.nextTemplate;
         }
-        raf(this.tick);
+        if (!this.stop) {
+            raf(this.tick);
+        }
     }
 
     draw(template) {
