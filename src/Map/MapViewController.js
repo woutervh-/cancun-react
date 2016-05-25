@@ -2,6 +2,7 @@ import MapHelper from './MapHelper';
 import VectorUtil from '../VectorUtil';
 import React from 'react';
 import style from './style';
+import Hammer from 'hammerjs';
 import classNames from 'classnames';
 import EventUtil from '../EventUtil';
 import {WebMercator} from './Projections';
@@ -9,6 +10,9 @@ import {WebMercator} from './Projections';
 export default class MapViewController extends React.Component {
     constructor() {
         super();
+        this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentDidUpdate = this.componentDidUpdate.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
         this.handleContextMenu = this.handleContextMenu.bind(this);
@@ -60,6 +64,28 @@ export default class MapViewController extends React.Component {
         pinching: false
     };
 
+    componentDidMount() {
+        this.hammer = new Hammer(this.refs.container);
+        let twoFingerTap = new Hammer.Tap({event: 'twofingertap', pointers: 2});
+        this.hammer.add(twoFingerTap);
+        this.updateHammer(this.hammer);
+    }
+
+    componentDidUpdate() {
+        if (this.hammer) {
+            /* Not necessary when no bound methods are dependent on props/state */
+            //this.updateHammer(this.hammer);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.hammer) {
+            this.hammer.stop();
+            this.hammer.destroy();
+        }
+        this.hammer = null;
+    }
+
     shouldComponentUpdate(nextProps, nextState) {
         return this.props.view != nextProps.view
             || this.props.onViewChange != nextProps.onViewChange
@@ -71,6 +97,33 @@ export default class MapViewController extends React.Component {
             || this.props.children != nextProps.children
             || this.state.dragging != nextState.dragging
             || this.state.pinching != nextState.pinching;
+    }
+
+    updateHammer(hammer) {
+        hammer.off('panstart');
+        hammer.on('panstart', this.handlePanStart);
+        hammer.off('pan');
+        hammer.on('pan', this.handlePan);
+        hammer.off('panend');
+        hammer.on('panend', this.handlePanEnd);
+
+        hammer.off('pinchstart');
+        hammer.on('pinchstart', this.handlePinchStart);
+        hammer.off('pinch');
+        hammer.on('pinch', this.handlePinch);
+        hammer.off('pinchend');
+        hammer.on('pinchend', this.handlePinchEnd);
+
+        hammer.off('twofingertap');
+        hammer.on('twofingertap', this.handleTwoFingerTap);
+        hammer.off('doubletap');
+        hammer.on('doubletap', this.handleDoubleTap);
+        hammer.off('press');
+        hammer.on('press', this.handlePress);
+        hammer.off('tap');
+        hammer.on('tap', this.handleTap);
+
+        hammer.get('pinch').set({enable: true, threshold: 0.1});
     }
 
     /**
@@ -336,12 +389,9 @@ export default class MapViewController extends React.Component {
     render() {
         return <div ref="container"
                     onWheel={this.handleWheel}
-                    onTouchStart={this.handleTouchStart}
-                    onTouchMove={this.handleTouchMove}
-                    onTouchEnd={this.handleTouchEnd}
                     onMouseDown={this.handleMouseDown}
-                    onMouseMove={this.handleMouseMove}
                     onMouseUp={this.handleMouseUp}
+                    onContextMenu={this.handleContextMenu}
                     className={classNames({[style['dragging']]: this.state.dragging})}>
             {this.props.children}
         </div>;

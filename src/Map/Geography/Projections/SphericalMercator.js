@@ -28,10 +28,14 @@ export default class SphericalMercator {
     bounds() {
         let size = earthRadius * Math.PI;
         return {
-            top: -size,
-            left: -size,
-            bottom: size,
-            right: size
+            min: {
+                x: -size,
+                y: -size
+            },
+            max: {
+                x: size,
+                y: size
+            }
         };
     }
 

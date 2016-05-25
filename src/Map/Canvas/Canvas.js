@@ -51,6 +51,10 @@ export default class Canvas extends React.Component {
         this.nextTemplate = template;
     }
 
+    getElement() {
+        return this.refs.canvas;
+    }
+
     render() {
         return <canvas ref="canvas" {...this.props}>
             Your browser does not support the HTML5 canvas tag.
