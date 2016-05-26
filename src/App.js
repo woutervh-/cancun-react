@@ -5,18 +5,35 @@ import {TileLayer} from './Map/Layers';
 
 export default class App extends LocalStorageComponent {
     constructor() {
+        super();
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.handleResize = this.handleResize.bind(this);
     }
+
+    state = {
+        width: window.innerWidth,
+        height: window.innerHeight
+    };
 
     componentDidMount() {
         this.setPersistenceKey('app');
         this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle, traffic: state.traffic}));
         this.restoreState();
-        window.addEventListener('') // TODO: resize window -> resize component -> test pinch on mobile
+
+        window.addEventListener('resize', this.handleResize);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    handleResize() {
+        this.setState({width: window.innerWidth, height: window.innerHeight});
     }
 
     render() {
-        return <Map width={800} height={600}>
+        return <Map width={this.state.width} height={this.state.height}>
             <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
         </Map>;
 

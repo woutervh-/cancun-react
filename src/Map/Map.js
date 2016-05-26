@@ -4,7 +4,7 @@ import {HtmlLayer, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import Transformation from './Transformation';
-import {Canvas, Group, Picture, Rectangle} from './Canvas';
+import {Canvas, Group, Picture, Rectangle, Scale, Text} from './Canvas';
 import VectorUtil from '../VectorUtil';
 import {Manager} from './Events';
 import style from './style';
@@ -12,9 +12,6 @@ import style from './style';
 export default class Map extends React.Component {
     constructor() {
         super();
-        this.imageFrontier = new ImageFrontier();
-        this.tileLayerUrlUtil = new TileLayerUrlUtil();
-
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
@@ -35,6 +32,9 @@ export default class Map extends React.Component {
         this.handleMoveStart = this.handleMoveStart.bind(this);
         this.handleMove = this.handleMove.bind(this);
         this.handleMoveEnd = this.handleMoveEnd.bind(this);
+        this.handleBoxStart = this.handleBoxStart.bind(this);
+        this.handleBox = this.handleBox.bind(this);
+        this.handleBoxEnd = this.handleBoxEnd.bind(this);
         this.handlePinchStart = this.handlePinchStart.bind(this);
         this.handlePinch = this.handlePinch.bind(this);
         this.handlePinchEnd = this.handlePinchEnd.bind(this);
@@ -43,8 +43,18 @@ export default class Map extends React.Component {
         this.handleTwoFingerTap = this.handleTwoFingerTap.bind(this);
         this.handleContextMenu = this.handleContextMenu.bind(this);
         this.screenToContainer = this.screenToContainer.bind(this);
+        this.containerToPixel = this.containerToPixel.bind(this);
         this.moveMapBy = this.moveMapBy.bind(this);
+        this.setPositionTo = this.setPositionTo.bind(this);
+        this.setZoomTo = this.setZoomTo.bind(this);
         this.setZoomAround = this.setZoomAround.bind(this);
+        this.setZoomAt = this.setZoomAt.bind(this);
+
+        this.imageFrontier = new ImageFrontier();
+        this.tileLayerUrlUtil = new TileLayerUrlUtil();
+        this.manager = null;
+        this.moving = false;
+        this.pinching = false;
     }
 
     static propTypes = {
@@ -59,7 +69,8 @@ export default class Map extends React.Component {
         maxZoom: React.PropTypes.number.isRequired,
         crs: React.PropTypes.instanceOf(Base).isRequired,
         onViewChange: React.PropTypes.func.isRequired,
-        contextMenuTime: React.PropTypes.number.isRequired
+        contextMenuTime: React.PropTypes.number.isRequired,
+        pinchZoomJumpThreshold: React.PropTypes.number.isRequired
     };
 
     static defaultProps = {
@@ -70,13 +81,19 @@ export default class Map extends React.Component {
         crs: new EPSG3857(),
         onViewChange: () => {
         },
-        contextMenuTime: 250
+        contextMenuTime: 250,
+        pinchZoomJumpThreshold: 0.2
     };
 
     state = {
         dLatitude: 0,
         dLongitude: 0,
-        dZoom: 0
+        dZoom: 0,
+        box: {
+            show: false,
+            start: {x: 0, y: 0},
+            end: {x: 0, y: 0}
+        }
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -89,7 +106,7 @@ export default class Map extends React.Component {
             || this.state.dLatitude != nextState.dLatitude
             || this.state.dLongitude != nextState.dLongitude
             || this.state.dZoom != nextState.dZoom
-            || this.state.debug != nextState.debug;
+            || this.state.box != nextState.box;
     }
 
     componentDidMount() {
@@ -97,6 +114,9 @@ export default class Map extends React.Component {
         this.manager.on('movestart', this.handleMoveStart);
         this.manager.on('move', this.handleMove);
         this.manager.on('moveend', this.handleMoveEnd);
+        this.manager.on('boxstart', this.handleBoxStart);
+        this.manager.on('box', this.handleBox);
+        this.manager.on('boxend', this.handleBoxEnd);
         this.manager.on('pinchstart', this.handlePinchStart);
         this.manager.on('pinch', this.handlePinch);
         this.manager.on('pinchend', this.handlePinchEnd);
@@ -140,7 +160,18 @@ export default class Map extends React.Component {
             props: {
                 children: [
                     ...transformedLayers,
-                    {
+                    this.state.box.show ? {
+                        type: Rectangle,
+                        props: {
+                            top: this.state.box.start.y,
+                            left: this.state.box.start.x,
+                            width: this.state.box.end.x - this.state.box.start.x,
+                            height: this.state.box.end.y - this.state.box.start.y,
+                            strokeStyle: 'rgba(189, 215, 49, 1)',
+                            fillStyle: 'rgba(189, 215, 49, 0.25)'
+                        }
+                    } : null
+                    , {
                         type: Rectangle,
                         props: {
                             width: this.props.width,
@@ -161,17 +192,17 @@ export default class Map extends React.Component {
             y: (tileRange.min.y + tileRange.max.y) / 2
         };
         let zoomLevel = this.zoomLevel();
-        let displayTiles = [];
+        let displayTiles = {};
         let toLoadTiles = [];
         for (let i = tileRange.min.x; i <= tileRange.max.x; i++) {
             for (let j = tileRange.min.y; j <= tileRange.max.y; j++) {
                 let ancestor = this.firstLoadedAncestor(layer, i, j, zoomLevel);
                 if (!!ancestor && ancestor.i == i && ancestor.j == j && ancestor.zoomLevel == zoomLevel) {
-                    displayTiles.push(ancestor);
+                    displayTiles[[ancestor.i, ancestor.j, ancestor.zoomLevel]] = ancestor;
                 } else {
                     toLoadTiles.push({i, j, zoomLevel});
                     if (!!ancestor && layer.props.displayCachedTiles) {
-                        displayTiles.push(ancestor);
+                        displayTiles[[ancestor.i, ancestor.j, ancestor.zoomLevel]] = ancestor;
                     }
                 }
             }
@@ -185,10 +216,10 @@ export default class Map extends React.Component {
 
         let origin = VectorUtil.round(this.pixelBounds().min);
         let tileSize = this.props.crs.tileSize();
-        let pictures = displayTiles.map(tile => {
+        let pictures = Object.keys(displayTiles).map(key => displayTiles[key]).sort((a, b) => a.zoomLevel - b.zoomLevel).map(tile => {
             let source = this.getTileUrl(layer, tile);
             let image = this.imageFrontier.getLoadedImage(source);
-            let scale = this.scale() * Math.pow(2, zoomLevel - tile.zoomLevel);
+            let scale = Math.pow(2, zoomLevel - tile.zoomLevel);
             let topLeft = VectorUtil.subtract(VectorUtil.multiply({x: tile.i, y: tile.j}, scale * tileSize), origin);
             return {
                 type: Picture,
@@ -203,8 +234,10 @@ export default class Map extends React.Component {
         });
 
         return {
-            type: Group,
+            type: Scale,
             props: {
+                scaleWidth: this.scale(),
+                scaleHeight: this.scale(),
                 children: pictures
             }
         };
@@ -299,25 +332,87 @@ export default class Map extends React.Component {
     }
 
     handleMoveStart(event) {
-        let {clientX: x, clientY: y} = event.pointers[0];
-        document.body.classList.add(style['unselectable']);
-        this.move = {x, y};
+        if (!this.moving && !this.pinching) {
+            this.moving = true;
+
+            let {clientX: x, clientY: y} = event.pointers[0];
+            document.body.classList.add(style['unselectable']);
+            this.move = {x, y};
+        }
     }
 
     handleMove(event) {
-        let {clientX: x, clientY: y} = event.pointers[0];
-        let dx = x - this.move.x;
-        let dy = y - this.move.y;
-        this.move = {x, y};
-        this.moveMapBy({x: -dx, y: -dy});
+        if (this.moving) {
+            let {clientX: x, clientY: y} = event.pointers[0];
+            let dx = x - this.move.x;
+            let dy = y - this.move.y;
+            this.move = {x, y};
+            this.moveMapBy({x: -dx, y: -dy});
+        }
     }
 
     handleMoveEnd() {
-        document.body.classList.remove(style['unselectable']);
-        this.pushViewUpdate();
+        if (this.moving) {
+            this.moving = false;
+
+            document.body.classList.remove(style['unselectable']);
+            this.pushViewUpdate();
+        }
+    }
+
+    handleBoxStart(event) {
+        let {clientX: x, clientY: y} = event.pointers[0];
+        this.setState({
+            box: {
+                show: true,
+                start: {x, y},
+                end: {x, y}
+            }
+        });
+    }
+
+    handleBox(event) {
+        let {clientX: x, clientY: y} = event.pointers[0];
+        this.setState({
+            box: {
+                ...this.state.box,
+                end: {x, y}
+            }
+        });
+    }
+
+    handleBoxEnd() {
+        let boxWidth = Math.abs(this.state.box.end.x - this.state.box.start.x);
+        let boxHeight = Math.abs(this.state.box.end.y - this.state.box.start.y);
+        let boxCenter = this.screenToContainer(VectorUtil.divide(VectorUtil.add(this.state.box.start, this.state.box.end), 2));
+
+        let containerAspectRatio = this.props.width / this.props.height;
+        let boxAspectRatio = boxWidth / boxHeight;
+
+        if (containerAspectRatio >= boxAspectRatio) {
+            let scale = this.props.height / boxHeight;
+            let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
+            this.setZoomAt(boxCenter, zoom);
+        } else {
+            let scale = this.props.width / boxWidth;
+            let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
+            this.setZoomAt(boxCenter, zoom);
+        }
+
+        this.setState({
+            box: {
+                ...this.state.box,
+                show: false
+            }
+        });
     }
 
     handlePinchStart(event) {
+        if (this.moving) {
+            this.moving = false;
+        }
+        this.pinching = true;
+
         let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
         let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
         let pointer = this.screenToContainer(VectorUtil.divide(VectorUtil.add(p1, p2), 2));
@@ -327,17 +422,33 @@ export default class Map extends React.Component {
     }
 
     handlePinch(event) {
-        let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
-        let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
-        let pointer = this.screenToContainer(VectorUtil.divide(VectorUtil.add(p1, p2), 2));
-        let distance = VectorUtil.distance(p1, p2);
-        let zoom = this.pinch.zoom + Math.log2(distance / this.pinch.distance);
-        this.pinch = {pointer, distance, zoom};
-        this.setZoomAround(pointer, zoom);
+        if (this.pinching) {
+            let p1 = {x: event.pointers[0].clientX, y: event.pointers[0].clientY};
+            let p2 = {x: event.pointers[1].clientX, y: event.pointers[1].clientY};
+            let pointer = this.screenToContainer(VectorUtil.divide(VectorUtil.add(p1, p2), 2));
+            let distance = VectorUtil.distance(p1, p2);
+            let delta = VectorUtil.subtract(this.pinch.pointer, pointer);
+            let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.pinch.zoom + Math.log2(distance / this.pinch.distance)));
+            this.setZoomAround(pointer, zoom, delta);
+            this.pinch.pointer = pointer;
+        }
     }
 
-    handlePinchEnd(event) {
+    handlePinchEnd() {
+        if (this.pinching) {
+            this.pinching = false;
 
+            let startZoom = this.pinch.zoom;
+            let newZoom = this.zoom();
+            if (startZoom < newZoom) {
+                newZoom = newZoom - startZoom > this.props.pinchZoomJumpThreshold ? Math.ceil(newZoom) : Math.floor(newZoom);
+                newZoom = Math.min(this.props.maxZoom, newZoom);
+            } else if (startZoom > newZoom) {
+                newZoom = startZoom - newZoom > this.props.pinchZoomJumpThreshold ? Math.floor(newZoom) : Math.ceil(newZoom);
+                newZoom = Math.max(this.props.minZoom, newZoom);
+            }
+            this.setZoomAround(this.pinch.pointer, newZoom);
+        }
     }
 
     handleWheel(event) {
@@ -398,28 +509,63 @@ export default class Map extends React.Component {
         return VectorUtil.subtract(point, containerOffset);
     }
 
+    containerToPixel({x, y}) {
+        let center = this.center();
+        let halfSize = this.halfSize();
+        let centerPoint = this.props.crs.coordinateToPoint(center, this.zoomLevel());
+        let offset = {
+            x: x - halfSize.width,
+            y: y - halfSize.height
+        };
+        return VectorUtil.add(centerPoint, offset);
+    }
+
     moveMapBy(pixelAmount) {
         let oldCenter = this.center();
-        let oldCenterPoint = this.props.crs.coordinateToPoint(oldCenter, this.zoomLevel());
-        let newCenterPoint = this.props.crs.wrapPoint(VectorUtil.add(oldCenterPoint, pixelAmount), this.zoomLevel());
-        let newCenter = this.props.crs.pointToCoordinate(newCenterPoint, this.zoomLevel());
+        let oldCenterPoint = this.props.crs.coordinateToPoint(oldCenter, this.zoom());
+        let newCenterPoint = this.props.crs.wrapPoint(VectorUtil.add(oldCenterPoint, pixelAmount), this.zoom());
+        let newCenter = this.props.crs.pointToCoordinate(newCenterPoint, this.zoom());
         this.setState({
             dLatitude: this.state.dLatitude + newCenter.latitude - oldCenter.latitude,
             dLongitude: this.state.dLongitude + newCenter.longitude - oldCenter.longitude
         });
     }
 
-    setZoomAround(containerPoint, zoom) {
-        let halfSize = this.halfSize();
-        let scale = this.props.crs.scale(zoom) / this.props.crs.scale(this.zoom());
-        let offset = {
-            x: (containerPoint.x - halfSize.width) * (1 - 1 / scale),
-            y: (containerPoint.y - halfSize.height) * (1 - 1 / scale)
-        };
-        this.moveMapBy(offset);
+    setPositionTo(coordinate) {
+        let oldCenter = this.center();
+        this.setState({
+            dLatitude: this.state.dLatitude + coordinate.latitude - oldCenter.latitude,
+            dLongitude: this.state.dLongitude + coordinate.longitude - oldCenter.longitude
+        });
+    }
+
+    setZoomTo(zoom) {
         this.setState({
             dZoom: this.state.dZoom + zoom - this.zoom()
         });
+    }
+
+    setZoomAround(containerPoint, zoom, additionalOffset = VectorUtil.ZERO) {
+        let halfSize = this.halfSize();
+        let scale = this.scale();
+        let deltaScale = this.props.crs.scale(zoom) / this.props.crs.scale(this.zoom());
+        let offset = {
+            x: (containerPoint.x - halfSize.width * scale) * (1 - 1 / deltaScale),
+            y: (containerPoint.y - halfSize.height * scale) * (1 - 1 / deltaScale)
+        };
+        this.moveMapBy(VectorUtil.add(offset, additionalOffset));
+        this.setZoomTo(zoom);
+    }
+
+    setZoomAt(containerPoint, zoom) {
+        let halfSize = this.halfSize();
+        let scale = this.scale();
+        let offset = {
+            x: (containerPoint.x - halfSize.width * scale),
+            y: (containerPoint.y - halfSize.height * scale)
+        };
+        this.moveMapBy(offset);
+        this.setZoomTo(zoom);
     }
 
     render() {
@@ -430,9 +576,6 @@ export default class Map extends React.Component {
             <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute'}}>
                 Your browser does not support the HTML5 canvas tag.
             </Canvas>
-            <pre style={{position: 'fixed', top: 0, left: 0}}>
-                {JSON.stringify(this.state.debug, null, 2)}
-            </pre>
         </div>;
 
         //<div ref="htmlLayers" style={{position: 'absolute', overflow: 'hidden', top: this.state.dy, left: this.state.dx, width, height}}>

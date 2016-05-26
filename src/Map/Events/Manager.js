@@ -42,6 +42,7 @@ export default class Manager {
         this.hammer.off('tap');
         this.hammer.on('tap', this.handleTap);
 
+        this.hammer.get('pan').set({threshold: 0});
         this.hammer.get('pinch').set({enable: true, threshold: 0.1});
 
         this.element = element;

@@ -3,6 +3,7 @@ import Picture from './Picture';
 import Rectangle from './Rectangle';
 import Rotate from './Rotate';
 import Scale from './Scale';
+import Text from './Text';
 import Transform from './Transform';
 import Translate from './Translate';
 
@@ -30,6 +31,9 @@ export default function Group(props) {
                                 break;
                             case Scale:
                                 Scale(child.props).draw(context);
+                                break;
+                            case Text:
+                                Text(child.props).draw(context);
                                 break;
                             case Transform:
                                 Transform(child.props).draw(context);

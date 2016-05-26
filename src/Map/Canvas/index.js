@@ -5,7 +5,8 @@ import Picture from './Picture';
 import Rectangle from './Rectangle';
 import Rotate from './Rotate';
 import Scale from './Scale';
+import Text from './Text';
 import Transform  from './Transform';
 import Translate from './Translate';
 
-export {Canvas, Composition, Group, Picture, Rectangle, Rotate, Scale, Transform, Translate};
+export {Canvas, Composition, Group, Picture, Rectangle, Rotate, Scale, Text, Transform, Translate};
