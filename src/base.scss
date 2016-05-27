@@ -1,0 +1,45 @@
+@import "~react-toolbox/lib/base";
+@import "~react-toolbox/lib/commons";
+
+@mixin breakpoint($point) {
+  @if $point == mobile {
+    @media screen and (max-width: 719px) {
+      @content;
+    }
+  } @else if $point == desktop {
+    @media screen and (min-width: 720px) {
+      @content;
+    }
+  }
+}
+
+$z-index-toolbar: 100;
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+@media screen and (min-width: 2560px) {
+  /* WQHD Desktop */
+  html {
+    font-size: 100%;
+  }
+}
+
+@media screen and (min-width: 3840px) {
+  /* UHD Desktop */
+  html {
+    font-size: 137.5%;
+  }
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
 import {TileLayer} from './Map/Layers';
+import {Toolbar} from './Toolbar';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -50,14 +51,17 @@ export default class App extends LocalStorageComponent {
     }
 
     render() {
-        return <Map center={this.state.view.center}
-                    zoom={this.state.view.zoom}
-                    width={this.state.width}
-                    height={this.state.height}
-                    onViewChange={this.handleViewChange}
-                    onLocationSelect={this.handleLocationSelect}>
-            <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
-        </Map>;
+        return <div>
+            <Toolbar/>
+            <Map center={this.state.view.center}
+                 zoom={this.state.view.zoom}
+                 width={this.state.width}
+                 height={this.state.height}
+                 onViewChange={this.handleViewChange}
+                 onLocationSelect={this.handleLocationSelect}>
+                <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
+            </Map>
+        </div>;
 
         //return <span>
         //    <TopBar onSearchSubmit={this.handleSearchSubmit}

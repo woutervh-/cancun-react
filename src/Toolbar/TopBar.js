@@ -9,7 +9,7 @@ import LocalStorageComponent from '../LocalStorageComponent';
 import EventUtil from '../EventUtil';
 import {MapToolbarItem, TrafficToolbarItem} from './ToolbarItems/Map';
 
-export default class TopBar extends LocalStorageComponent {
+export default class Toolbar extends LocalStorageComponent {
     constructor() {
         super();
         this.componentDidMount = this.componentDidMount.bind(this);
@@ -60,7 +60,7 @@ export default class TopBar extends LocalStorageComponent {
     }
 
     componentDidMount() {
-        this.setPersistenceKey('top-bar');
+        this.setPersistenceKey('toolbar');
         this.setStateMapping(state => ({pinned: state.pinned}));
         this.restoreState();
         if (this.state.toolbarActive) {
@@ -97,8 +97,8 @@ export default class TopBar extends LocalStorageComponent {
     }
 
     render() {
-        return <div className={classNames(style['top-bar-hover-container'], {[style['pinned']]: this.state.pinned})}>
-            <div className={style['top-bar']}>
+        return <div className={classNames(style['toolbar-hover-container'], {[style['pinned']]: this.state.pinned})}>
+            <div className={style['toolbar']}>
                 <IconButton onClick={this.handlePinClick}>
                     {this.state.pinned
                         ? <EyeActive viewBox="0 0 30 30"/>
