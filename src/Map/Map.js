@@ -4,7 +4,7 @@ import {HtmlLayer, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import Transformation from './Transformation';
-import {Canvas, Group, Picture, Rectangle, Scale, Text} from './Canvas';
+import {Canvas, Group, Picture, Rectangle, Scale} from './Canvas';
 import VectorUtil from '../VectorUtil';
 import {Manager} from './Events';
 import style from './style';
@@ -42,6 +42,7 @@ export default class Map extends React.Component {
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handleTwoFingerTap = this.handleTwoFingerTap.bind(this);
         this.handleContextMenu = this.handleContextMenu.bind(this);
+        this.handlePress = this.handlePress.bind(this);
         this.screenToContainer = this.screenToContainer.bind(this);
         this.containerToPixel = this.containerToPixel.bind(this);
         this.moveMapBy = this.moveMapBy.bind(this);
@@ -69,6 +70,7 @@ export default class Map extends React.Component {
         maxZoom: React.PropTypes.number.isRequired,
         crs: React.PropTypes.instanceOf(Base).isRequired,
         onViewChange: React.PropTypes.func.isRequired,
+        onLocationSelect: React.PropTypes.func.isRequired,
         contextMenuTime: React.PropTypes.number.isRequired,
         pinchZoomJumpThreshold: React.PropTypes.number.isRequired
     };
@@ -80,6 +82,8 @@ export default class Map extends React.Component {
         maxZoom: 18,
         crs: new EPSG3857(),
         onViewChange: () => {
+        },
+        onLocationSelect: () => {
         },
         contextMenuTime: 250,
         pinchZoomJumpThreshold: 0.2
@@ -124,6 +128,7 @@ export default class Map extends React.Component {
         this.manager.on('doubletap', this.handleDoubleTap);
         this.manager.on('twofingertap', this.handleTwoFingerTap);
         this.manager.on('contextmenu', this.handleContextMenu);
+        this.manager.on('press', this.handlePress);
 
         this.drawTileLayers();
     }
@@ -170,8 +175,7 @@ export default class Map extends React.Component {
                             strokeStyle: 'rgba(189, 215, 49, 1)',
                             fillStyle: 'rgba(189, 215, 49, 0.25)'
                         }
-                    } : null
-                    , {
+                    } : null, {
                         type: Rectangle,
                         props: {
                             width: this.props.width,
@@ -319,7 +323,7 @@ export default class Map extends React.Component {
     pushViewUpdate() {
         this.props.onViewChange({
             center: this.center(),
-            zoomLevel: this.zoomLevel()
+            zoom: this.zoom()
         });
     }
 
@@ -392,11 +396,11 @@ export default class Map extends React.Component {
         if (containerAspectRatio >= boxAspectRatio) {
             let scale = this.props.height / boxHeight;
             let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
-            this.setZoomAt(boxCenter, zoom);
+            this.setZoomAt(boxCenter, zoom, this.pushViewUpdate);
         } else {
             let scale = this.props.width / boxWidth;
             let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
-            this.setZoomAt(boxCenter, zoom);
+            this.setZoomAt(boxCenter, zoom, this.pushViewUpdate);
         }
 
         this.setState({
@@ -429,7 +433,7 @@ export default class Map extends React.Component {
             let distance = VectorUtil.distance(p1, p2);
             let delta = VectorUtil.subtract(this.pinch.pointer, pointer);
             let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.pinch.zoom + Math.log2(distance / this.pinch.distance)));
-            this.setZoomAround(pointer, zoom, delta);
+            this.setZoomAround(pointer, zoom, null, delta);
             this.pinch.pointer = pointer;
         }
     }
@@ -447,7 +451,7 @@ export default class Map extends React.Component {
                 newZoom = startZoom - newZoom > this.props.pinchZoomJumpThreshold ? Math.floor(newZoom) : Math.ceil(newZoom);
                 newZoom = Math.max(this.props.minZoom, newZoom);
             }
-            this.setZoomAround(this.pinch.pointer, newZoom);
+            this.setZoomAround(this.pinch.pointer, newZoom, this.pushViewUpdate);
         }
     }
 
@@ -455,10 +459,10 @@ export default class Map extends React.Component {
         let {x, y} = this.screenToContainer({x: event.clientX, y: event.clientY});
         if (event.deltaY < 0 && this.zoom() < this.props.maxZoom) {
             let newZoom = Math.min(this.props.maxZoom, this.zoom() + 1);
-            this.setZoomAround({x, y}, newZoom);
+            this.setZoomAround({x, y}, newZoom, this.pushViewUpdate);
         } else if (event.deltaY > 0 && this.zoom() > this.props.minZoom) {
             let newZoom = Math.max(this.props.minZoom, this.zoom() - 1);
-            this.setZoomAround({x, y}, newZoom);
+            this.setZoomAround({x, y}, newZoom, this.pushViewUpdate);
         }
     }
 
@@ -466,7 +470,7 @@ export default class Map extends React.Component {
         let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         if (this.zoom() < this.props.maxZoom) {
             let newZoom = Math.min(this.props.maxZoom, this.zoom() + 1);
-            this.setZoomAround({x, y}, newZoom);
+            this.setZoomAround({x, y}, newZoom, this.pushViewUpdate);
         }
     }
 
@@ -474,7 +478,7 @@ export default class Map extends React.Component {
         let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         if (this.zoom() > this.props.minZoom) {
             let newZoom = Math.max(this.props.minZoom, this.zoom() - 1);
-            this.setZoomAround({x, y}, newZoom);
+            this.setZoomAround({x, y}, newZoom, this.pushViewUpdate);
         }
     }
 
@@ -486,16 +490,33 @@ export default class Map extends React.Component {
             let {x, y} = this.screenToContainer({x: event.clientX, y: event.clientY});
             if (this.zoom() > this.props.minZoom) {
                 let newZoom = Math.max(this.props.minZoom, this.zoom() - 1);
-                this.setZoomAround({x, y}, newZoom);
+                this.setZoomAround({x, y}, newZoom, this.pushViewUpdate);
             }
         } else {
             this.contextMenuTimer = setTimeout(() => {
                 this.contextMenuTimer = null;
-                console.log('show menu')
+                let {x, y} = this.screenToContainer({x: event.clientX, y: event.clientY});
+                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}));
+                this.props.onLocationSelect(position, true);
             }, this.props.contextMenuTime);
         }
 
         event.preventDefault();
+    }
+
+    handlePress(event) {
+        switch (event.pointerType) {
+            case 'mouse':
+                let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
+                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}));
+                this.props.onLocationSelect(position, false);
+                break;
+            case 'touch':
+                /* ignore touch press - it will be handled by the context menu event */
+                break;
+            default:
+                throw new Error('Unknown pointer type for press event: ' + event.pointerType);
+        }
     }
 
     screenToContainer(point, container = this.refs.canvas.getElement()) {
@@ -520,7 +541,7 @@ export default class Map extends React.Component {
         return VectorUtil.add(centerPoint, offset);
     }
 
-    moveMapBy(pixelAmount) {
+    moveMapBy(pixelAmount, callback) {
         let oldCenter = this.center();
         let oldCenterPoint = this.props.crs.coordinateToPoint(oldCenter, this.zoom());
         let newCenterPoint = this.props.crs.wrapPoint(VectorUtil.add(oldCenterPoint, pixelAmount), this.zoom());
@@ -528,24 +549,24 @@ export default class Map extends React.Component {
         this.setState({
             dLatitude: this.state.dLatitude + newCenter.latitude - oldCenter.latitude,
             dLongitude: this.state.dLongitude + newCenter.longitude - oldCenter.longitude
-        });
+        }, callback);
     }
 
-    setPositionTo(coordinate) {
+    setPositionTo(coordinate, callback) {
         let oldCenter = this.center();
         this.setState({
             dLatitude: this.state.dLatitude + coordinate.latitude - oldCenter.latitude,
             dLongitude: this.state.dLongitude + coordinate.longitude - oldCenter.longitude
-        });
+        }, callback);
     }
 
-    setZoomTo(zoom) {
+    setZoomTo(zoom, callback) {
         this.setState({
             dZoom: this.state.dZoom + zoom - this.zoom()
-        });
+        }, callback);
     }
 
-    setZoomAround(containerPoint, zoom, additionalOffset = VectorUtil.ZERO) {
+    setZoomAround(containerPoint, zoom, callback, additionalOffset = VectorUtil.ZERO) {
         let halfSize = this.halfSize();
         let scale = this.scale();
         let deltaScale = this.props.crs.scale(zoom) / this.props.crs.scale(this.zoom());
@@ -553,19 +574,59 @@ export default class Map extends React.Component {
             x: (containerPoint.x - halfSize.width * scale) * (1 - 1 / deltaScale),
             y: (containerPoint.y - halfSize.height * scale) * (1 - 1 / deltaScale)
         };
-        this.moveMapBy(VectorUtil.add(offset, additionalOffset));
-        this.setZoomTo(zoom);
+        if (!!callback) {
+            let moveMapByCallback = false;
+            let setZoomToCallback = false;
+
+            function checkAndCallback() {
+                if (moveMapByCallback && setZoomToCallback) {
+                    callback();
+                }
+            }
+
+            this.moveMapBy(VectorUtil.add(offset, additionalOffset), () => {
+                moveMapByCallback = true;
+                checkAndCallback();
+            });
+            this.setZoomTo(zoom, () => {
+                setZoomToCallback = true;
+                checkAndCallback();
+            });
+        } else {
+            this.moveMapBy(VectorUtil.add(offset, additionalOffset));
+            this.setZoomTo(zoom);
+        }
     }
 
-    setZoomAt(containerPoint, zoom) {
+    setZoomAt(containerPoint, zoom, callback) {
         let halfSize = this.halfSize();
         let scale = this.scale();
         let offset = {
             x: (containerPoint.x - halfSize.width * scale),
             y: (containerPoint.y - halfSize.height * scale)
         };
-        this.moveMapBy(offset);
-        this.setZoomTo(zoom);
+        if (!!callback) {
+            let moveMapByCallback = false;
+            let setZoomToCallback = false;
+
+            function checkAndCallback() {
+                if (moveMapByCallback && setZoomToCallback) {
+                    callback();
+                }
+            }
+
+            this.moveMapBy(offset, () => {
+                moveMapByCallback = true;
+                checkAndCallback();
+            });
+            this.setZoomTo(zoom, () => {
+                setZoomToCallback = true;
+                checkAndCallback();
+            });
+        } else {
+            this.moveMapBy(offset);
+            this.setZoomTo(zoom);
+        }
     }
 
     render() {

@@ -9,16 +9,25 @@ export default class App extends LocalStorageComponent {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleResize = this.handleResize.bind(this);
+        this.handleViewChange = this.handleViewChange.bind(this);
+        this.handleLocationSelect = this.handleLocationSelect.bind(this);
     }
 
     state = {
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
+        view: {
+            center: {
+                latitude: 0,
+                longitude: 0
+            },
+            zoom: 0
+        }
     };
 
     componentDidMount() {
         this.setPersistenceKey('app');
-        this.setStateMapping(state => ({view: state.view, mapStyle: state.mapStyle, traffic: state.traffic}));
+        this.setStateMapping(state => ({view: state.view}));
         this.restoreState();
 
         window.addEventListener('resize', this.handleResize);
@@ -32,8 +41,21 @@ export default class App extends LocalStorageComponent {
         this.setState({width: window.innerWidth, height: window.innerHeight});
     }
 
+    handleViewChange(view) {
+        this.setState({view});
+    }
+
+    handleLocationSelect() {
+
+    }
+
     render() {
-        return <Map width={this.state.width} height={this.state.height}>
+        return <Map center={this.state.view.center}
+                    zoom={this.state.view.zoom}
+                    width={this.state.width}
+                    height={this.state.height}
+                    onViewChange={this.handleViewChange}
+                    onLocationSelect={this.handleLocationSelect}>
             <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
         </Map>;
 

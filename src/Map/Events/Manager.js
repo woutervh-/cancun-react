@@ -16,6 +16,7 @@ export default class Manager {
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handleContextMenu = this.handleContextMenu.bind(this);
         this.handleTap = this.handleTap.bind(this);
+        this.handlePress = this.handlePress.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
 
         this.handlers = {};
@@ -41,6 +42,8 @@ export default class Manager {
         this.hammer.on('doubletap', this.handleDoubleTap);
         this.hammer.off('tap');
         this.hammer.on('tap', this.handleTap);
+        this.hammer.off('press');
+        this.hammer.on('press', this.handlePress);
 
         this.hammer.get('pan').set({threshold: 0});
         this.hammer.get('pinch').set({enable: true, threshold: 0.1});
@@ -128,6 +131,10 @@ export default class Manager {
 
     handleTap(event) {
         this.fire('tap', event);
+    }
+
+    handlePress(event) {
+        this.fire('press', event);
     }
 
     handleWheel(event) {
