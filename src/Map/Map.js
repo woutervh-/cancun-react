@@ -158,6 +158,7 @@ export default class Map extends React.Component {
     }
 
     drawCanvasLayers() {
+        /* todo: optimize by drawing on raf and if dirty */
         this.imageFrontier.clear();
         let layers = React.Children.toArray(this.props.children);
         let tileLayers = this.transformTileLayers(layers.filter(child => child.type == TileLayer));
@@ -194,22 +195,29 @@ export default class Map extends React.Component {
     }
 
     transformMarkerLayers(layers) {
-        return layers.map(layer => {
-            let {image, width, height, position}= layer.props;
-            let point = this.props.crs.coordinateToPoint(position, this.zoom());
-            let offset = this.pixelToContainer(point);
-
-            return {
-                type: Picture,
-                props: {
-                    image,
-                    width,
-                    height,
-                    top: offset.y,
-                    left: offset.x
-                }
-            };
-        });
+        let priority = 1;
+        let pictures = [];
+        for (let layer of layers) {
+            let {source, width, height, position, anchor} = layer.props;
+            if (this.imageFrontier.isLoaded(source)) {
+                let image = this.imageFrontier.getLoadedImage(source);
+                let point = this.props.crs.coordinateToPoint(position, this.zoomLevel());
+                let offset = VectorUtil.multiply(this.pixelToContainer(point), this.scale());
+                pictures.push({
+                    type: Picture,
+                    props: {
+                        image,
+                        width,
+                        height,
+                        top: offset.y - anchor.y,
+                        left: offset.x - anchor.x
+                    }
+                });
+            } else {
+                this.imageFrontier.fetch(source, priority++, this.drawCanvasLayers);
+            }
+        }
+        return pictures;
     }
 
     transformTileLayers(layers) {

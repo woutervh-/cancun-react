@@ -14,6 +14,8 @@ export default class App extends LocalStorageComponent {
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+        this.renderTileLayers = this.renderTileLayers.bind(this);
+        this.renderMarker = this.renderMarker.bind(this);
     }
 
     state = {
@@ -25,6 +27,9 @@ export default class App extends LocalStorageComponent {
                 longitude: 0
             },
             zoom: 0
+        },
+        marker: {
+            show: false
         }
     };
 
@@ -59,14 +64,25 @@ export default class App extends LocalStorageComponent {
             view: {
                 center: {latitude, longitude},
                 zoom
+            },
+            marker: {
+                show: true,
+                position: {latitude, longitude}
             }
         });
     }
 
-    render() {
-        let img = new Image();
-        img.src = SearchMarker;
+    renderTileLayers() {
+        return <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>;
+    }
 
+    renderMarker() {
+        if (this.state.marker.show) {
+            return <Marker position={this.state.marker.position} width={20} height={30} anchor={{x: 10, y: 30}} source={SearchMarker}/>;
+        }
+    }
+
+    render() {
         return <div>
             <Toolbar
                 onSearchSubmit={this.handleSearchSubmit}/>
@@ -78,9 +94,8 @@ export default class App extends LocalStorageComponent {
                 height={this.state.height}
                 onViewChange={this.handleViewChange}
                 onLocationSelect={this.handleLocationSelect}>
-                <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
-                <Marker position={{latitude: 0, longitude: 0}} width={20} height={30} image={img}/>
-                <Marker position={{latitude: 0, longitude: 1}} width={20} height={30} image={img}/>
+                {this.renderTileLayers()}
+                {this.renderMarker()}
             </Map>
         </div>;
 
