@@ -13,8 +13,8 @@
    height="30"
    id="svg4768"
    version="1.1"
-   inkscape:version="0.48.4 r9939"
-   sodipodi:docname="marker_search.svg">
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="search-marker.svg">
   <defs
      id="defs4770" />
   <sodipodi:namedview
@@ -42,10 +42,10 @@
      inkscape:snap-midpoints="true"
      inkscape:snap-object-midpoints="true"
      inkscape:snap-center="true"
-     inkscape:window-width="1081"
-     inkscape:window-height="612"
-     inkscape:window-x="1403"
-     inkscape:window-y="266"
+     inkscape:window-width="2374"
+     inkscape:window-height="1501"
+     inkscape:window-x="134"
+     inkscape:window-y="173"
      inkscape:window-maximized="0">
     <inkscape:grid
        type="xygrid"
@@ -63,7 +63,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>

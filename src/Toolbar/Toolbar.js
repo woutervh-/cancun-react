@@ -25,12 +25,10 @@ export default class Toolbar extends React.Component {
     }
 
     render() {
-        let Eye = this.state.pinned ? EyeActive : EyeInactive;
-
         return <div className={classNames(style['toolbar-hover-container'], {[style['pinned']]: this.state.pinned})}>
             <div className={style['toolbar']}>
                 <IconButton className={style['toolbar-item']} onClick={this.handlePinClick}>
-                    <Eye viewBox="0 0 30 30"/>
+                    <img className={style['svg-icon']} src={this.state.pinned ? EyeActive : EyeInactive}/>
                 </IconButton>
                 <LocationSearch className={style['toolbar-item']} onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
             </div>

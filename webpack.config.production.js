@@ -47,9 +47,8 @@ module.exports = {
                 test: /\.s?css$/,
                 loader: cssExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')
             }, {
-                /* TODO: in production load such that it renders as <img src="..." .../> */
                 test: /\.svg$/,
-                loader: 'babel?presets[]=es2015&presets[]=react&presets[]=stage-0!react-svg'
+                loader: 'file'
             }
         ]
     },

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Base, EPSG3857} from './Geography/CoordinateReferenceSystems';
-import {HtmlLayer, TileLayer, TileLayerUrlUtil} from './Layers';
+import {HtmlLayer, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import Transformation from './Transformation';
@@ -16,7 +16,9 @@ export default class Map extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
-        this.drawTileLayers = this.drawTileLayers.bind(this);
+        this.drawCanvasLayers = this.drawCanvasLayers.bind(this);
+        this.transformMarkerLayers = this.transformMarkerLayers.bind(this);
+        this.transformTileLayers = this.transformTileLayers.bind(this);
         this.transformTileLayer = this.transformTileLayer.bind(this);
         this.halfSize = this.halfSize.bind(this);
         this.pixelBounds = this.pixelBounds.bind(this);
@@ -130,7 +132,7 @@ export default class Map extends React.Component {
         this.manager.on('contextmenu', this.handleContextMenu);
         this.manager.on('press', this.handlePress);
 
-        this.drawTileLayers();
+        this.drawCanvasLayers();
     }
 
     componentDidUpdate(prevProps) {
@@ -147,7 +149,7 @@ export default class Map extends React.Component {
             });
         }
 
-        this.drawTileLayers();
+        this.drawCanvasLayers();
     }
 
     componentWillUnmount() {
@@ -155,16 +157,18 @@ export default class Map extends React.Component {
         this.manager = null;
     }
 
-    drawTileLayers() {
+    drawCanvasLayers() {
         this.imageFrontier.clear();
-        let layers = React.Children.toArray(this.props.children).filter(child => child.type == TileLayer);
-        let transformedLayers = layers.map(this.transformTileLayer);
+        let layers = React.Children.toArray(this.props.children);
+        let tileLayers = this.transformTileLayers(layers.filter(child => child.type == TileLayer));
+        let markerLayers = this.transformMarkerLayers(layers.filter(child => child.type == Marker));
 
         this.refs.canvas.draw({
             type: Group,
             props: {
                 children: [
-                    ...transformedLayers,
+                    ...tileLayers,
+                    ...markerLayers,
                     this.state.box.show ? {
                         type: Rectangle,
                         props: {
@@ -187,6 +191,29 @@ export default class Map extends React.Component {
                 ]
             }
         });
+    }
+
+    transformMarkerLayers(layers) {
+        return layers.map(layer => {
+            let {image, width, height, position}= layer.props;
+            let point = this.props.crs.coordinateToPoint(position, this.zoom());
+            let offset = this.pixelToContainer(point);
+
+            return {
+                type: Picture,
+                props: {
+                    image,
+                    width,
+                    height,
+                    top: offset.y,
+                    left: offset.x
+                }
+            };
+        });
+    }
+
+    transformTileLayers(layers) {
+        return layers.map(this.transformTileLayer);
     }
 
     transformTileLayer(layer) {
@@ -215,7 +242,7 @@ export default class Map extends React.Component {
         let priority = 0;
         toLoadTiles.sort((a, b) => VectorUtil.distance2({x: a.i, y: a.j}, tileCenter) - VectorUtil.distance2({x: b.i, y: b.j}, tileCenter)).forEach(tile => {
             let source = this.getTileUrl(layer, tile);
-            this.imageFrontier.fetch(source, priority--, this.drawTileLayers);
+            this.imageFrontier.fetch(source, priority--, this.drawCanvasLayers);
         });
 
         let origin = VectorUtil.round(this.pixelBounds().min);
@@ -539,6 +566,17 @@ export default class Map extends React.Component {
             y: y - halfSize.height
         };
         return VectorUtil.add(centerPoint, offset);
+    }
+
+    pixelToContainer({x, y}) {
+        let center = this.center();
+        let halfSize = this.halfSize();
+        let centerPoint = this.props.crs.coordinateToPoint(center, this.zoomLevel());
+        let offset = {
+            x: x + halfSize.width,
+            y: y + halfSize.height
+        };
+        return VectorUtil.subtract(offset, centerPoint);
     }
 
     moveMapBy(pixelAmount, callback) {

@@ -1,8 +1,9 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {TileLayer} from './Map/Layers';
+import {Marker, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
+import SearchMarker from './Icons/search-marker';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -63,6 +64,9 @@ export default class App extends LocalStorageComponent {
     }
 
     render() {
+        let img = new Image();
+        img.src = SearchMarker;
+
         return <div>
             <Toolbar
                 onSearchSubmit={this.handleSearchSubmit}/>
@@ -75,6 +79,8 @@ export default class App extends LocalStorageComponent {
                 onViewChange={this.handleViewChange}
                 onLocationSelect={this.handleLocationSelect}>
                 <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
+                <Marker position={{latitude: 0, longitude: 0}} width={20} height={30} image={img}/>
+                <Marker position={{latitude: 0, longitude: 1}} width={20} height={30} image={img}/>
             </Map>
         </div>;
 
