@@ -11,6 +11,11 @@ export default class Toolbar extends React.Component {
         this.handlePinClick = this.handlePinClick.bind(this);
     }
 
+    static propTypes = {
+        onSearchSubmit: React.PropTypes.func,
+        onSearchClear: React.PropTypes.func
+    };
+
     state = {
         pinned: true
     };
@@ -27,8 +32,7 @@ export default class Toolbar extends React.Component {
                 <IconButton className={style['toolbar-item']} onClick={this.handlePinClick}>
                     <Eye viewBox="0 0 30 30"/>
                 </IconButton>
-                <LocationSearch className={style['toolbar-item']}/>
-                <IconButton icon="clear" type="button" onClick={this.handleClearClick} className={style['toolbar-item']}/>
+                <LocationSearch className={style['toolbar-item']} onSubmit={this.props.onSearchSubmit} onClear={this.props.onSearchClear}/>
             </div>
         </div>;
     }

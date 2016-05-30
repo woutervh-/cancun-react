@@ -58,7 +58,7 @@ export default class Autocomplete extends React.Component {
             });
         }
 
-        if(this.props.suggestions != prevProps.suggestions) {
+        if (this.props.suggestions != prevProps.suggestions) {
             this.setState({index: -1});
         }
     }
@@ -106,7 +106,7 @@ export default class Autocomplete extends React.Component {
             case 13:
                 if (this.state.index >= 0 && this.state.index < this.props.suggestions.length) {
                     this.setState({query: this.props.suggestions[this.state.index], focus: false}, () => this.refs.input.blur());
-                } else {
+                } else if (this.state.query.length > 0) {
                     this.setState({focus: false}, () => this.refs.input.blur());
                 }
                 this.submit();
@@ -126,6 +126,10 @@ export default class Autocomplete extends React.Component {
             default:
                 break;
         }
+    }
+
+    clear() {
+        this.setState({query: '', index: -1});
     }
 
     render() {
@@ -148,13 +152,12 @@ export default class Autocomplete extends React.Component {
                 {suggestions.map((item, index) =>
                     <ListItem
                         key={index}
-                        ripple={false}
+                        ripple={true}
                         className={classNames(style['suggestions-item'], {[style['active']]: this.state.index == index})}
                         itemContent={<span>{item}</span>}
                         onMouseDown={this.handleItemMouseDown.bind(this, index)}/>
                 )}
             </div>
-            <IconButton icon="clear" type="button" onClick={this.handleClearClick} className={style['toolbar-item']}/>
         </Input>;
     }
 };

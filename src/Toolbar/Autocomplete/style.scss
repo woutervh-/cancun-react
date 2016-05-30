@@ -21,6 +21,7 @@
 .suggestions-item {
   display: inline-block;
   width: 100%;
+  cursor: default;
 }
 
 .suggestions-item span {
@@ -37,4 +38,8 @@
   &:not(.active) {
     background-color: $suggestions-hover-background;
   }
+}
+
+.search-input {
+  display: inline-block;
 }

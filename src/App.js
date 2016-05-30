@@ -12,6 +12,7 @@ export default class App extends LocalStorageComponent {
         this.handleResize = this.handleResize.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
+        this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
     }
 
     state = {
@@ -50,15 +51,29 @@ export default class App extends LocalStorageComponent {
 
     }
 
+    handleSearchSubmit(result) {
+        let {latitude, longitude, isCoordinate, location} = result;
+        let zoom = Math.max(this.refs.map.zoom(), 12);
+        this.setState({
+            view: {
+                center: {latitude, longitude},
+                zoom
+            }
+        });
+    }
+
     render() {
         return <div>
-            <Toolbar/>
-            <Map center={this.state.view.center}
-                 zoom={this.state.view.zoom}
-                 width={this.state.width}
-                 height={this.state.height}
-                 onViewChange={this.handleViewChange}
-                 onLocationSelect={this.handleLocationSelect}>
+            <Toolbar
+                onSearchSubmit={this.handleSearchSubmit}/>
+            <Map
+                ref="map"
+                center={this.state.view.center}
+                zoom={this.state.view.zoom}
+                width={this.state.width}
+                height={this.state.height}
+                onViewChange={this.handleViewChange}
+                onLocationSelect={this.handleLocationSelect}>
                 <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>
             </Map>
         </div>;

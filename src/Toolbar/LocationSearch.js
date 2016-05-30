@@ -13,18 +13,27 @@ export default class LocationSearch extends React.Component {
         this.isCoordinate = this.isCoordinate.bind(this);
         this.matchesForCoordinateQuery = this.matchesForCoordinateQuery.bind(this);
         this.matchesForFreeTextQuery = this.matchesForFreeTextQuery.bind(this);
+        this.updateCurrentQuery = this.updateCurrentQuery.bind(this);
         this.handleUpdateInput = this.handleUpdateInput.bind(this);
         this.handleInputSubmit = this.handleInputSubmit.bind(this);
+        this.handleClearClick = this.handleClearClick.bind(this);
 
-        this.query = '';
+        this.requestingQuery = '';
+        this.currentQuery = '';
     }
 
     static propTypes = {
-        sendRequestTimeout: React.PropTypes.number.isRequired
+        sendRequestTimeout: React.PropTypes.number.isRequired,
+        onSubmit: React.PropTypes.func.isRequired,
+        onClear: React.PropTypes.func.isRequired
     };
 
     static defaultProps = {
-        sendRequestTimeout: 250
+        sendRequestTimeout: 250,
+        onSubmit: () => {
+        },
+        onClear: () => {
+        }
     };
 
     state = {
@@ -55,37 +64,74 @@ export default class LocationSearch extends React.Component {
         });
     }
 
-    handleUpdateInput(query) {
+    updateCurrentQuery(query, callback, timeout = this.props.sendRequestTimeout) {
+        let queryMethod;
         if (this.isCoordinate(query)) {
-            this.matchesForCoordinateQuery(query, (error, results) => {
-                this.setState({error, results});
-            });
+            timeout = 0;
+            queryMethod = this.matchesForCoordinateQuery;
         } else {
-            this.query = query;
-            setTimeout(() => {
-                if (this.query == query) {
-                    this.matchesForFreeTextQuery(query, (error, results) => {
-                        if (this.query == query) {
-                            this.setState({error, results});
+            queryMethod = this.matchesForFreeTextQuery;
+        }
+
+        this.requestingQuery = query;
+        setTimeout(() => {
+            if (this.requestingQuery == query && this.currentQuery != query) {
+                this.currentQuery = query;
+                queryMethod(query, (error, results) => {
+                    if (this.requestingQuery == query) {
+                        this.setState({error, results});
+                        if (!!callback) {
+                            callback(error, results);
                         }
-                    });
+                    }
+                });
+            } else if (this.requestingQuery == query) {
+                if (!!callback) {
+                    callback(this.state.error, this.state.results);
                 }
-            }, this.props.sendRequestTimeout);
+            }
+        }, timeout);
+    }
+
+    handleUpdateInput(query) {
+        this.setState({error: ''});
+        if (query.length > 0) {
+            this.updateCurrentQuery(query);
         }
     }
 
     handleInputSubmit(query, index) {
-        console.log('submitted: ' + query + ' (' + index + ')')
-        /*
-         if(results.length <= 0) this.setState({error: 'No results found'});
-        * */
+        if (query.length > 0) {
+            if (index >= 0) {
+                this.props.onSubmit(this.state.results[index]);
+            } else {
+                this.updateCurrentQuery(query, (error, results)=> {
+                    if (results.length > 0) {
+                        this.props.onSubmit(results[0]);
+                    } else {
+                        this.setState({error: 'No results found'});
+                    }
+                }, 0);
+            }
+        }
+    }
+
+    handleClearClick() {
+        this.setState({results: [], error: ''});
+        this.refs.autocomplete.clear();
+        this.props.onClear();
     }
 
     render() {
-        return <Autocomplete
-            error={this.state.error}
-            suggestions={this.state.results.map(result => result.location)}
-            onUpdateInput={this.handleUpdateInput}
-            onInputSubmit={this.handleInputSubmit}/>;
+        return <span>
+            <Autocomplete
+                ref="autocomplete"
+                error={this.state.error}
+                suggestions={this.state.results.map(result => result.location)}
+                onUpdateInput={this.handleUpdateInput}
+                onInputSubmit={this.handleInputSubmit}
+                className={style['inline-block']}/>
+            <IconButton icon="clear" type="button" onClick={this.handleClearClick} className={style['toolbar-item']}/>
+            </span>;
     }
 };
