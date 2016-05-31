@@ -127,6 +127,7 @@ export default class LocationSearch extends React.Component {
             <Autocomplete
                 ref="autocomplete"
                 error={this.state.error}
+                label="Enter location"
                 suggestions={this.state.results.map(result => result.location)}
                 onUpdateInput={this.handleUpdateInput}
                 onInputSubmit={this.handleInputSubmit}

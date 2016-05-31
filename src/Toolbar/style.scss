@@ -32,6 +32,42 @@
 
 .toolbar-item {
   display: inline-flex;
+  align-self: flex-start;
+}
+
+.toolbar-menu-toggle {
+  @include breakpoint(desktop) {
+    display: none;
+  }
+}
+
+.toolbar-menu-container {
+  @include breakpoint(desktop) {
+
+  }
+
+  @include breakpoint(mobile) {
+    position: fixed;
+    top: 0;
+    left: 8 * $unit;
+    right: 0;
+    height: 100vh;
+    overflow-x: auto;
+    background-color: $toolbar-menu-background-color;
+    z-index: $z-index-toolbar-menu;
+    transition: transform $animation-duration $animation-curve-default $animation-duration,
+    box-shadow $animation-duration $animation-curve-default $animation-duration;
+
+    &.active {
+      box-shadow: -2px 0 5px rgba(0, 0, 0, .26);
+      transform: translateX(0);
+    }
+
+    &:not(.active) {
+      box-shadow: none;
+      transform: translateX(100%);
+    }
+  }
 }
 
 /*
@@ -41,7 +77,7 @@
 */
 
 /* todo: refactor media queries to use mixins */
-
+/*
 @media screen and (max-width: 719px) {
   .toolbar-item-context-container {
     position: static;
@@ -85,12 +121,8 @@
     }
   }
 }
+*/
 
 .inline-block {
   display: inline-block;
-}
-
-.svg-icon {
-  width: 2rem;
-  height: 2rem;
 }

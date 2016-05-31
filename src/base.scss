@@ -16,3 +16,31 @@
 $z-index-toolbar: 100;
 $z-index-popup-floating: 90;
 $z-index-popup-fixed: 100;
+$z-index-toolbar-menu: 500;
+
+img.svg-icon {
+  width: 2rem;
+  height: 2rem;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.radio-button {
+  cursor: pointer;
+}
+
+.radio-button:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox {
+  cursor: pointer;
+}
+
+.checkbox:last-child {
+  margin-bottom: 0;
+}
+
+.switch {
+  cursor: pointer;
+}
