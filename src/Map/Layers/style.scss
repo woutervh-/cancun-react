@@ -1,0 +1,54 @@
+@import '../../base';
+
+.popup {
+  transition: opacity $animation-duration $animation-curve-default 0s,
+  transform $animation-duration $animation-curve-default $animation-duration,
+  box-shadow $animation-duration $animation-curve-default $animation-duration;
+
+  &.active {
+    pointer-events: auto;
+  }
+  &:not(.active) {
+    pointer-events: none;
+  }
+}
+
+.popup {
+  @include breakpoint(mobile) {
+    position: fixed;
+    top: auto;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: $z-index-popup-fixed;
+
+    &.active {
+      transform: translateY(0);
+      box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.25);
+    }
+    &:not(.active) {
+      transform: translateY(100%);
+      box-shadow: none;
+    }
+  }
+
+  @include breakpoint(desktop) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: auto;
+    right: auto;
+    width: 32rem;
+    height: auto;
+    z-index: $z-index-popup-floating;
+    box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.25);
+
+    &.active {
+      opacity: 1;
+    }
+    &:not(.active) {
+      opacity: 0;
+    }
+  }
+}
+

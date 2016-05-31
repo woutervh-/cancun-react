@@ -1,6 +1,6 @@
 import React from 'react';
 import {Base, EPSG3857} from './Geography/CoordinateReferenceSystems';
-import {HtmlLayer, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
+import {HtmlLayer, HtmlPopup, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import Transformation from './Transformation';
@@ -24,7 +24,7 @@ export default class Map extends React.Component {
         this.pixelBounds = this.pixelBounds.bind(this);
         this.tileRange = this.tileRange.bind(this);
         this.firstLoadedAncestor = this.firstLoadedAncestor.bind(this);
-        this.transformHtmlLayer = this.transformHtmlLayer.bind(this);
+        this.transformHtmlLayers = this.transformHtmlLayers.bind(this);
         this.center = this.center.bind(this);
         this.zoomLevel = this.zoomLevel.bind(this);
         this.zoom = this.zoom.bind(this);
@@ -41,6 +41,7 @@ export default class Map extends React.Component {
         this.handlePinch = this.handlePinch.bind(this);
         this.handlePinchEnd = this.handlePinchEnd.bind(this);
         this.handleWheel = this.handleWheel.bind(this);
+        this.handleTap = this.handleTap.bind(this);
         this.handleDoubleTap = this.handleDoubleTap.bind(this);
         this.handleTwoFingerTap = this.handleTwoFingerTap.bind(this);
         this.handleContextMenu = this.handleContextMenu.bind(this);
@@ -71,6 +72,7 @@ export default class Map extends React.Component {
         minZoom: React.PropTypes.number.isRequired,
         maxZoom: React.PropTypes.number.isRequired,
         crs: React.PropTypes.instanceOf(Base).isRequired,
+        onTap: React.PropTypes.func.isRequired,
         onViewChange: React.PropTypes.func.isRequired,
         onLocationSelect: React.PropTypes.func.isRequired,
         contextMenuTime: React.PropTypes.number.isRequired,
@@ -83,6 +85,8 @@ export default class Map extends React.Component {
         minZoom: 0,
         maxZoom: 18,
         crs: new EPSG3857(),
+        onTap: () => {
+        },
         onViewChange: () => {
         },
         onLocationSelect: () => {
@@ -127,6 +131,7 @@ export default class Map extends React.Component {
         this.manager.on('pinch', this.handlePinch);
         this.manager.on('pinchend', this.handlePinchEnd);
         this.manager.on('wheel', this.handleWheel);
+        this.manager.on('tap', this.handleTap);
         this.manager.on('doubletap', this.handleDoubleTap);
         this.manager.on('twofingertap', this.handleTwoFingerTap);
         this.manager.on('contextmenu', this.handleContextMenu);
@@ -323,17 +328,12 @@ export default class Map extends React.Component {
         }
     }
 
-    transformHtmlLayer(layer, index) {
-        let {width, height} = this.props;
-        let layerCenter = this.props.crs.coordinateToPoint(layer.props, this.zoomLevel());
-        let mapCenter = this.props.crs.coordinateToPoint(this.props);
-        let offset = {
-            x: (layerCenter.x - mapCenter.x) * this.scale() + width / 2,
-            y: (layerCenter.y - mapCenter.y) * this.scale() + height / 2
-        };
-        return <div key={index} style={{position: 'absolute', top: offset.y, left: offset.x}}>
-            {layer.props.children}
-        </div>;
+    transformHtmlLayers(layers) {
+        return layers.map((layer, index) => {
+            let point = this.props.crs.coordinateToPoint(layer.props.position, this.zoomLevel());
+            let offset = VectorUtil.multiply(this.pixelToContainer(point), this.scale());
+            return React.cloneElement(layer, {offset});
+        });
     }
 
     center() {
@@ -501,6 +501,10 @@ export default class Map extends React.Component {
         }
     }
 
+    handleTap() {
+        this.props.onTap();
+    }
+
     handleDoubleTap(event) {
         let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
         if (this.zoom() < this.props.maxZoom) {
@@ -531,7 +535,7 @@ export default class Map extends React.Component {
             this.contextMenuTimer = setTimeout(() => {
                 this.contextMenuTimer = null;
                 let {x, y} = this.screenToContainer({x: event.clientX, y: event.clientY});
-                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}));
+                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}), this.zoom());
                 this.props.onLocationSelect(position, true);
             }, this.props.contextMenuTime);
         }
@@ -543,7 +547,7 @@ export default class Map extends React.Component {
         switch (event.pointerType) {
             case 'mouse':
                 let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
-                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}));
+                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}), this.zoom());
                 this.props.onLocationSelect(position, false);
                 break;
             case 'touch':
@@ -676,17 +680,16 @@ export default class Map extends React.Component {
     }
 
     render() {
-        let {width, height, center, zoomLevel, crs, children, style, ...other} = this.props;
+        let {width, height, center, zoom, minZoom, maxZoom, crs, onViewChange, onLocationSelect, contextMenuTime, pinchZoomJumpThreshold, children, style, ...other} = this.props;
         let rootStyle = objectAssign({}, {position: 'absolute'}, style);
+        let layers = React.Children.toArray(this.props.children);
+        let htmlLayers = this.transformHtmlLayers(layers.filter(child => child.type == HtmlLayer || child.type == HtmlPopup));
 
         return <div style={rootStyle} {...other}>
             <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute'}}>
                 Your browser does not support the HTML5 canvas tag.
             </Canvas>
+            {htmlLayers}
         </div>;
-
-        //<div ref="htmlLayers" style={{position: 'absolute', overflow: 'hidden', top: this.state.dy, left: this.state.dx, width, height}}>
-        //    {React.Children.toArray(children).filter(child => child.type == HtmlLayer).map(this.transformHtmlLayer.bind(this))}
-        //</div>
     }
 };

@@ -1,9 +1,10 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {Marker, TileLayer} from './Map/Layers';
+import {Marker, HtmlPopup, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
 import SearchMarker from './Icons/search-marker';
+import LocationInfoBox from './LocationInfoBox';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -15,6 +16,7 @@ export default class App extends LocalStorageComponent {
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.renderTileLayers = this.renderTileLayers.bind(this);
+        this.renderPopup = this.renderPopup.bind(this);
         this.renderMarker = this.renderMarker.bind(this);
     }
 
@@ -22,14 +24,16 @@ export default class App extends LocalStorageComponent {
         width: window.innerWidth,
         height: window.innerHeight,
         view: {
-            center: {
-                latitude: 0,
-                longitude: 0
-            },
+            center: {latitude: 0, longitude: 0},
             zoom: 0
         },
         marker: {
             show: false
+        },
+        box: {
+            position: {latitude: 0, longitude: 0},
+            title: '',
+            subtitle: ''
         }
     };
 
@@ -53,27 +57,60 @@ export default class App extends LocalStorageComponent {
         this.setState({view});
     }
 
-    handleLocationSelect() {
+    handleLocationSelect(position, showDetails) {
+        const displayNumber = number => Math.round(number * 1000000) / 1000000;
+        const displayCoordinate = ({latitude, longitude}) => [latitude, longitude].map(displayNumber).join(', ');
 
+        this.setState({
+            marker: {
+                show: true,
+                position
+            },
+            box: {
+                position,
+                title: 'Coordinate',
+                subtitle: displayCoordinate(position)
+            }
+        });
+
+        if (showDetails) {
+            this.refs.popup.activate();
+        }
     }
 
     handleSearchSubmit(result) {
+        const displayNumber = number => Math.round(number * 1000000) / 1000000;
+        const displayCoordinate = ({latitude, longitude}) => [latitude, longitude].map(displayNumber).join(', ');
+
         let {latitude, longitude, isCoordinate, location} = result;
+        let position = {latitude, longitude};
         let zoom = Math.max(this.refs.map.zoom(), 12);
         this.setState({
             view: {
-                center: {latitude, longitude},
+                center: position,
                 zoom
             },
             marker: {
                 show: true,
-                position: {latitude, longitude}
+                position
+            },
+            box: {
+                position,
+                title: isCoordinate ? 'Coordinate' : location,
+                subtitle: displayCoordinate(position)
             }
         });
     }
 
     renderTileLayers() {
         return <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>;
+    }
+
+    renderPopup() {
+        let {position, title, subtitle} = this.state.box;
+        return <HtmlPopup ref="popup" position={position}>
+            <LocationInfoBox title={title} subtitle={subtitle}/>
+        </HtmlPopup>;
     }
 
     renderMarker() {
@@ -95,6 +132,7 @@ export default class App extends LocalStorageComponent {
                 onViewChange={this.handleViewChange}
                 onLocationSelect={this.handleLocationSelect}>
                 {this.renderTileLayers()}
+                {this.renderPopup()}
                 {this.renderMarker()}
             </Map>
         </div>;
