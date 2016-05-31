@@ -1,6 +1,6 @@
 import React from 'react';
 import {Base, EPSG3857} from './Geography/CoordinateReferenceSystems';
-import {HtmlLayer, HtmlPopup, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
+import {HtmlLayer, HtmlMarker, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
 import Transformation from './Transformation';
@@ -683,7 +683,7 @@ export default class Map extends React.Component {
         let {width, height, center, zoom, minZoom, maxZoom, crs, onViewChange, onLocationSelect, contextMenuTime, pinchZoomJumpThreshold, children, style, ...other} = this.props;
         let rootStyle = objectAssign({}, {position: 'absolute'}, style);
         let layers = React.Children.toArray(this.props.children);
-        let htmlLayers = this.transformHtmlLayers(layers.filter(child => child.type == HtmlLayer || child.type == HtmlPopup));
+        let htmlLayers = this.transformHtmlLayers(layers.filter(child => child.type == HtmlLayer || child.type == HtmlMarker));
 
         return <div style={rootStyle} {...other}>
             <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute'}}>

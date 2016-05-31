@@ -3,6 +3,7 @@ import React from 'react';
 import style from './style';
 import classNames from 'classnames';
 import EventUtil from '../../EventUtil';
+import shallowEqual from 'shallowequal';
 
 export default class ToolbarItem extends React.Component {
     constructor() {
@@ -32,12 +33,7 @@ export default class ToolbarItem extends React.Component {
     };
 
     shouldComponentUpdate(nextProps, nextState) {
-        return this.props.icon != nextProps.icon
-            || this.props.label != nextProps.label
-            || this.props.buttonClassName != nextProps.buttonClassName
-            || this.props.cardClassName != nextProps.cardClassName
-            || this.props.children != nextProps.children
-            || this.state.show != nextState.show;
+        return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
     }
 
     componentDidMount() {
@@ -71,9 +67,9 @@ export default class ToolbarItem extends React.Component {
     }
 
     render() {
-        let {icon, label, children, buttonClassName, cardClassName, ...rest} = this.props;
+        let {icon, label, children, buttonClassName, cardClassName, ...other} = this.props;
 
-        return <div ref="container" {...rest}>
+        return <div ref="container" {...other}>
             <Button onClick={this.handleClick}
                     primary={this.state.show}
                     className={classNames(style['button'], {[style['active']]: this.state.show}, buttonClassName)}>

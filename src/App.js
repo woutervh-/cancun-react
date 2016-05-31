@@ -1,7 +1,7 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {HtmlLayer, HtmlPopup, TileLayer} from './Map/Layers';
+import {HtmlMarker, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
 import {SearchMarker} from './Icons';
 import LocationInfoBox from './LocationInfoBox';
@@ -18,8 +18,8 @@ export default class App extends LocalStorageComponent {
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handlePopupClearClick = this.handlePopupClearClick.bind(this);
         this.renderTileLayers = this.renderTileLayers.bind(this);
-        this.renderPopup = this.renderPopup.bind(this);
         this.renderMarker = this.renderMarker.bind(this);
+        this.renderMarkerIcon = this.renderMarkerIcon.bind(this);
     }
 
     state = {
@@ -30,10 +30,10 @@ export default class App extends LocalStorageComponent {
             zoom: 0
         },
         marker: {
-            show: false
+            show: false,
+            position: {latitude: 0, longitude: 0}
         },
         box: {
-            position: {latitude: 0, longitude: 0},
             title: '',
             subtitle: ''
         }
@@ -78,7 +78,7 @@ export default class App extends LocalStorageComponent {
         });
 
         if (showDetails) {
-            this.refs.popup.activate();
+            this.refs.marker.activate();
         }
     }
 
@@ -98,7 +98,6 @@ export default class App extends LocalStorageComponent {
                 position
             },
             box: {
-                position,
                 title: isCoordinate ? 'Coordinate' : location,
                 subtitle: displayCoordinate(position)
             }
@@ -108,29 +107,34 @@ export default class App extends LocalStorageComponent {
     handlePopupClearClick() {
         this.setState({
             marker: {
+                ...this.state.marker,
                 show: false
             }
         });
-        this.refs.popup.deactivate();
+        this.refs.marker.deactivate();
     }
 
     renderTileLayers() {
         return <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>;
     }
 
-    renderPopup() {
-        let {position, title, subtitle} = this.state.box;
-        return <HtmlPopup ref="popup" position={position} elements={() => [this.refs.marker.getContainer()]}>
-            <LocationInfoBox title={title} subtitle={subtitle} onClearClick={this.handlePopupClearClick}/>
-        </HtmlPopup>;
+    renderMarker() {
+        // TODO: refactor this into generic Marker class (or HtmlMarker + CanvasMarker) with event capabilities
+        return <HtmlMarker
+            ref="marker"
+            position={this.state.marker.position}
+            icon={this.renderMarkerIcon()}>
+            <LocationInfoBox {...this.state.box} onClearClick={this.handlePopupClearClick}/>
+        </HtmlMarker>;
     }
 
-    renderMarker() {
+    renderMarkerIcon() {
         if (this.state.marker.show) {
-            // TODO: refactor this into generic Marker class (or HtmlMarker + CanvasMarker) with event capabilities
-            return <HtmlLayer ref="marker" position={this.state.marker.position}>
-                <img onTouchTap={() => {this.refs.popup.activate()}} src={SearchMarker} style={{width: '2rem', height: '3rem', position: 'absolute', bottom: 0, marginLeft: 'calc(2rem / -2)', cursor: 'pointer'}}/>
-            </HtmlLayer>;
+            return <img
+                src={SearchMarker}
+                onTouchTap={() => {this.refs.marker.activate()}}
+                style={{width: '2rem', height: '3rem', position: 'absolute', marginTop: '-3rem', marginLeft: 'calc(2rem / -2)', cursor: 'pointer'}}
+            />;
         }
     }
 
@@ -147,7 +151,6 @@ export default class App extends LocalStorageComponent {
                 onViewChange={this.handleViewChange}
                 onLocationSelect={this.handleLocationSelect}>
                 {this.renderTileLayers()}
-                {this.renderPopup()}
                 {this.renderMarker()}
             </Map>
         </div>;

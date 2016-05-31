@@ -1,10 +1,10 @@
 import React from 'react';
+import style from './style';
 import shallowEqual from 'shallowequal';
 import EventUtil from '../../EventUtil';
-import style from './style';
 import classNames from 'classnames';
 
-export default class HtmlPopup extends React.Component {
+export default class Marker extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
@@ -25,11 +25,7 @@ export default class HtmlPopup extends React.Component {
             x: React.PropTypes.number.isRequired,
             y: React.PropTypes.number.isRequired
         }),
-        elements: React.PropTypes.func.isRequired
-    };
-
-    static defaultProps = {
-        elements: () => []
+        icon: React.PropTypes.any
     };
 
     state = {
@@ -61,7 +57,7 @@ export default class HtmlPopup extends React.Component {
     }
 
     handleDocumentClick(event) {
-        if (!EventUtil.targetIsDescendant(event, this.refs.container) && this.props.elements().every(element => !EventUtil.targetIsDescendant(event, element))) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
             this.setState({active: false});
         }
     }
@@ -75,9 +71,10 @@ export default class HtmlPopup extends React.Component {
     }
 
     render() {
-        let {position, offset, children, ...other} = this.props;
-        return <div style={{position: 'absolute', top: offset.y, left: offset.x}} {...other}>
-            <div ref="container" className={classNames(style['popup'], {[style['active']]: this.state.active})}>
+        let {position, offset, icon, children, ...other} = this.props;
+        return <div ref="container" style={{position: 'absolute', top: offset.y, left: offset.x}} {...other}>
+            {icon}
+            <div className={classNames(style['popup'], {[style['active']]: this.state.active})}>
                 {children}
             </div>
         </div>;
