@@ -13,6 +13,7 @@ export default class HtmlPopup extends React.Component {
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
         this.activate = this.activate.bind(this);
+        this.deactivate = this.deactivate.bind(this);
     }
 
     static propTypes = {
@@ -23,7 +24,12 @@ export default class HtmlPopup extends React.Component {
         offset: React.PropTypes.shape({
             x: React.PropTypes.number.isRequired,
             y: React.PropTypes.number.isRequired
-        })
+        }),
+        elements: React.PropTypes.func.isRequired
+    };
+
+    static defaultProps = {
+        elements: () => []
     };
 
     state = {
@@ -55,13 +61,17 @@ export default class HtmlPopup extends React.Component {
     }
 
     handleDocumentClick(event) {
-        if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
+        if (!EventUtil.targetIsDescendant(event, this.refs.container) && this.props.elements().every(element => !EventUtil.targetIsDescendant(event, element))) {
             this.setState({active: false});
         }
     }
 
     activate() {
         this.setState({active: true});
+    }
+
+    deactivate() {
+        this.setState({active: false});
     }
 
     render() {

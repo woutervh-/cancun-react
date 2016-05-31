@@ -5,6 +5,7 @@ export default class HtmlLayer extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
+        this.getContainer = this.getContainer.bind(this);
     }
 
     static propTypes = {
@@ -22,9 +23,13 @@ export default class HtmlLayer extends React.Component {
         return !shallowEqual(this.props, nextProps);
     }
 
+    getContainer() {
+        return this.refs.container;
+    }
+
     render() {
         let {position, offset, children, ...other} = this.props;
-        return <div style={{position: 'absolute', top: offset.y, left: offset.x}} {...other}>
+        return <div ref="container" style={{position: 'absolute', top: offset.y, left: offset.x}} {...other}>
             {children}
         </div>;
     }

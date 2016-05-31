@@ -11,12 +11,14 @@
 }
 
 .toolbar-hover-container > .toolbar {
-  transition: transform $animation-duration $animation-curve-default $animation-duration;
+  transition: transform $animation-duration $animation-curve-default $animation-duration,
+  box-shadow $animation-duration $animation-curve-default $animation-duration;
   transform: translateY(-100%);
 }
 
 .toolbar-hover-container:hover > .toolbar, .toolbar-hover-container.pinned > .toolbar {
   transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, .26);
 }
 
 .toolbar {
@@ -25,7 +27,7 @@
   width: 100%;
   padding: 1 * $unit;
   background-color: $toolbar-background-color;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, .26);
+  box-shadow: none;
 }
 
 .toolbar-item {

@@ -1,20 +1,22 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {Marker, HtmlPopup, TileLayer} from './Map/Layers';
+import {HtmlLayer, HtmlPopup, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
-import SearchMarker from './Icons/search-marker';
+import {SearchMarker} from './Icons';
 import LocationInfoBox from './LocationInfoBox';
 
 export default class App extends LocalStorageComponent {
     constructor() {
         super();
+        this.componentWillMount = this.componentWillMount.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleResize = this.handleResize.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
+        this.handlePopupClearClick = this.handlePopupClearClick.bind(this);
         this.renderTileLayers = this.renderTileLayers.bind(this);
         this.renderPopup = this.renderPopup.bind(this);
         this.renderMarker = this.renderMarker.bind(this);
@@ -37,11 +39,13 @@ export default class App extends LocalStorageComponent {
         }
     };
 
-    componentDidMount() {
+    componentWillMount() {
         this.setPersistenceKey('app');
         this.setStateMapping(state => ({view: state.view}));
         this.restoreState();
+    }
 
+    componentDidMount() {
         window.addEventListener('resize', this.handleResize);
     }
 
@@ -82,8 +86,7 @@ export default class App extends LocalStorageComponent {
         const displayNumber = number => Math.round(number * 1000000) / 1000000;
         const displayCoordinate = ({latitude, longitude}) => [latitude, longitude].map(displayNumber).join(', ');
 
-        let {latitude, longitude, isCoordinate, location} = result;
-        let position = {latitude, longitude};
+        let {isCoordinate, location, ...position} = result;
         let zoom = Math.max(this.refs.map.zoom(), 12);
         this.setState({
             view: {
@@ -102,20 +105,32 @@ export default class App extends LocalStorageComponent {
         });
     }
 
+    handlePopupClearClick() {
+        this.setState({
+            marker: {
+                show: false
+            }
+        });
+        this.refs.popup.deactivate();
+    }
+
     renderTileLayers() {
         return <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>;
     }
 
     renderPopup() {
         let {position, title, subtitle} = this.state.box;
-        return <HtmlPopup ref="popup" position={position}>
-            <LocationInfoBox title={title} subtitle={subtitle}/>
+        return <HtmlPopup ref="popup" position={position} elements={() => [this.refs.marker.getContainer()]}>
+            <LocationInfoBox title={title} subtitle={subtitle} onClearClick={this.handlePopupClearClick}/>
         </HtmlPopup>;
     }
 
     renderMarker() {
         if (this.state.marker.show) {
-            return <Marker position={this.state.marker.position} width={20} height={30} anchor={{x: 10, y: 30}} source={SearchMarker}/>;
+            // TODO: refactor this into generic Marker class (or HtmlMarker + CanvasMarker) with event capabilities
+            return <HtmlLayer ref="marker" position={this.state.marker.position}>
+                <img onTouchTap={() => {this.refs.popup.activate()}} src={SearchMarker} style={{width: '2rem', height: '3rem', position: 'absolute', bottom: 0, marginLeft: 'calc(2rem / -2)', cursor: 'pointer'}}/>
+            </HtmlLayer>;
         }
     }
 
