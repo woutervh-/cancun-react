@@ -31,7 +31,6 @@
 }
 
 .toolbar-item {
-  display: inline-flex;
   align-self: flex-start;
 }
 
@@ -42,10 +41,6 @@
 }
 
 .toolbar-menu-container {
-  @include breakpoint(desktop) {
-
-  }
-
   @include breakpoint(mobile) {
     position: fixed;
     top: 0;
@@ -69,59 +64,6 @@
     }
   }
 }
-
-/*
-.toolbar > * {
-  align-self: flex-start;
-}
-*/
-
-/* todo: refactor media queries to use mixins */
-/*
-@media screen and (max-width: 719px) {
-  .toolbar-item-context-container {
-    position: static;
-    display: inline-flex;
-    float: left;
-    clear: both;
-  }
-}
-
-@media screen and (min-width: 720px) {
-  .toggle-side-bar-button {
-    display: none;
-  }
-}
-
-@media screen and (min-width: 720px) {
-  .toolbar-container {
-    display: flex;
-  }
-}
-
-@media screen and (max-width: 719px) {
-  .toolbar-container {
-    background-color: white;
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100vh;
-    overflow-x: auto;
-    width: calc(100vw - #{6 * $unit});
-    transition: transform $animation-duration $animation-curve-default $animation-duration,
-    box-shadow $animation-duration $animation-curve-default $animation-duration;
-    z-index: 100;
-    &:not(.active) {
-      box-shadow: none;
-      transform: translateX(100%);
-    }
-    &.active {
-      box-shadow: -2px 0 5px rgba(0, 0, 0, .26);
-      transform: translateX(0);
-    }
-  }
-}
-*/
 
 .inline-block {
   display: inline-block;

@@ -40,12 +40,18 @@ export default class App extends LocalStorageComponent {
         },
         map: {
             style: '1'
+        },
+        traffic: {
+            show: false,
+            showTubes: false,
+            showIcons: false,
+            flow: 'none'
         }
     };
 
     componentWillMount() {
         this.setPersistenceKey('app');
-        this.setStateMapping(state => ({view: state.view, map: state.map}));
+        this.setStateMapping(state => ({view: state.view, map: state.map, traffic: state.traffic}));
         this.restoreState();
     }
 
@@ -124,7 +130,7 @@ export default class App extends LocalStorageComponent {
     }
 
     renderMarker() {
-        // TODO: refactor this into generic Marker class (or HtmlMarker + CanvasMarker) with event capabilities
+        /* TODO: refactor this into generic Marker class (or HtmlMarker + CanvasMarker) with event capabilities */
         return <HtmlMarker
             ref="marker"
             position={this.state.marker.position}

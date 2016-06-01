@@ -6,7 +6,7 @@ import {EyeActive, EyeInactive} from '../Icons';
 import LocationSearch from './LocationSearch';
 import LocalStorageComponent from '../LocalStorageComponent';
 import EventUtil from '../EventUtil';
-import {MapToolbarItem} from './TempToolbarItems';
+import {MapToolbarItem, TrafficToolbarItem} from './ToolbarItems';
 import shallowEqual from 'shallowequal';
 
 export default class Toolbar extends LocalStorageComponent {
@@ -95,6 +95,7 @@ export default class Toolbar extends LocalStorageComponent {
                 </div>
                 <div ref="toolbarItemsContainer" className={classNames(style['toolbar-item'], style['toolbar-menu-container'], {[style['active']]: this.state.expanded})}>
                     <MapToolbarItem context={this.props.context.map} onContextChange={this.handleContextChange.bind(this, 'map')}/>
+                    <TrafficToolbarItem context={this.props.context.traffic} onContextChange={this.handleContextChange.bind(this, 'traffic')}/>
                 </div>
             </div>
         </div>;

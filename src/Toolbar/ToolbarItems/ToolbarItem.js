@@ -1,9 +1,10 @@
-import {Button, Card, CardText} from 'react-toolbox';
+import {Button, Card, CardText, MenuDivider, Switch} from 'react-toolbox';
 import React from 'react';
 import style from './style';
 import classNames from 'classnames';
 import EventUtil from '../../EventUtil';
 import shallowEqual from 'shallowequal';
+import Hammer from 'hammerjs';
 
 export default class ToolbarItem extends React.Component {
     constructor() {
@@ -13,19 +14,37 @@ export default class ToolbarItem extends React.Component {
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
+        this.handleMouseOver = this.handleMouseOver.bind(this);
+        this.handleMouseOut = this.handleMouseOut.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
+        this.handleSwitchChange = this.handleSwitchChange.bind(this);
+
+        this.cancelMouseOut = false;
+        this.preventClick = false;
+        this.preventMouseOver = false;
     }
 
     static propTypes = {
+        canActivate: React.PropTypes.bool.isRequired,
+        onActiveChange: React.PropTypes.func.isRequired,
+        active: React.PropTypes.bool.isRequired,
+        switchLabel: React.PropTypes.string.isRequired,
         icon: React.PropTypes.any.isRequired,
-        label: React.PropTypes.any.isRequired,
-        buttonClassName: React.PropTypes.string.isRequired,
-        cardClassName: React.PropTypes.string.isRequired
+        label: React.PropTypes.any.isRequired
+    };
+
+    static contextTypes = {
+        touchevents: React.PropTypes.bool.isRequired,
+        pointerevents: React.PropTypes.bool.isRequired
     };
 
     static defaultProps = {
-        buttonClassName: '',
-        cardClassName: ''
+        canActivate: false,
+        onActiveChange: () => {
+        },
+        active: false,
+        switchLabel: 'Enable'
     };
 
     state = {
@@ -57,7 +76,43 @@ export default class ToolbarItem extends React.Component {
     }
 
     handleClick() {
+        if (this.preventClick) {
+            this.preventClick = false;
+        } else {
+            if (this.props.canActivate) {
+                this.props.onActiveChange(!this.props.active);
+            }
+        }
+    }
+
+    handleTouchEnd() {
+        /*  prevent click from doing its usual stuff */
+        this.preventClick = true;
+        this.preventMouseOver = true;
         this.setState({show: !this.state.show});
+    }
+
+    handleMouseOver() {
+        if (this.state.show) {
+            this.cancelMouseOut = true;
+        } else {
+            if (this.preventMouseOver) {
+                this.preventMouseOver = false;
+            } else {
+                this.setState({show: true});
+            }
+        }
+    }
+
+    handleMouseOut() {
+        if (this.state.show) {
+            this.cancelMouseOut = false;
+            setImmediate(() => {
+                if (!this.cancelMouseOut) {
+                    this.setState({show: false});
+                }
+            });
+        }
     }
 
     handleDocumentClick(event) {
@@ -66,17 +121,36 @@ export default class ToolbarItem extends React.Component {
         }
     }
 
-    render() {
-        let {icon, label, children, buttonClassName, cardClassName, ...other} = this.props;
+    handleSwitchChange(value) {
+        this.props.onActiveChange(value);
+    }
 
-        return <div ref="container" {...other}>
-            <Button onClick={this.handleClick}
-                    primary={this.state.show}
-                    className={classNames(style['button'], {[style['active']]: this.state.show}, buttonClassName)}>
+    render() {
+        let {icon, label, className, children, ...other} = this.props;
+
+        return <div
+            ref="container"
+            onMouseOver={this.handleMouseOver}
+            onMouseOut={this.handleMouseOut}
+            className={classNames(style['toolbar-menu-item-container'], className)}
+            {...other}>
+            <Button primary={this.state.show} onClick={this.handleClick} onTouchEnd={this.handleTouchEnd} className={style['toolbar-menu-button']}>
                 {icon} {label}
+                <hr className={classNames(
+                    style['toolbar-menu-status-bar'],
+                    {[style['active']]: this.props.active && this.props.canActivate},
+                    {[style['inactive']]: !this.props.active && this.props.canActivate},
+                    {[style['neutral']]: !this.props.canActivate}
+                )}/>
             </Button>
-            <Card className={classNames(style['context-container'], {[style['active']]: this.state.show}, cardClassName)}>
+            <Card className={classNames(style['toolbar-menu-context-container'], {[style['active']]: this.state.show})}>
                 <CardText>
+                    {this.props.canActivate && (this.context.touchevents || this.context.pointerevents) ?
+                        <span>
+                            <Switch checked={this.props.active} label={this.props.switchLabel} onChange={this.handleSwitchChange}/>
+                            <MenuDivider/>
+                        </span>
+                        : null}
                     {children}
                 </CardText>
             </Card>

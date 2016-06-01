@@ -1,3 +1,5 @@
+import MapToolbarItem from './MapToolbarItem';
 import ToolbarItem from './ToolbarItem';
+import TrafficToolbarItem from './TrafficToolbarItem';
 
-export {ToolbarItem};
+export {MapToolbarItem, ToolbarItem, TrafficToolbarItem};

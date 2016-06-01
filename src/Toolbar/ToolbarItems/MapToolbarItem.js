@@ -2,15 +2,15 @@ import React from 'react';
 import {RadioButton, RadioGroup} from 'react-toolbox';
 import style from './style';
 import ToolbarItem from './ToolbarItem';
-import {MapActive, MapInactive} from '../../Icons';
+import {MapInactive} from '../../Icons';
 import shallowEqual from 'shallowequal';
 
 export default class MapToolbarItem extends React.Component {
     constructor() {
         super();
         this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
-        this.renderIcon = this.renderIcon.bind(this);
         this.handleMapSelect = this.handleMapSelect.bind(this);
+        this.renderIcon = this.renderIcon.bind(this);
     }
 
     static propTypes = {
@@ -31,7 +31,7 @@ export default class MapToolbarItem extends React.Component {
     }
 
     render() {
-        return <ToolbarItem icon={this.renderIcon()} active={false} label="Map">
+        return <ToolbarItem icon={this.renderIcon()} label="Map">
             <RadioGroup name="map" value={this.props.context.style} onChange={this.handleMapSelect}>
                 <RadioButton className={style['radio-button']} label="Day" value="1"/>
                 <RadioButton className={style['radio-button']} label="Night" value="night"/>
