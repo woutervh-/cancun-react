@@ -3,32 +3,38 @@ import {RadioButton, RadioGroup} from 'react-toolbox';
 import style from './style';
 import ToolbarItem from './ToolbarItem';
 import {MapActive, MapInactive} from '../../Icons';
+import shallowEqual from 'shallowequal';
 
 export default class MapToolbarItem extends React.Component {
     constructor() {
         super();
+        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.renderIcon = this.renderIcon.bind(this);
         this.handleMapSelect = this.handleMapSelect.bind(this);
     }
 
-    state = {
-        active: false,
-        selected: 'a'
+    static propTypes = {
+        context: React.PropTypes.object.isRequired,
+        onContextChange: React.PropTypes.func.isRequired
     };
 
+    shouldComponentUpdate(nextProps) {
+        return !shallowEqual(this.props, nextProps);
+    }
+
     handleMapSelect(value) {
-        this.setState({selected: value});
+        this.props.onContextChange({style: value});
     }
 
     renderIcon() {
-        return <img src={this.state.active ? MapActive : MapInactive} className={style['svg-icon']}/>
+        return <img src={MapInactive} className={style['svg-icon']}/>
     }
 
     render() {
         return <ToolbarItem icon={this.renderIcon()} active={false} label="Map">
-            <RadioGroup name="map" value={this.state.selected} onChange={this.handleMapSelect}>
-                <RadioButton className={style['radio-button']} label="A" value="a"/>
-                <RadioButton className={style['radio-button']} label="B" value="b"/>
+            <RadioGroup name="map" value={this.props.context.style} onChange={this.handleMapSelect}>
+                <RadioButton className={style['radio-button']} label="Day" value="1"/>
+                <RadioButton className={style['radio-button']} label="Night" value="night"/>
             </RadioGroup>
         </ToolbarItem>;
     }

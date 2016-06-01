@@ -20,6 +20,7 @@ export default class App extends LocalStorageComponent {
         this.renderTileLayers = this.renderTileLayers.bind(this);
         this.renderMarker = this.renderMarker.bind(this);
         this.renderMarkerIcon = this.renderMarkerIcon.bind(this);
+        this.handleContextChange = this.handleContextChange.bind(this);
     }
 
     state = {
@@ -36,12 +37,15 @@ export default class App extends LocalStorageComponent {
         box: {
             title: '',
             subtitle: ''
+        },
+        map: {
+            style: '1'
         }
     };
 
     componentWillMount() {
         this.setPersistenceKey('app');
-        this.setStateMapping(state => ({view: state.view}));
+        this.setStateMapping(state => ({view: state.view, map: state.map}));
         this.restoreState();
     }
 
@@ -115,7 +119,8 @@ export default class App extends LocalStorageComponent {
     }
 
     renderTileLayers() {
-        return <TileLayer url="https://{s}.api.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256" displayCachedTiles={true}/>;
+        let url = 'https://{s}.api.tomtom.com/lbs/map/3/basic/' + this.state.map.style + '/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256';
+        return <TileLayer url={url} displayCachedTiles={true}/>;
     }
 
     renderMarker() {
@@ -138,9 +143,16 @@ export default class App extends LocalStorageComponent {
         }
     }
 
+    handleContextChange(value) {
+        this.setState(value);
+    }
+
     render() {
         return <div>
             <Toolbar
+                ref="toolbar"
+                context={this.state}
+                onContextChange={this.handleContextChange}
                 onSearchSubmit={this.handleSearchSubmit}/>
             <Map
                 ref="map"
