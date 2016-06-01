@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 import style from './style';
+import FeaturesProvider from './FeaturesProvider';
 
 // Needed for onTouchTap
 // Can go away when react 1.0 release
@@ -11,6 +12,6 @@ import style from './style';
 injectTapEventPlugin();
 
 ReactDOM.render(
-    <App/>,
+    <FeaturesProvider><App/></FeaturesProvider>,
     document.getElementById('react-main-mount')
 );

@@ -12,8 +12,8 @@ export default class Marker extends React.Component {
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
-        this.activate = this.activate.bind(this);
-        this.deactivate = this.deactivate.bind(this);
+        this.show = this.show.bind(this);
+        this.hide= this.hide.bind(this);
     }
 
     static propTypes = {
@@ -29,7 +29,7 @@ export default class Marker extends React.Component {
     };
 
     state = {
-        active: false
+        show: false
     };
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -37,44 +37,44 @@ export default class Marker extends React.Component {
     }
 
     componentDidMount() {
-        if (this.state.active) {
+        if (this.state.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (this.state.active && !prevState.active) {
+        if (this.state.show && !prevState.show) {
             document.addEventListener('mousedown', this.handleDocumentClick);
-        } else if (!this.state.active && prevState.active) {
+        } else if (!this.state.show && prevState.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     componentWillUnmount() {
-        if (this.state.active) {
+        if (this.state.show) {
             document.removeEventListener('mousedown', this.handleDocumentClick);
         }
     }
 
     handleDocumentClick(event) {
         if (!EventUtil.targetIsDescendant(event, this.refs.container)) {
-            this.setState({active: false});
+            this.setState({show: false});
         }
     }
 
-    activate() {
-        this.setState({active: true});
+    show() {
+        this.setState({show: true});
     }
 
-    deactivate() {
-        this.setState({active: false});
+    hide() {
+        this.setState({show: false});
     }
 
     render() {
         let {position, offset, icon, children, ...other} = this.props;
         return <div ref="container" style={{position: 'absolute', top: offset.y, left: offset.x}} {...other}>
             {icon}
-            <div className={classNames(style['popup'], {[style['active']]: this.state.active})}>
+            <div className={classNames(style['popup'], {[style['active']]: this.state.show})}>
                 {children}
             </div>
         </div>;

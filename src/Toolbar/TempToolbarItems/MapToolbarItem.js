@@ -1,5 +1,5 @@
 import React from 'react';
-import {RadioButton, RadioGroup, Switch} from 'react-toolbox';
+import {RadioButton, RadioGroup} from 'react-toolbox';
 import style from './style';
 import ToolbarItem from './ToolbarItem';
 import {MapActive, MapInactive} from '../../Icons';

@@ -1,4 +1,4 @@
-import {Button, Card, CardText} from 'react-toolbox';
+import {Button, Card, CardText, MenuDivider, Switch} from 'react-toolbox';
 import React from 'react';
 import style from './style';
 import classNames from 'classnames';
@@ -14,24 +14,37 @@ export default class ToolbarItem extends React.Component {
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handleTouchEnd = this.handleTouchEnd.bind(this);
         this.handleMouseOver = this.handleMouseOver.bind(this);
         this.handleMouseOut = this.handleMouseOut.bind(this);
         this.handleDocumentClick = this.handleDocumentClick.bind(this);
+        this.handleSwitchChange = this.handleSwitchChange.bind(this);
+
+        this.cancelMouseOut = false;
+        this.preventClick = false;
+        this.preventMouseOver = false;
     }
 
     static propTypes = {
         canActivate: React.PropTypes.bool.isRequired,
         onActiveToggle: React.PropTypes.func.isRequired,
         active: React.PropTypes.bool.isRequired,
+        switchLabel: React.PropTypes.string.isRequired,
         icon: React.PropTypes.any.isRequired,
         label: React.PropTypes.any.isRequired
+    };
+
+    static contextTypes = {
+        touchevents: React.PropTypes.bool.isRequired,
+        pointerevents: React.PropTypes.bool.isRequired
     };
 
     static defaultProps = {
         canActivate: false,
         onActiveToggle: () => {
         },
-        active: false
+        active: false,
+        switchLabel: 'Enable'
     };
 
     state = {
@@ -62,39 +75,43 @@ export default class ToolbarItem extends React.Component {
         }
     }
 
-    handleClick(event) {
-        this.setState({show: !this.state.show});
-        //switch (event.pointerType) {
-        //    case 'mouse':
-        //        if (this.props.canActivate) {
-        //            this.props.onActiveToggle();
-        //        }
-        //        break;
-        //    case 'touch':
-        //        /* toggle menu visibility on touch devices with tap event */
-        //        /* showing the menu is handled by mouse over event on touch devices */
-        //        this.setState({show: !this.state.show});
-        //        break;
-        //    default:
-        //        throw new Error('Unknown pointer type for press event: ' + event.pointerType);
-        //}
-    }
-
-    handleMouseOver(event) {
-        console.log(event.target);
-        console.log(this.refs.cardContainer);
-        if (!EventUtil.targetIsDescendant(event, this.refs.cardContainer)) {
-            console.log('descendant')
-            this.setState({show: true});
+    handleClick() {
+        if (this.preventClick) {
+            this.preventClick = false;
+        } else {
+            if (this.props.canActivate) {
+                this.props.onActiveToggle(!this.props.active);
+            }
         }
     }
 
-    handleMouseOut(event) {
-        console.log(event.target);
-        console.log(this.refs.cardContainer);
-        if (!EventUtil.targetIsDescendant(event, this.refs.cardContainer)) {
-            console.log('descendant')
-            this.setState({show: false});
+    handleTouchEnd() {
+        /*  prevent click from doing its usual stuff */
+        this.preventClick = true;
+        this.preventMouseOver = true;
+        this.setState({show: !this.state.show});
+    }
+
+    handleMouseOver() {
+        if (this.state.show) {
+            this.cancelMouseOut = true;
+        } else {
+            if (this.preventMouseOver) {
+                this.preventMouseOver = false;
+            } else {
+                this.setState({show: true});
+            }
+        }
+    }
+
+    handleMouseOut() {
+        if (this.state.show) {
+            this.cancelMouseOut = false;
+            setImmediate(() => {
+                if (!this.cancelMouseOut) {
+                    this.setState({show: false});
+                }
+            });
         }
     }
 
@@ -102,6 +119,10 @@ export default class ToolbarItem extends React.Component {
         if (this.state.show && !EventUtil.targetIsDescendant(event, this.refs.container)) {
             this.setState({show: false});
         }
+    }
+
+    handleSwitchChange(value) {
+        this.props.onActivateToggle(value);
     }
 
     render() {
@@ -113,7 +134,7 @@ export default class ToolbarItem extends React.Component {
             onMouseOut={this.handleMouseOut}
             className={classNames(style['toolbar-menu-item-container'], className)}
             {...other}>
-            <Button primary={this.state.show} onClick={this.handleClick} className={style['toolbar-menu-button']}>
+            <Button primary={this.state.show} onClick={this.handleClick} onTouchEnd={this.handleTouchEnd} className={style['toolbar-menu-button']}>
                 {icon} {label}
                 <hr className={classNames(
                     style['toolbar-menu-status-bar'],
@@ -122,13 +143,17 @@ export default class ToolbarItem extends React.Component {
                     {[style['neutral']]: !this.props.canActivate}
                 )}/>
             </Button>
-            <span ref="cardContainer">
-                <Card className={classNames(style['toolbar-menu-context-container'], {[style['active']]: this.state.show})}>
-                    <CardText>
-                        {children}
-                    </CardText>
-                </Card>
-            </span>
+            <Card className={classNames(style['toolbar-menu-context-container'], {[style['active']]: this.state.show})}>
+                <CardText>
+                    {this.props.canActivate && (this.context.touchevents || this.context.pointerevents) ?
+                        <span>
+                            <Switch checked={this.props.active} label={this.props.switchLabel} onChange={this.handleSwitchChange}/>
+                            <MenuDivider/>
+                        </span>
+                        : null}
+                    {children}
+                </CardText>
+            </Card>
         </div>;
     }
 };

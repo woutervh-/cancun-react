@@ -19,7 +19,10 @@ module.exports = {
         modulesDirectories: [
             'node_modules',
             path.resolve(__dirname, './node_modules')
-        ]
+        ],
+        alias: {
+            modernizr$: path.resolve(__dirname, '.modernizrrc')
+        }
     },
     module: {
         loaders: [
@@ -36,6 +39,9 @@ module.exports = {
             }, {
                 test: /\.svg$/,
                 loader: 'url'
+            }, {
+                test: /\.modernizrrc$/,
+                loader: 'modernizr'
             }
         ]
     },

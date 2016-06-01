@@ -78,7 +78,7 @@ export default class App extends LocalStorageComponent {
         });
 
         if (showDetails) {
-            this.refs.marker.activate();
+            this.refs.marker.show();
         }
     }
 
@@ -111,7 +111,7 @@ export default class App extends LocalStorageComponent {
                 show: false
             }
         });
-        this.refs.marker.deactivate();
+        this.refs.marker.hide();
     }
 
     renderTileLayers() {
@@ -132,7 +132,7 @@ export default class App extends LocalStorageComponent {
         if (this.state.marker.show) {
             return <img
                 src={SearchMarker}
-                onTouchTap={() => {this.refs.marker.activate()}}
+                onTouchTap={() => {this.refs.marker.show()}}
                 style={{width: '2rem', height: '3rem', position: 'absolute', marginTop: '-3rem', marginLeft: 'calc(2rem / -2)', cursor: 'pointer'}}
             />;
         }
