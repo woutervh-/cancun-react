@@ -3,8 +3,7 @@ import {Base, EPSG3857} from './Geography/CoordinateReferenceSystems';
 import {HtmlLayer, HtmlMarker, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
-import Transformation from './Transformation';
-import {Canvas, Group, Picture, Rectangle, Scale} from './Canvas';
+import {Cache, Canvas, Group, Picture, Rectangle, Scale} from './Canvas';
 import VectorUtil from '../VectorUtil';
 import {Manager} from './Events';
 import style from './style';
@@ -22,9 +21,11 @@ export default class Map extends React.Component {
         this.transformTileLayer = this.transformTileLayer.bind(this);
         this.halfSize = this.halfSize.bind(this);
         this.pixelBounds = this.pixelBounds.bind(this);
+        this.coordinateBounds = this.coordinateBounds.bind(this);
         this.tileRange = this.tileRange.bind(this);
         this.firstLoadedAncestor = this.firstLoadedAncestor.bind(this);
         this.transformHtmlLayers = this.transformHtmlLayers.bind(this);
+        this.crs = this.crs.bind(this);
         this.center = this.center.bind(this);
         this.zoomLevel = this.zoomLevel.bind(this);
         this.zoom = this.zoom.bind(this);
@@ -59,6 +60,7 @@ export default class Map extends React.Component {
         this.manager = null;
         this.moving = false;
         this.pinching = false;
+        this.markersImageId = 0;
     }
 
     static propTypes = {
@@ -154,6 +156,11 @@ export default class Map extends React.Component {
             });
         }
 
+        if (this.props.children != prevProps.children) {
+            console.log('invalidating cache')
+            this.markersImageId += 1; // todo: doesn't work very well yet: manage cache lifecycle in map?
+        }
+
         this.drawCanvasLayers();
     }
 
@@ -174,7 +181,16 @@ export default class Map extends React.Component {
             props: {
                 children: [
                     ...tileLayers,
-                    ...markerLayers,
+                    {
+                        type: Cache,
+                        props: {
+                            width: this.props.width,
+                            height: this.props.height,
+                            poolId: 'map-markers',
+                            imageId: this.markersImageId,
+                            children: markerLayers
+                        }
+                    },
                     this.state.box.show ? {
                         type: Rectangle,
                         props: {
@@ -309,6 +325,12 @@ export default class Map extends React.Component {
         };
     }
 
+    coordinateBounds() {
+        let {min, max} = this.pixelBounds();
+        let zoomLevel = this.zoomLevel();
+        return {min: this.props.crs.pointToCoordinate(min, zoomLevel), max: this.props.crs.pointToCoordinate(max, zoomLevel)};
+    }
+
     tileRange(pixelBounds) {
         let tileSize = this.props.crs.tileSize();
         return {
@@ -334,6 +356,10 @@ export default class Map extends React.Component {
             let offset = VectorUtil.multiply(this.pixelToContainer(point), this.scale());
             return React.cloneElement(layer, {offset});
         });
+    }
+
+    crs() {
+        return this.props.crs;
     }
 
     center() {

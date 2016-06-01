@@ -1,3 +1,4 @@
+import Cache from './Cache';
 import Canvas from './Canvas';
 import Composition from './Composition';
 import Group from './Group';
@@ -9,4 +10,4 @@ import Text from './Text';
 import Transform  from './Transform';
 import Translate from './Translate';
 
-export {Canvas, Composition, Group, Picture, Rectangle, Rotate, Scale, Text, Transform, Translate};
+export {Cache, Canvas, Composition, Group, Picture, Rectangle, Rotate, Scale, Text, Transform, Translate};

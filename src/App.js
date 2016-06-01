@@ -1,10 +1,14 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {HtmlMarker, TileLayer} from './Map/Layers';
+import {HtmlMarker, Marker, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
 import {SearchMarker} from './Icons';
 import LocationInfoBox from './LocationInfoBox';
+import {SphericalMercator} from './Map/Geography/Projections';
+import {PlaceHolder} from './Icons';
+
+import jsonp from 'jsonp';
 
 export default class App extends LocalStorageComponent {
     constructor() {
@@ -17,7 +21,10 @@ export default class App extends LocalStorageComponent {
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
         this.handleSearchSubmit = this.handleSearchSubmit.bind(this);
         this.handlePopupClearClick = this.handlePopupClearClick.bind(this);
-        this.renderTileLayers = this.renderTileLayers.bind(this);
+        this.renderMapTileLayer = this.renderMapTileLayer.bind(this);
+        this.renderFlowTileLayer = this.renderFlowTileLayer.bind(this);
+        this.renderTrafficTileLayer = this.renderTrafficTileLayer.bind(this);
+        this.renderIncidentMarkers = this.renderIncidentMarkers.bind(this);
         this.renderMarker = this.renderMarker.bind(this);
         this.renderMarkerIcon = this.renderMarkerIcon.bind(this);
         this.handleContextChange = this.handleContextChange.bind(this);
@@ -46,7 +53,8 @@ export default class App extends LocalStorageComponent {
             showTubes: false,
             showIcons: false,
             flow: 'none'
-        }
+        },
+        incidents: []
     };
 
     componentWillMount() {
@@ -57,6 +65,33 @@ export default class App extends LocalStorageComponent {
 
     componentDidMount() {
         window.addEventListener('resize', this.handleResize);
+
+        const baseUrl = 'https://api.tomtom.com/lbs/services';
+        const apiKey = 'wqz3ad2zvhnfsnwpddk6wgqq';
+        const crs = new SphericalMercator();
+        let zoomLevel = this.refs.map.zoomLevel();
+        let {min: northWest, max: southEast} = this.refs.map.coordinateBounds();
+        let earthNorthWest = crs.project(northWest);
+        let earthSouthEast = crs.project(southEast);
+        let boundingBox = earthNorthWest.x + ',' + earthSouthEast.y + ',' + earthSouthEast.x + ',' + earthNorthWest.y;
+        let url = baseUrl + '/viewportDesc/3/' + boundingBox + '/' + zoomLevel + '/' + boundingBox + '/' + zoomLevel + '/false/jsonp?key=' + apiKey;
+        jsonp(url, {param: 'jsonp'}, (error, data) => {
+            if (!!error) {
+                console.log(error);
+            } else {
+                let trafficModelId = data['viewpResp']['trafficState']['@trafficModelId'];
+                let boundingBox = northWest.latitude + ',' + southEast.longitude + ',' + southEast.latitude + ',' + northWest.longitude;
+                let url = baseUrl + '/trafficIcons/3/s1/' + boundingBox + '/' + zoomLevel + '/' + trafficModelId + '/jsonp?key=' + apiKey + '&projection=EPSG4326';
+                jsonp(url, {param: 'jsonp'}, (error, data) => {
+                    if (!!error) {
+                        console.log(error);
+                    } else {
+                        this.setState({incidents: data['tm']['poi'] || []});
+                    }
+                });
+            }
+        });
+
     }
 
     componentWillUnmount() {
@@ -124,9 +159,27 @@ export default class App extends LocalStorageComponent {
         this.refs.marker.hide();
     }
 
-    renderTileLayers() {
-        let url = 'https://{s}.api.tomtom.com/lbs/map/3/basic/' + this.state.map.style + '/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256';
-        return <TileLayer url={url} displayCachedTiles={true}/>;
+    renderMapTileLayer() {
+        return <TileLayer url={'https://{s}.api.tomtom.com/lbs/map/3/basic/' + this.state.map.style + '/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256'} displayCachedTiles={true}/>;
+    }
+
+    renderFlowTileLayer() {
+        if (this.state.traffic.show && this.state.traffic.flow != 'none') {
+            return <TileLayer url={'https://{s}.api.tomtom.com/lbs/map/3/flow/' + this.state.traffic.flow + '/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256'}/>;
+        }
+    }
+
+    renderTrafficTileLayer() {
+        if (this.state.traffic.show && this.state.traffic.showTubes) {
+            return <TileLayer url={'https://{s}.api.tomtom.com/lbs/map/3/traffic/s3/{z}/{x}/{y}.png?key=wqz3ad2zvhnfsnwpddk6wgqq&tileSize=256'}/>;
+        }
+    }
+
+    renderIncidentMarkers() {
+        return this.state.incidents.map((incident, index) => {
+            let {p: {x: longitude, y: latitude}} = incident;
+            return <Marker key={index} source={PlaceHolder} position={{latitude, longitude}} width={20} height={20} anchor={{x: 10, y: 10}}/>
+        });
     }
 
     renderMarker() {
@@ -168,7 +221,10 @@ export default class App extends LocalStorageComponent {
                 height={this.state.height}
                 onViewChange={this.handleViewChange}
                 onLocationSelect={this.handleLocationSelect}>
-                {this.renderTileLayers()}
+                {this.renderMapTileLayer()}
+                {this.renderFlowTileLayer()}
+                {this.renderTrafficTileLayer()}
+                {this.renderIncidentMarkers()}
                 {this.renderMarker()}
             </Map>
         </div>;

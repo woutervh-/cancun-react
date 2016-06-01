@@ -14,6 +14,7 @@ export default class ToolbarItem extends React.Component {
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
         this.handleClick = this.handleClick.bind(this);
+        this.handleTouchStart = this.handleTouchStart.bind(this);
         this.handleTouchEnd = this.handleTouchEnd.bind(this);
         this.handleMouseOver = this.handleMouseOver.bind(this);
         this.handleMouseOut = this.handleMouseOut.bind(this);
@@ -85,10 +86,13 @@ export default class ToolbarItem extends React.Component {
         }
     }
 
-    handleTouchEnd() {
-        /*  prevent click from doing its usual stuff */
+    handleTouchStart() {
+        /*  prevent click and mouse over from doing their usual stuff */
         this.preventClick = true;
         this.preventMouseOver = true;
+    }
+
+    handleTouchEnd() {
         this.setState({show: !this.state.show});
     }
 
@@ -134,7 +138,7 @@ export default class ToolbarItem extends React.Component {
             onMouseOut={this.handleMouseOut}
             className={classNames(style['toolbar-menu-item-container'], className)}
             {...other}>
-            <Button primary={this.state.show} onClick={this.handleClick} onTouchEnd={this.handleTouchEnd} className={style['toolbar-menu-button']}>
+            <Button primary={this.state.show} onClick={this.handleClick} onTouchStart={this.handleTouchStart} onTouchEnd={this.handleTouchEnd} className={style['toolbar-menu-button']}>
                 {icon} {label}
                 <hr className={classNames(
                     style['toolbar-menu-status-bar'],

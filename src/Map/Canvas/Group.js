@@ -1,3 +1,4 @@
+import Cache from './Cache';
 import Composition from './Composition';
 import Picture from './Picture';
 import Rectangle from './Rectangle';
@@ -14,6 +15,9 @@ export default function Group(props) {
                 (Array.isArray(props.children) ? props.children : [props.children]).forEach(child => {
                     if (!!child) {
                         switch (child.type) {
+                            case Cache:
+                                Cache(child.props).draw(context);
+                                break;
                             case Composition:
                                 Composition(child.props).draw(context);
                                 break;
