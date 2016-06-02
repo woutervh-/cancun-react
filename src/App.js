@@ -107,7 +107,7 @@ export default class App extends LocalStorageComponent {
                 jsonp(url, {param: 'jsonp'}, (error, data) => {
                     if (!!error) {
                         console.log(error);
-                    } else if (lastIncidentsId == this.incidentsId) {
+                    } else if (lastIncidentsId == this.incidentsId && 'tm' in data && 'poi' in data['tm']) {
                         this.refs.map.invalidateCache('incidents');
                         this.setState({incidents: data['tm']['poi'] || []});
                     }
