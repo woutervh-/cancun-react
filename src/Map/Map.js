@@ -489,16 +489,15 @@ export default class Map extends React.Component {
         let containerAspectRatio = this.props.width / this.props.height;
         let boxAspectRatio = boxWidth / boxHeight;
 
+        let scale = 1;
         if (containerAspectRatio >= boxAspectRatio) {
-            let scale = this.props.height / boxHeight;
-            let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
-            this.setZoomAt(boxCenter, zoom, this.pushViewUpdate);
+            scale = this.props.height / boxHeight;
         } else {
-            let scale = this.props.width / boxWidth;
-            let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, this.zoom() + Math.log2(scale)));
-            this.setZoomAt(boxCenter, zoom, this.pushViewUpdate);
+            scale = this.props.width / boxWidth;
         }
 
+        let zoom = Math.min(this.props.maxZoom, Math.max(this.props.minZoom, Math.round(this.zoom() + Math.log2(scale))));
+        this.setZoomAt(boxCenter, zoom, this.pushViewUpdate);
         this.setState({
             box: {
                 ...this.state.box,
