@@ -17,7 +17,10 @@ module.exports = {
         modulesDirectories: [
             'node_modules',
             path.resolve(__dirname, './node_modules')
-        ]
+        ],
+        alias: {
+            modernizr$: path.resolve(__dirname, '.modernizrrc')
+        }
     },
     plugins: [
         new webpack.optimize.OccurrenceOrderPlugin(),
@@ -48,7 +51,10 @@ module.exports = {
                 loader: cssExtractTextPlugin.extract('style', '!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox')
             }, {
                 test: /\.svg$/,
-                loader: 'file'
+                loader: 'file?name=images/[name].[ext]'
+            }, {
+                test: /\.modernizrrc$/,
+                loader: 'modernizr'
             }
         ]
     },

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "clean": "rimraf public/javascripts && rimraf public/stylesheets",
+    "clean": "rimraf public/images && rimraf public/javascripts && rimraf public/stylesheets",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.production.js",
     "build": "npm run clean && npm run build:webpack",
     "start": "node bin/www"

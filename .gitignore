@@ -8,5 +8,6 @@ node_modules/react-toolbox/*
 !node_modules/react-toolbox/lib/
 node_modules/react-toolbox/lib/*
 !node_modules/react-toolbox/lib/_base.scss
-public/javascripts/
-public/stylesheets/
+public/*
+!public/index.html
+!public/favicon.ico
