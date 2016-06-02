@@ -595,8 +595,8 @@ export default class Map extends React.Component {
         } else {
             this.contextMenuTimer = setTimeout(() => {
                 this.contextMenuTimer = null;
-                let {x, y} = this.screenToContainer({x: event.clientX, y: event.clientY});
-                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}), this.zoom());
+                let point = this.containerToPixel(this.screenToContainer({x: event.clientX, y: event.clientY}), this.zoom(), this.scale());
+                let position = this.props.crs.pointToCoordinate(point, this.zoom());
                 this.props.onLocationSelect(position, true);
             }, this.props.contextMenuTime);
         }
@@ -607,8 +607,8 @@ export default class Map extends React.Component {
     handlePress(event) {
         switch (event.pointerType) {
             case 'mouse':
-                let {x, y} = this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY});
-                let position = this.props.crs.pointToCoordinate(this.containerToPixel({x, y}), this.zoom());
+                let point = this.containerToPixel(this.screenToContainer({x: event.pointers[0].clientX, y: event.pointers[0].clientY}), this.zoom(), this.scale());
+                let position = this.props.crs.pointToCoordinate(point, this.zoom());
                 this.props.onLocationSelect(position, false);
                 break;
             case 'touch':
@@ -630,13 +630,13 @@ export default class Map extends React.Component {
         return VectorUtil.subtract(point, containerOffset);
     }
 
-    containerToPixel({x, y}) {
+    containerToPixel({x, y}, zoom = this.zoomLevel(), scale = 1) {
         let center = this.center();
         let halfSize = this.halfSize();
-        let centerPoint = this.props.crs.coordinateToPoint(center, this.zoomLevel());
+        let centerPoint = this.props.crs.coordinateToPoint(center, zoom);
         let offset = {
-            x: x - halfSize.width,
-            y: y - halfSize.height
+            x: x - halfSize.width * scale,
+            y: y - halfSize.height * scale
         };
         return VectorUtil.add(centerPoint, offset);
     }
