@@ -1,21 +1,25 @@
 import React from 'react';
 import LocalStorageComponent from './LocalStorageComponent';
 import {Map} from './Map';
-import {HtmlMarker, Marker, TileLayer} from './Map/Layers';
+import {CanvasCache, HtmlMarker, Marker, TileLayer} from './Map/Layers';
 import {Toolbar} from './Toolbar';
 import {SearchMarker} from './Icons';
 import LocationInfoBox from './LocationInfoBox';
 import {SphericalMercator} from './Map/Geography/Projections';
 import {PlaceHolder} from './Icons';
+import shallowEqual from 'shallowequal';
 
 import jsonp from 'jsonp';
 
 export default class App extends LocalStorageComponent {
     constructor() {
         super();
+        this.shouldComponentUpdate = this.shouldComponentUpdate.bind(this);
         this.componentWillMount = this.componentWillMount.bind(this);
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.componentWillUpdate = this.componentWillUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.updateIncidents = this.updateIncidents.bind(this);
         this.handleResize = this.handleResize.bind(this);
         this.handleViewChange = this.handleViewChange.bind(this);
         this.handleLocationSelect = this.handleLocationSelect.bind(this);
@@ -28,6 +32,8 @@ export default class App extends LocalStorageComponent {
         this.renderMarker = this.renderMarker.bind(this);
         this.renderMarkerIcon = this.renderMarkerIcon.bind(this);
         this.handleContextChange = this.handleContextChange.bind(this);
+
+        this.incidentsId = 0;
     }
 
     state = {
@@ -57,6 +63,10 @@ export default class App extends LocalStorageComponent {
         incidents: []
     };
 
+    shouldComponentUpdate(nextProps, nextState) {
+        return !shallowEqual(this.state, nextState);
+    }
+
     componentWillMount() {
         this.setPersistenceKey('app');
         this.setStateMapping(state => ({view: state.view, map: state.map, traffic: state.traffic}));
@@ -65,7 +75,18 @@ export default class App extends LocalStorageComponent {
 
     componentDidMount() {
         window.addEventListener('resize', this.handleResize);
+        this.updateIncidents();
+    }
 
+    componentWillUpdate() {
+        this.refs.map.invalidateCache('incidents');
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    updateIncidents() {
         const baseUrl = 'https://api.tomtom.com/lbs/services';
         const apiKey = 'wqz3ad2zvhnfsnwpddk6wgqq';
         const crs = new SphericalMercator();
@@ -75,27 +96,24 @@ export default class App extends LocalStorageComponent {
         let earthSouthEast = crs.project(southEast);
         let boundingBox = earthNorthWest.x + ',' + earthSouthEast.y + ',' + earthSouthEast.x + ',' + earthNorthWest.y;
         let url = baseUrl + '/viewportDesc/3/' + boundingBox + '/' + zoomLevel + '/' + boundingBox + '/' + zoomLevel + '/false/jsonp?key=' + apiKey;
+        let lastIncidentsId = ++this.incidentsId;
         jsonp(url, {param: 'jsonp'}, (error, data) => {
             if (!!error) {
                 console.log(error);
-            } else {
+            } else if (lastIncidentsId == this.incidentsId) {
                 let trafficModelId = data['viewpResp']['trafficState']['@trafficModelId'];
                 let boundingBox = northWest.latitude + ',' + southEast.longitude + ',' + southEast.latitude + ',' + northWest.longitude;
                 let url = baseUrl + '/trafficIcons/3/s1/' + boundingBox + '/' + zoomLevel + '/' + trafficModelId + '/jsonp?key=' + apiKey + '&projection=EPSG4326';
                 jsonp(url, {param: 'jsonp'}, (error, data) => {
                     if (!!error) {
                         console.log(error);
-                    } else {
+                    } else if (lastIncidentsId == this.incidentsId) {
+                        this.refs.map.invalidateCache('incidents');
                         this.setState({incidents: data['tm']['poi'] || []});
                     }
                 });
             }
         });
-
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('resize', this.handleResize);
     }
 
     handleResize() {
@@ -103,6 +121,7 @@ export default class App extends LocalStorageComponent {
     }
 
     handleViewChange(view) {
+        this.updateIncidents();
         this.setState({view});
     }
 
@@ -176,10 +195,14 @@ export default class App extends LocalStorageComponent {
     }
 
     renderIncidentMarkers() {
-        return this.state.incidents.map((incident, index) => {
-            let {p: {x: longitude, y: latitude}} = incident;
-            return <Marker key={index} source={PlaceHolder} position={{latitude, longitude}} width={20} height={20} anchor={{x: 10, y: 10}}/>
-        });
+        if (this.state.traffic.show && this.state.traffic.showIcons) {
+            return <CanvasCache id="incidents">
+                {this.state.incidents.map((incident, index) => {
+                    let {p: {x: longitude, y: latitude}} = incident;
+                    return <Marker key={index} source={PlaceHolder} position={{latitude, longitude}} width={20} height={20} anchor={{x: 10, y: 10}}/>
+                })}
+            </CanvasCache>;
+        }
     }
 
     renderMarker() {

@@ -1,12 +1,13 @@
 import React from 'react';
 import {Base, EPSG3857} from './Geography/CoordinateReferenceSystems';
-import {HtmlLayer, HtmlMarker, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
+import {CanvasCache, HtmlLayer, HtmlMarker, Marker, TileLayer, TileLayerUrlUtil} from './Layers';
 import objectAssign from 'object-assign';
 import ImageFrontier from './ImageFrontier';
-import {Cache, Canvas, Group, Picture, Rectangle, Scale} from './Canvas';
+import {Cache, Canvas, Group, Picture, Rectangle, Scale, Translate} from './Canvas';
 import VectorUtil from '../VectorUtil';
 import {Manager} from './Events';
 import style from './style';
+import shallowEqual from 'shallowequal';
 
 export default class Map extends React.Component {
     constructor() {
@@ -15,7 +16,9 @@ export default class Map extends React.Component {
         this.componentDidMount = this.componentDidMount.bind(this);
         this.componentDidUpdate = this.componentDidUpdate.bind(this);
         this.componentWillUnmount = this.componentWillUnmount.bind(this);
+        this.invalidateCache = this.invalidateCache.bind(this);
         this.drawCanvasLayers = this.drawCanvasLayers.bind(this);
+        this.transformCacheLayers = this.transformCacheLayers.bind(this);
         this.transformMarkerLayers = this.transformMarkerLayers.bind(this);
         this.transformTileLayers = this.transformTileLayers.bind(this);
         this.transformTileLayer = this.transformTileLayer.bind(this);
@@ -60,7 +63,7 @@ export default class Map extends React.Component {
         this.manager = null;
         this.moving = false;
         this.pinching = false;
-        this.markersImageId = 0;
+        this.cacheIds = {};
     }
 
     static propTypes = {
@@ -156,11 +159,6 @@ export default class Map extends React.Component {
             });
         }
 
-        if (this.props.children != prevProps.children) {
-            console.log('invalidating cache')
-            this.markersImageId += 1; // todo: doesn't work very well yet: manage cache lifecycle in map?
-        }
-
         this.drawCanvasLayers();
     }
 
@@ -169,28 +167,27 @@ export default class Map extends React.Component {
         this.manager = null;
     }
 
+    invalidateCache(id) {
+        if (id in this.cacheIds) {
+            this.cacheIds[id] += 1;
+        }
+    }
+
     drawCanvasLayers() {
         /* todo: optimize by drawing on raf and if dirty */
         this.imageFrontier.clear();
         let layers = React.Children.toArray(this.props.children);
-        let tileLayers = this.transformTileLayers(layers.filter(child => child.type == TileLayer));
-        let markerLayers = this.transformMarkerLayers(layers.filter(child => child.type == Marker));
+        let tileLayers = this.transformTileLayers(layers.filter(layer => layer.type == TileLayer));
+        let cacheLayers = this.transformCacheLayers(layers.filter(layer => layer.type == CanvasCache));
+        let markerLayers = this.transformMarkerLayers(layers.filter(layer => layer.type == Marker));
 
         this.refs.canvas.draw({
             type: Group,
             props: {
                 children: [
                     ...tileLayers,
-                    {
-                        type: Cache,
-                        props: {
-                            width: this.props.width,
-                            height: this.props.height,
-                            poolId: 'map-markers',
-                            imageId: this.markersImageId,
-                            children: markerLayers
-                        }
-                    },
+                    ...cacheLayers,
+                    ...markerLayers,
                     this.state.box.show ? {
                         type: Rectangle,
                         props: {
@@ -215,7 +212,45 @@ export default class Map extends React.Component {
         });
     }
 
-    transformMarkerLayers(layers) {
+    transformCacheLayers(layers) {
+        let scale = Math.pow(2, this.state.dZoom);
+        let zoom = this.zoom();
+        let halfSizeXy = {x: this.props.width / 2, y: this.props.height / 2};
+        let oldCenterPoint = this.props.crs.coordinateToPoint(this.props.center, zoom);
+        let newCenterPoint = this.props.crs.coordinateToPoint(this.center(), zoom);
+        let origin = this.pixelBounds().min;
+        let originOffset = VectorUtil.subtract(VectorUtil.round(origin), origin);
+        let offset = VectorUtil.subtract(oldCenterPoint, newCenterPoint);
+        let adjustedOffset = VectorUtil.subtract(VectorUtil.add(offset, VectorUtil.multiply(halfSizeXy, 1 - scale)), originOffset);
+
+        return layers.map(layer => {
+            let poolId = layer.props.id;
+            if (!(poolId in this.cacheIds)) {
+                this.cacheIds[poolId] = 0;
+            }
+
+            let layers = React.Children.toArray(layer.props.children);
+            let markerLayers = this.transformMarkerLayers(layers.filter(layer => layer.type == Marker), () => {
+                this.invalidateCache(poolId);
+                this.drawCanvasLayers();
+            });
+
+            return {
+                type: Cache,
+                props: {
+                    top: adjustedOffset.y,
+                    left: adjustedOffset.x,
+                    width: this.props.width * scale,
+                    height: this.props.height * scale,
+                    poolId,
+                    imageId: this.cacheIds[poolId],
+                    children: markerLayers
+                }
+            };
+        });
+    }
+
+    transformMarkerLayers(layers, redraw = this.drawCanvasLayers) {
         let priority = 1;
         let pictures = [];
         for (let layer of layers) {
@@ -235,7 +270,7 @@ export default class Map extends React.Component {
                     }
                 });
             } else {
-                this.imageFrontier.fetch(source, priority++, this.drawCanvasLayers);
+                this.imageFrontier.fetch(source, priority++, redraw);
             }
         }
         return pictures;
@@ -709,7 +744,7 @@ export default class Map extends React.Component {
         let {width, height, center, zoom, minZoom, maxZoom, crs, onViewChange, onLocationSelect, contextMenuTime, pinchZoomJumpThreshold, children, style, ...other} = this.props;
         let rootStyle = objectAssign({}, {position: 'absolute'}, style);
         let layers = React.Children.toArray(this.props.children);
-        let htmlLayers = this.transformHtmlLayers(layers.filter(child => child.type == HtmlLayer || child.type == HtmlMarker));
+        let htmlLayers = this.transformHtmlLayers(layers.filter(layer => layer.type == HtmlLayer || layer.type == HtmlMarker));
 
         return <div style={rootStyle} {...other}>
             <Canvas ref="canvas" width={width} height={height} style={{position: 'absolute'}}>
@@ -718,4 +753,5 @@ export default class Map extends React.Component {
             {htmlLayers}
         </div>;
     }
-};
+}
+;
