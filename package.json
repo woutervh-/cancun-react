@@ -6,7 +6,8 @@
     "clean": "rimraf public/images && rimraf public/javascripts && rimraf public/stylesheets",
     "build:webpack": "cross-env NODE_ENV=production webpack --config webpack.config.production.js",
     "build": "npm run clean && npm run build:webpack",
-    "start": "node bin/www"
+    "start": "node bin/www",
+    "test": "jest --coverage"
   },
   "devDependencies": {
     "autoprefixer": "^6.3.6",
@@ -24,6 +25,7 @@
     "file-loader": "^0.8.5",
     "hammerjs": "^2.0.8",
     "heap": "^0.2.6",
+    "jest-cli": "^12.1.1",
     "jsonp": "^0.2.0",
     "modernizr": "^3.3.1",
     "modernizr-loader": "0.0.5",

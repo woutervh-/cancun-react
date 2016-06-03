@@ -1,13 +1,22 @@
+# IntelliJ IDEA
 *.iml
+.idea/
+
+# Binaries
 *.zip
 
-.idea/
+# Exception for react-toolbox bug: https://github.com/react-toolbox/react-toolbox/issues/468
 node_modules/*
 !node_modules/react-toolbox/
 node_modules/react-toolbox/*
 !node_modules/react-toolbox/lib/
 node_modules/react-toolbox/lib/*
 !node_modules/react-toolbox/lib/_base.scss
+
+# Build output
 public/*
 !public/index.html
 !public/favicon.ico
+
+# Coverage reports
+coverage/
