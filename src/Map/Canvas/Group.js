@@ -11,7 +11,7 @@ import Translate from './Translate';
 export default function Group(props) {
     return {
         draw: (context) => {
-            if (!!props.children) {
+            if (!!props && !!props.children) {
                 (Array.isArray(props.children) ? props.children : [props.children]).forEach(child => {
                     if (!!child) {
                         switch (child.type) {
