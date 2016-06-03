@@ -29,10 +29,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 exclude: /node_modules/,
-                loader: 'babel',
-                query: {
-                    presets: ['es2015', 'react', 'stage-0', 'react-hmre']
-                }
+                loader: 'babel'
             }, {
                 test: /\.s?css$/,
                 loader: 'style!css?modules&importLoaders=1&localIdentName=[name]---[local]---[hash:base64:5]!sass!toolbox'
