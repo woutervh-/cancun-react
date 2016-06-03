@@ -1,5 +1,4 @@
 jest.unmock('../Cache');
-jest.unmock('../Group');
 jest.unmock('object-assign');
 
 import Cache from '../Cache';

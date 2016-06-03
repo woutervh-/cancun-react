@@ -15,7 +15,7 @@ export default class Canvas extends React.Component {
 
     static propTypes = {
         width: React.PropTypes.number.isRequired,
-        height: React.PropTypes.number.isRequired,
+        height: React.PropTypes.number.isRequired
     };
 
     componentDidMount() {

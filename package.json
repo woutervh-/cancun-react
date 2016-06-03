@@ -38,6 +38,7 @@
     "raf": "^3.2.0",
     "react": "^15.0.0",
     "react-addons-css-transition-group": "^15.0.0",
+    "react-addons-test-utils": "^15.0.0",
     "react-dom": "^15.0.0",
     "react-tap-event-plugin": "^1.0.0",
     "react-toolbox": "^0.16.2",
@@ -63,8 +64,13 @@
     "serve-favicon": "~2.3.0"
   },
   "jest": {
-    "moduleFileExtensions": ["js"],
-    "moduleDirectories": ["node_modules", "src"],
+    "moduleFileExtensions": [
+      "js"
+    ],
+    "moduleDirectories": [
+      "node_modules",
+      "src"
+    ],
     "unmockedModulePathPatterns": [
       "<rootDir>/node_modules/react/",
       "<rootDir>/node_modules/react-dom/",
